@@ -621,3 +621,26 @@ function app() {
     }
   };
 }
+deleteAccount: async function () {
+  if (prompt("Cette action est irréversible. Tapez SUPPRIMER :") !== "SUPPRIMER") return;
+  this.busy = true;
+  clearTimeout(tmr);
+  this.authed = false; // empêche queue()/save() de recréer la boutique
+  try {
+    var buckets = ["shop-media", "id-documents"];
+    for (var i = 0; i < buckets.length; i++) {
+      var l = await db.storage.from(buckets[i]).list(this.uid);
+      if (l.data && l.data.length)
+        await db.storage.from(buckets[i]).remove(l.data.map(function (x) { return this.uid + "/" + x.name; }, this));
+    }
+    var r = await db.rpc("delete_my_account");
+    if (r.error) throw r.error;
+    await db.auth.signOut();
+    localStorage.clear(); sessionStorage.clear();
+    alert("Votre compte a été supprimé.");
+    location.reload();
+  } catch (err) {
+    this.authed = true;
+    alert("Erreur lors de la suppression : " + (err.message || ""));
+  } finally { this.busy = false; }
+}
