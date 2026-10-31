@@ -388,7 +388,15 @@ function app() {
         }
       } finally { this.busy = false; }
     },
-    logout: async function () { await db.auth.signOut(); location.reload(); },
+    
+    logout: async function () { 
+      try {
+        await db.auth.signOut();
+      } catch (e) {}
+      localStorage.clear();
+      sessionStorage.clear();
+      location.reload(); 
+    },
 
     cancelSubscription: function() {
       if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous basculerez sur le plan Starter à l'échéance.")) {
@@ -406,6 +414,8 @@ function app() {
             await db.from("shops").delete().eq("id", this.shop.sid);
           }
           await db.auth.signOut();
+          localStorage.clear();
+          sessionStorage.clear();
           alert("Votre compte a été supprimé.");
           location.reload();
         } catch (err) {
