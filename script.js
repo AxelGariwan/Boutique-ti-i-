@@ -412,6 +412,17 @@ function app() {
       }
     },
 
+    authMsg: function (err) {
+      var m = String((err && err.message) || "");
+      if (/not confirmed/i.test(m)) return "Votre email n'est pas encore confirmé. Ouvrez le message de confirmation reçu par email, puis reconnectez-vous.";
+      if (/rate limit|too many/i.test(m)) return "Trop de tentatives ou d'emails envoyés. Patientez un moment puis réessayez.";
+      if (/already registered|already been registered/i.test(m)) return "Cet email est déjà utilisé. Connectez-vous ou confirmez votre email.";
+      if (/password/i.test(m) && /characters|weak|short/i.test(m)) return "Mot de passe trop court ou trop faible (6 caractères minimum).";
+      if (/invalid login|invalid credentials/i.test(m)) return "Email ou mot de passe incorrect.";
+      if (/failed to fetch|network/i.test(m)) return "Problème de connexion internet. Réessayez.";
+      return m || "Une erreur est survenue. Réessayez.";
+    },
+
     switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; },
     submitAuth: async function () {
       var f = this.f, m = this.authMode;
@@ -428,6 +439,7 @@ function app() {
           var r = await db.auth.signUp({
             email: email, password: f.password,
             options: {
+              emailRedirectTo: location.origin + location.pathname,
               data: {
                 full_name: f.fullName,
                 phone: f.phone,
@@ -438,7 +450,7 @@ function app() {
               }
             }
           });
-          if (r.error) { this.authErr = r.error.message; return; }
+          if (r.error) { this.authErr = this.authMsg(r.error); return; }
 
           if (r.data.session) {
             if (r.data.user && f.idBlob) {
@@ -453,7 +465,7 @@ function app() {
           }
         } else {
           var r2 = await db.auth.signInWithPassword({ email: email, password: f.password });
-          if (r2.error) { this.authErr = "Email ou mot de passe incorrect."; return; }
+          if (r2.error) { this.authErr = this.authMsg(r2.error); return; }
           location.reload();
         }
       } finally { this.busy = false; }
