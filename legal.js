@@ -32,3 +32,13 @@ window.LEGAL = {
     w.textContent = "Page non publiable en l’état : complétez les champs suivants dans le fichier legal.js → " + missing.join(", ") + ".";
   }
 })();
+// legal.js - À la fin du fichier ou en remplaçant la configuration existante
+
+export const legalConfig = {
+  nom: "Axel Gariwan",
+  formeJuridique: "Entrepreneur individuel",
+  adresse: "Dakar, Sénégal",
+  email: "boutiquetii789@gmail.com",
+  telephone: "+221 71 062 06 85",
+  directeur: "Axel Gariwan"
+};
