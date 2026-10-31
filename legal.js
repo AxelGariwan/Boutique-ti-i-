@@ -6,15 +6,15 @@
 // s'affiche en haut des pages légales.
 // ============================================================
 window.LEGAL = {
-  nom: "",         // Nom et prénom (personne physique) ou raison sociale (société)
-  forme: "",       // Ex : "Entrepreneur individuel", "SARL", "SUARL"…
-  adresse: "",     // Adresse postale complète (rue, quartier, ville, Sénégal)
-  email: "",       // Email de contact (droits RGPD/CDP, réclamations)
-  telephone: "",   // Téléphone ou WhatsApp de contact
-  directeur: "",   // Directeur de la publication (souvent le même nom)
-  ninea: "",       // Numéro NINEA (si vous en avez un)
-  rccm: "",        // Numéro RCCM (si vous en avez un)
-  cdp: ""          // N° de récépissé de la déclaration à la CDP (cdp.sn), une fois obtenu
+  nom: "Axel Gariwan",
+  forme: "Entrepreneur individuel",
+  adresse: "Dakar, Sénégal",
+  email: "boutiquetii@gmail.com",
+  telephone: "+221 71 062 06 85 ",
+  directeur: "Axel Gariwan",
+  ninea: "En cours d'immatriculation",
+  rccm: "En cours d'immatriculation",
+  cdp: "En cours"
 };
 (function () {
   var L = window.LEGAL, required = ["nom", "forme", "adresse", "email", "telephone", "directeur"], missing = [];
@@ -32,13 +32,3 @@ window.LEGAL = {
     w.textContent = "Page non publiable en l’état : complétez les champs suivants dans le fichier legal.js → " + missing.join(", ") + ".";
   }
 })();
-// legal.js - À la fin du fichier ou en remplaçant la configuration existante
-
-export const legalConfig = {
-  nom: "Axel Gariwan",
-  formeJuridique: "Entrepreneur individuel",
-  adresse: "Dakar, Sénégal",
-  email: "boutiquetii789@gmail.com",
-  telephone: "+221 71 062 06 85",
-  directeur: "Axel Gariwan"
-};
