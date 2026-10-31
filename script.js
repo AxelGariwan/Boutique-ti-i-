@@ -123,7 +123,7 @@ var TR = {
     trackingCodeLabel:"Tu Código de Seguimiento Único:", copy:"Copiar", copied:"¡Copiado!", sendOrderWa:"Enviar pedido al vendedor por WhatsApp", close:"Cerrar",
     client:"Cliente", status:"Estado", statusPending:"Pagado / Pendiente", statusProcessing:"En preparación", statusCompleted:"Entregado",
     inStockLabel:"En Stock", outOfStockLabel:"Agotado",
-    cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Pagar online", cancel:"Cancelar",
+    cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Payer online", cancel:"Cancelar",
     statVisits:"Visitas", statRevenue:"Ingresos totales", statOrders:"Pedidos recibidos",
     viewSub:"Ver suscripción",
     navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda",
@@ -204,7 +204,7 @@ function app() {
     remote: false, loading: !!shopId, remoteErr: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false,
     modal: "", showPw: false, authMode: "login", authErr: "", copied: false, copiedCode: false,
-    tab: "welcome", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
+    tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "",
     cardData: { number: "", exp: "", cvv: "" },
     
@@ -226,14 +226,26 @@ function app() {
       var self = this;
       this.$watch("shop", function () { if (!self.remote) self.queue(); }, { deep: true });
       this.$watch("lang", function (v) { document.documentElement.lang = v; });
-      if (shopId) { this.loadRemote(shopId); this.ready = true; }
-      else {
-        db.auth.onAuthStateChange(function (evt, session) { setTimeout(function () { self.onSession(session); }, 0); });
-        db.auth.getSession().then(function (r) { self.onSession(r.data.session); });
+      
+      if (shopId) { 
+        this.loadRemote(shopId); 
+        this.ready = true; 
+      } else {
+        // S'il n'y a pas de ?b=..., on reste sur la page d'accueil SaaS par défaut sans charger automatiquement la session vendeur
+        this.ready = true;
       }
       this.loadRates();
       var draw = function () { if (window.lucide) lucide.createIcons(); };
       setTimeout(draw, 100);
+    },
+
+    // Méthode appelée quand on clique sur "Accéder à mon espace vendeur" depuis la page d'accueil SaaS
+    openVendorSpace: async function() {
+      this.loading = true;
+      var session = (await db.auth.getSession()).data.session;
+      await this.onSession(session);
+      this.loading = false;
+      this.tab = "vendor";
     },
 
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
@@ -451,7 +463,7 @@ function app() {
 
         this.shop = shopData;
         this.remote = true; 
-        this.tab = "welcome";
+        this.tab = "client";
 
         this.shop.visits = (this.shop.visits || 0) + 1;
         await db.from("shops").update({ data: this.shop }).eq("id", id);
@@ -589,7 +601,7 @@ function app() {
         return;
       }
       var p = parseInt(this.newP.price, 10), v = this.newP.video.trim();
-      if (!this.newP.title.trim() || !p) { alert("Nom et prix obligatoires."); return; }
+      if (!this.newP.title.tab || !p) { alert("Nom et prix obligatoires."); return; }
       
       if (v && !this.currentPlanObj.videoAllowed) {
         alert("L'ajout de vidéos nécessite l'abonnement Pro ou Premium.");
