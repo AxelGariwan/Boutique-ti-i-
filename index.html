@@ -206,6 +206,10 @@
  <!-- Formulaire d'authentification si non connecté -->
  <div x-show="!loading&&!remoteErr&&tab==='vendor'&&ready&&!authed" x-cloak class="card max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 my-8">
   <h2 class="font-bold text-lg text-slate-900" x-text="authMode==='signup'?t('createShopTitle'):t('loginTitle')"></h2>
+  <div x-show="waEnabled" class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+   <button type="button" @click="authMethod='email'; otpSent=false; authErr=''" :class="authMethod==='email'?'bg-white text-emerald-700 shadow-sm':'text-slate-600'" class="py-2 rounded-lg transition">Email</button>
+   <button type="button" @click="authMethod='whatsapp'; otpSent=false; authErr=''" :class="authMethod==='whatsapp'?'bg-white text-emerald-700 shadow-sm':'text-slate-600'" class="py-2 rounded-lg transition">WhatsApp</button>
+  </div>
   <form @submit.prevent="submitAuth()" class="space-y-3">
    <template x-if="authMode==='signup'">
     <div class="space-y-3">
@@ -228,16 +232,27 @@
      </div>
     </div>
    </template>
-   <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('email')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="email" x-ref="em" x-model="f.email"></div>
-   <div>
+   <div x-show="authMethod==='email'"><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('email')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="email" x-ref="em" x-model="f.email"></div>
+   <div x-show="authMethod==='email'">
     <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('password')"></label>
     <div class="relative">
      <input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm pr-16" :type="showPw?'text':'password'" x-ref="pw" x-model="f.password">
      <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500" @click="showPw=!showPw" x-text="showPw?t('hide'):t('show')"></button>
     </div>
    </div>
+   <div x-show="authMethod==='whatsapp'" class="space-y-3">
+    <div x-show="authMode==='login'">
+     <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('whatsappNumber')"></label>
+     <input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="tel" placeholder="+221771234567" autocomplete="tel" x-model="f.phone">
+    </div>
+    <p x-show="authMode==='signup'" class="text-xs text-slate-500">Un code sera envoyé sur le numéro WhatsApp indiqué ci-dessus (format international, ex : +221771234567).</p>
+    <div x-show="otpSent">
+     <label class="block text-xs font-semibold text-slate-600 mb-1">Code reçu sur WhatsApp</label>
+     <input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm tracking-widest" inputmode="numeric" autocomplete="one-time-code" maxlength="8" x-model="otp">
+    </div>
+   </div>
    <p x-show="authErr" class="text-red-600 text-xs mt-2" x-text="authErr"></p>
-   <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-4" :disabled="busy" x-text="busy?t('pleaseWait'):(authMode==='signup'?t('createShopBtn'):t('loginBtn'))"></button>
+   <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-4" :disabled="busy" x-text="busy?t('pleaseWait'):(authMethod==='whatsapp'?(otpSent?'Valider le code':'Recevoir le code par WhatsApp'):(authMode==='signup'?t('createShopBtn'):t('loginBtn')))"></button>
   </form>
   <div class="text-center mt-4 text-xs">
    <button type="button" class="underline font-bold text-emerald-700" @click="switchAuth()" x-text="authMode==='login'?t('noAccount'):t('hasAccount')"></button>

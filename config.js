@@ -3,3 +3,7 @@
 // Ne mettez JAMAIS ici la clé "service_role" ou "secret".
 window.SB_URL = "https://rsabamyxihhxyjvmlxav.supabase.co";
 window.SB_KEY = "sb_publishable_r188ItWJrWmhLTrLvR91Ig_8nQjRvAH";
+
+// Mettre true UNIQUEMENT quand Twilio (canal WhatsApp) est configuré dans Supabase.
+// Tant que c'est false, seul l'email est proposé.
+window.WA_AUTH = false;

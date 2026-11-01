@@ -206,7 +206,7 @@ function app() {
   return {
     remote: false, loading: !!shopId, remoteErr: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
-    modal: "", showPw: false, authMode: "login", authErr: "", copied: false, copiedCode: false,
+    modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
     cardData: { number: "", exp: "", cvv: "" },
@@ -419,12 +419,54 @@ function app() {
       if (/already registered|already been registered/i.test(m)) return "Cet email est déjà utilisé. Connectez-vous ou confirmez votre email.";
       if (/password/i.test(m) && /characters|weak|short/i.test(m)) return "Mot de passe trop court ou trop faible (6 caractères minimum).";
       if (/invalid login|invalid credentials/i.test(m)) return "Email ou mot de passe incorrect.";
+      if (/signups not allowed|user not found/i.test(m)) return "Aucun compte avec ce numéro. Créez d'abord votre boutique.";
+      if (/invalid.*phone|phone.*invalid/i.test(m)) return "Numéro invalide. Utilisez le format international, ex : +221771234567.";
+      if (/expired|invalid.*(token|otp)|token.*invalid/i.test(m)) return "Code incorrect ou expiré.";
       if (/failed to fetch|network/i.test(m)) return "Problème de connexion internet. Réessayez.";
       return m || "Une erreur est survenue. Réessayez.";
     },
 
-    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; },
+    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; this.otpSent = false; this.otp = ""; },
+    normPhone: function (v) {
+      var x = String(v || "").replace(/[\s().-]/g, "");
+      if (x.indexOf("00") === 0) x = "+" + x.slice(2);
+      return /^\+\d{8,15}$/.test(x) ? x : "";
+    },
+
+    // Connexion / inscription par code reçu sur WhatsApp (nécessite Twilio configuré dans Supabase)
+    submitWa: async function () {
+      var f = this.f, m = this.authMode;
+      var phone = this.normPhone(f.phone);
+      this.authErr = "";
+      if (!phone) { this.authErr = "Numéro invalide. Utilisez le format international, ex : +221771234567."; return; }
+      if (m === "signup" && (!f.idFile || !f.fullName.trim() || !f.shopName.trim())) {
+        this.authErr = "Nom, nom de boutique et pièce d'identité sont obligatoires.";
+        return;
+      }
+      this.busy = true;
+      try {
+        if (!this.otpSent) {
+          var o = { channel: "whatsapp", shouldCreateUser: m === "signup" };
+          if (m === "signup") o.data = { full_name: f.fullName.trim(), phone: phone, country: f.country, location: f.location, shop_name: f.shopName.trim(), id_verified: false };
+          var r = await db.auth.signInWithOtp({ phone: phone, options: o });
+          if (r.error) { this.authErr = this.authMsg(r.error); return; }
+          this.otpSent = true;
+          this.authErr = "Code envoyé sur WhatsApp au " + phone + ". Saisissez-le ci-dessous.";
+        } else {
+          var v = await db.auth.verifyOtp({ phone: phone, token: String(this.otp || "").trim(), type: "sms" });
+          if (v.error) { this.authErr = this.authMsg(v.error); return; }
+          if (m === "signup" && f.idBlob && v.data && v.data.user) {
+            var up = await this.uploadIdDoc(v.data.user.id, f.idBlob, false);
+            if (up && up.error) alert("Compte créé, mais l'envoi de la pièce d'identité a échoué. Vous pourrez la renvoyer depuis votre tableau de bord.");
+          }
+          location.reload();
+        }
+      } catch (e) { this.authErr = this.authMsg(e); }
+      finally { this.busy = false; }
+    },
+
     submitAuth: async function () {
+      if (this.authMethod === "whatsapp") return this.submitWa();
       var f = this.f, m = this.authMode;
       var email = f.email.trim().toLowerCase();
 
