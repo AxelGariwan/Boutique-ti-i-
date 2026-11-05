@@ -96,8 +96,9 @@ join public.subscription_plans p
   on p.slug = case when s.plan in ('starter','pro','premium') then s.plan else 'pro' end
  and p.currency = upper(coalesce(nullif(s.currency,''), 'XOF'))
  and p.country_code = case
-   when upper(coalesce(s.country,'')) in ('SN','SENEGAL','SÉNÉGAL') then 'SN'
-   else 'SN'
+   when upper(trim(coalesce(s.country,''))) in ('SN','SENEGAL','SÉNÉGAL') then 'SN'
+   when length(trim(coalesce(s.country,''))) = 2 then upper(trim(s.country))
+   else null
  end
 where s.trial_end is not null
   and s.trial_end > now()
@@ -138,7 +139,7 @@ grant select on public.vendor_subscriptions to authenticated;
 revoke all on public.subscription_payments from anon, authenticated;
 grant select on public.subscription_payments to authenticated;
 revoke all on public.payment_webhook_events from anon, authenticated;
-revoke insert, update, delete on public.subscription_plans from anon, authenticated;
+revoke all on public.subscription_plans from public, anon, authenticated;
 grant select on public.subscription_plans to anon, authenticated;
 
 -- Toute activation d'essai est faite côté base, jamais depuis le navigateur.
@@ -156,17 +157,14 @@ begin
   select p.id into v_plan_id
   from public.subscription_plans p
   where p.slug = 'pro'
-    and p.country_code = upper(coalesce(new.country, 'SN'))
+    and p.country_code = case
+      when upper(trim(coalesce(new.country,''))) in ('SN','SENEGAL','SÉNÉGAL') then 'SN'
+      when length(trim(coalesce(new.country,''))) = 2 then upper(trim(new.country))
+      else null
+    end
     and p.currency = upper(coalesce(new.currency, 'XOF'))
     and p.is_active = true
   limit 1;
-
-  if v_plan_id is null then
-    select p.id into v_plan_id
-    from public.subscription_plans p
-    where p.slug = 'pro' and p.country_code = 'SN' and p.currency = 'XOF'
-    limit 1;
-  end if;
 
   if v_plan_id is null then
     raise exception 'Tarif Pro indisponible : impossible de démarrer l’essai gratuit';
@@ -190,17 +188,14 @@ begin
   select p.id into v_plan_id
   from public.subscription_plans p
   where p.slug = 'pro'
-    and p.country_code = upper(coalesce(new.country, 'SN'))
+    and p.country_code = case
+      when upper(trim(coalesce(new.country,''))) in ('SN','SENEGAL','SÉNÉGAL') then 'SN'
+      when length(trim(coalesce(new.country,''))) = 2 then upper(trim(new.country))
+      else null
+    end
     and p.currency = upper(coalesce(new.currency, 'XOF'))
     and p.is_active = true
   limit 1;
-
-  if v_plan_id is null then
-    select p.id into v_plan_id
-    from public.subscription_plans p
-    where p.slug = 'pro' and p.country_code = 'SN' and p.currency = 'XOF'
-    limit 1;
-  end if;
 
   insert into public.vendor_subscriptions
     (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
