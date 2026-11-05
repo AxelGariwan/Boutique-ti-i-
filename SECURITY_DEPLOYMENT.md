@@ -42,3 +42,27 @@ Le fichier SQL est une migration à appliquer dans Supabase; le pousser sur GitH
 - `place_order` reçoit actuellement `p_total` calculé dans le navigateur et aucun détail fiable des lignes de panier. La fonction doit recalculer le prix et le total à partir du catalogue serveur, contrôler le stock et enregistrer les lignes de commande.
 - Le flux de carte bancaire actuel ne contacte pas de prestataire de paiement : il ne doit pas présenter une carte comme réellement débitée ou un paiement comme confirmé. Intégrer un PSP et ne jamais stocker les numéros/CVV dans l'application.
 - Le flux de suppression appelait auparavant la suppression directe de la boutique avant `delete_my_account`. Cela a été retiré dans la branche pour éviter le déclencheur dangereux de `FIX_ALL.SQL`.
+
+## Récupérer les fichiers dans VS Code
+
+Après fusion de la Pull Request dans `main`, ouvrir le terminal à la racine du projet et exécuter :
+
+```bash
+git checkout main
+git pull origin main
+```
+
+Les fichiers suivis par Git sont alors mis à jour localement. Si le dépôt local n'est pas encore cloné, utiliser :
+
+```bash
+git clone https://github.com/AxelGariwan/Boutique-ti-i-.git
+```
+
+Pour vérifier les changements avant fusion, récupérer la branche de sécurité :
+
+```bash
+git fetch origin
+git checkout security/auth-hardening
+```
+
+Ne pas copier le SQL dans VS Code pour l'exécuter avec un serveur local : il doit être exécuté dans Supabase SQL Editor, uniquement après examen du diagnostic.
