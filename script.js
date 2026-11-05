@@ -212,8 +212,8 @@ function app() {
     cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
-      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 2500, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
-      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
+      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
+      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5984, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
       { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11"] }
     ],
 
@@ -304,6 +304,22 @@ function app() {
     get currentPlanObj() {
       var pid = this.shop.plan || "pro";
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
+    },
+
+    formatSubscriptionPrice: function (amount) {
+      var country = String(this.shop.country || "").trim().toLowerCase();
+      if (this.shop.currency !== "XOF" || (country !== "sénégal" && country !== "senegal" && country !== "sn")) {
+        return "Tarif local à confirmer";
+      }
+      return new Intl.NumberFormat("fr-FR").format(amount) + " XOF";
+    },
+
+    requestPlan: function (planId) {
+      if (planId === this.shop.plan) {
+        alert("Cette formule est déjà indiquée sur votre boutique. Le statut réel doit être vérifié dans votre espace abonnement.");
+        return;
+      }
+      alert("Le paiement sécurisé des abonnements n'est pas encore activé. Aucun changement de formule ni débit n'a été effectué. Réessayez lorsque le prestataire de paiement sera connecté.");
     },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
@@ -523,10 +539,7 @@ function app() {
     },
 
     cancelSubscription: function() {
-      if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous basculerez sur le plan Starter à l'échéance.")) {
-        this.shop.plan = "starter";
-        alert("Votre abonnement a bien été résilié.");
-      }
+      alert("La résiliation en ligne sera disponible lorsque le système d'abonnement serveur sera activé. Aucun changement n'a été effectué sur votre formule.");
     },
 
     // Suppression RÉELLE : appelle la fonction serveur delete_my_account() qui supprime l'utilisateur
