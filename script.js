@@ -246,13 +246,20 @@ function app() {
     // Méthode appelée quand on clique sur "Accéder à mon espace vendeur" depuis la page d'accueil SaaS
     openVendorSpace: async function() {
       this.loading = true;
+      this.authErr = "";
       try {
-        var session = (await db.auth.getSession()).data.session;
-        await this.onSession(session);
+        var result = await db.auth.getSession();
+        if (result.error) throw result.error;
+        await this.onSession(result.data.session);
+        this.tab = "vendor";
+      } catch (err) {
+        this.authErr = this.authMsg(err);
+        this.authed = false;
+        this.ready = true;
+        this.tab = "vendor";
       } finally {
         this.loading = false;
       }
-      this.tab = "vendor";
     },
 
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
@@ -330,15 +337,26 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
+      if (!session || !session.user || !session.user.id) {
+        this.uid = "";
+        this.authed = false;
+        this.orders = [];
+        this.shop = blankShop();
+        this.ready = true;
+        return;
+      }
       this.uid = session.user.id;
-      var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
-      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
-      var v = vq.data || {};
+      this.authed = false;
+      var results = await Promise.all([
+        db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle(),
+        db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle()
+      ]);
+      if (results[0].error) throw results[0].error;
+      if (results[1].error) throw results[1].error;
+      var s = results[0], v = results[1].data || {};
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
       } else {
-        // Aucune boutique en base : on prépare la boutique avec les infos du vendeur (et non la boutique par défaut)
         var m = session.user.user_metadata || {};
         var b = blankShop();
         b.name = v.shop_name || m.shop_name || b.name;
@@ -350,7 +368,8 @@ function app() {
         this.shop = norm(b);
       }
       this.shop.verified = (v.id_status === "approved");
-      this.authed = true; this.ready = true;
+      this.authed = true;
+      this.ready = true;
       await this.loadOrders();
       this.updateStats();
     },
@@ -514,12 +533,20 @@ function app() {
     },
 
     logout: async function () {
+      this.busy = true;
       try {
-        await db.auth.signOut();
-      } catch (e) {}
-      localStorage.clear();
-      sessionStorage.clear();
-      location.reload();
+        var result = await db.auth.signOut();
+        if (result.error) throw result.error;
+        this.uid = "";
+        this.authed = false;
+        this.orders = [];
+        this.shop = blankShop();
+        location.reload();
+      } catch (err) {
+        this.busy = false;
+        alert("La déconnexion n'a pas pu être confirmée. Vérifiez votre connexion puis réessayez.");
+        console.error("Échec de la déconnexion :", err);
+      }
     },
 
     cancelSubscription: function() {
@@ -578,10 +605,24 @@ function app() {
       clearTimeout(tmr); tmr = setTimeout(function () { self.save(); }, 1000);
     },
     save: async function () {
-      if (this.deleting || !this.authed) return;
-      if (!this.shop.sid) this.shop.sid = rnd(8);
-      var r = await db.from("shops").upsert({ id: this.shop.sid, owner: this.uid, data: this.shop }, { onConflict: "id" });
-      if (r && r.error) console.error("Sauvegarde de la boutique échouée :", r.error.message);
+      if (this.deleting || !this.authed || !this.uid) return;
+      try {
+        var current = await db.auth.getUser();
+        if (current.error || !current.data.user || current.data.user.id !== this.uid) {
+          this.authed = false;
+          this.uid = "";
+          this.orders = [];
+          return;
+        }
+        if (!this.shop.sid) this.shop.sid = rnd(8);
+        var r = await db.from("shops").upsert(
+          { id: this.shop.sid, owner: current.data.user.id, data: this.shop },
+          { onConflict: "id" }
+        );
+        if (r && r.error) throw r.error;
+      } catch (err) {
+        console.error("Sauvegarde de la boutique échouée :", err && err.message ? err.message : err);
+      }
     },
 
     loadRemote: async function (id) {
@@ -604,8 +645,8 @@ function app() {
         this.tab = "client";
 
         try { db.rpc("track_view", { p_key: "shop:" + id }); } catch (e) {}
-        this.shop.visits = (this.shop.visits || 0) + 1;
-        await db.from("shops").update({ data: this.shop }).eq("id", id);
+        // Les statistiques sont mises à jour côté serveur par track_view.
+        // Ne jamais modifier directement la ligne shops depuis une session publique.
       } catch (e) {
         this.remoteErr = "Boutique introuvable ou en cours de validation.";
       }
