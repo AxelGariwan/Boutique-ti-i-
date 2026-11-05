@@ -368,6 +368,7 @@ function app() {
         this.shop = norm(b);
       }
       this.shop.verified = (v.id_status === "approved");
+      this.shop.suspended = !!(s.data && s.data.suspended);
       this.authed = true;
       this.ready = true;
       await this.loadOrders();
@@ -625,7 +626,7 @@ function app() {
       clearTimeout(tmr); tmr = setTimeout(function () { self.save(); }, 1000);
     },
     save: async function () {
-      if (this.deleting || !this.authed || !this.uid) return;
+      if (this.deleting || !this.authed || !this.uid || this.shop.suspended) return;
       try {
         var current = await db.auth.getUser();
         if (current.error || !current.data.user || current.data.user.id !== this.uid) {
