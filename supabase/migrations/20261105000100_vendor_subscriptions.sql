@@ -118,7 +118,9 @@ revoke insert, update, delete on public.subscription_plans from anon, authentica
 grant select on public.subscription_plans to anon, authenticated;
 
 -- Toute activation d'essai est faite côté base, jamais depuis le navigateur.
-create or replace function public.start_pro_trial_for_new_shop()
+-- BEFORE INSERT : renseigne les champs du magasin. AFTER INSERT : crée l'abonnement
+-- (la ligne shops doit déjà exister pour satisfaire la clé étrangère).
+create or replace function public.prepare_pro_trial_for_new_shop()
 returns trigger
 language plpgsql
 security definer
@@ -126,7 +128,6 @@ set search_path = ''
 as $$
 declare
   v_plan_id uuid;
-  v_trial_end timestamptz := now() + interval '30 days';
 begin
   select p.id into v_plan_id
   from public.subscription_plans p
@@ -148,21 +149,53 @@ begin
   end if;
 
   new.plan := 'pro';
-  new.trial_end := v_trial_end;
+  new.trial_end := now() + interval '30 days';
+  return new;
+end;
+$$;
+
+create or replace function public.create_pro_trial_subscription()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_plan_id uuid;
+begin
+  select p.id into v_plan_id
+  from public.subscription_plans p
+  where p.slug = 'pro'
+    and p.country_code = upper(coalesce(new.country, 'SN'))
+    and p.currency = upper(coalesce(new.currency, 'XOF'))
+    and p.is_active = true
+  limit 1;
+
+  if v_plan_id is null then
+    select p.id into v_plan_id
+    from public.subscription_plans p
+    where p.slug = 'pro' and p.country_code = 'SN' and p.currency = 'XOF'
+    limit 1;
+  end if;
 
   insert into public.vendor_subscriptions
     (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
   values
-    (new.id, v_plan_id, 'trialing', now(), v_trial_end, v_trial_end, false);
+    (new.id, v_plan_id, 'trialing', now(), new.trial_end, new.trial_end, false);
 
   return new;
 end;
 $$;
 
 drop trigger if exists shops_start_pro_trial on public.shops;
-create trigger shops_start_pro_trial
+create trigger shops_prepare_pro_trial
 before insert on public.shops
-for each row execute function public.start_pro_trial_for_new_shop();
+for each row execute function public.prepare_pro_trial_for_new_shop();
+
+drop trigger if exists shops_create_pro_trial_subscription on public.shops;
+create trigger shops_create_pro_trial_subscription
+after insert on public.shops
+for each row execute function public.create_pro_trial_subscription();
 
 -- Fonction réservée au serveur (Edge Function après vérification cryptographique
 -- du webhook du prestataire). Elle est idempotente au niveau du paiement.
