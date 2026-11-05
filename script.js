@@ -512,8 +512,10 @@ function app() {
         this.authErr = "Renseignez un email valide, votre nom, le nom de la boutique et une pièce d'identité.";
         return;
       }
-      if (!f.password || f.password.length < 8) {
-        this.authErr = "Utilisez un mot de passe d'au moins 8 caractères.";
+      if (!f.password || (m === "signup" && f.password.length < 8)) {
+        this.authErr = m === "signup"
+          ? "Utilisez un mot de passe d'au moins 8 caractères."
+          : "Veuillez saisir votre mot de passe.";
         return;
       }
 
@@ -628,11 +630,20 @@ function app() {
           this.orders = [];
           return;
         }
-        if (!this.shop.sid) this.shop.sid = rnd(8);
-        var r = await db.from("shops").upsert(
-          { id: this.shop.sid, owner: current.data.user.id, data: this.shop },
-          { onConflict: "id" }
-        );
+        var r;
+        if (this.shop.sid) {
+          // UPDATE ne touche que data : owner et suspended restent non modifiables par le vendeur.
+          r = await db.from("shops").update({ data: this.shop })
+            .eq("id", this.shop.sid).eq("owner", current.data.user.id);
+        } else {
+          var newId = rnd(8);
+          r = await db.from("shops").insert({
+            id: newId,
+            owner: current.data.user.id,
+            data: this.shop
+          });
+          if (!r.error) this.shop.sid = newId;
+        }
         if (r && r.error) throw r.error;
       } catch (err) {
         console.error("Sauvegarde de la boutique échouée :", err && err.message ? err.message : err);
