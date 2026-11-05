@@ -54,3 +54,36 @@ Le fournisseur de paiement n'est pas encore choisi. Cette migration prépare le 
 - Un client ne peut pas confirmer un paiement par une simple requête navigateur.
 - Un même événement webhook ou paiement ne peut pas prolonger deux fois un abonnement.
 - Les commandes clients ne sont jamais écrites dans subscription_payments.
+
+## Intégration PayDunya (première version)
+
+Le premier prestataire choisi est PayDunya avec le paiement par redirection. La page de paiement est créée exclusivement depuis la fonction serveur `create-subscription-checkout`. Le montant et la devise sont lus depuis `subscription_plans` : le navigateur ne peut pas imposer son propre prix.
+
+Deux fonctions Supabase Edge sont ajoutées :
+
+- `create-subscription-checkout` : exige une session Supabase valide, vérifie que l'utilisateur possède la boutique, lit le tarif actif du pays et crée une facture PayDunya.
+- `paydunya-webhook` : reçoit l'IPN PayDunya, vérifie le SHA-512 de la Master Key, relit la facture auprès de PayDunya, contrôle le token, le statut et le montant, puis appelle la fonction SQL réservée au rôle serveur.
+
+La redirection du client vers le site ne valide jamais un abonnement. Seule la notification vérifiée côté serveur peut activer le plan.
+
+### Secrets Supabase à configurer
+
+Dans les secrets des Edge Functions, ajouter les valeurs obtenues dans le tableau de bord PayDunya (ne jamais les mettre dans le code, dans GitHub ou dans une conversation) :
+
+- `PAYDUNYA_MASTER_KEY`
+- `PAYDUNYA_PRIVATE_KEY`
+- `PAYDUNYA_TOKEN`
+- `PAYDUNYA_CALLBACK_URL` = URL publique de la fonction `paydunya-webhook`
+
+Les variables Supabase `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` sont fournies à l'environnement des Edge Functions par Supabase. Ne jamais exposer la Service Role Key dans le navigateur.
+
+### Déploiement et tests
+
+1. Exécuter la migration `20261105000100_vendor_subscriptions.sql` après revue de la structure réelle de la base.
+2. Déployer les deux Edge Functions.
+3. Configurer les secrets PayDunya en mode TEST et l'URL IPN.
+4. Effectuer un paiement test pour Starter (3 000 XOF), Pro (6 000 XOF) et Premium (10 000 XOF).
+5. Vérifier qu'un paiement en attente, annulé, échoué, avec montant incorrect ou hash invalide n'active jamais un abonnement.
+6. Vérifier qu'une notification répétée ne crée pas plusieurs abonnements.
+
+**Limite actuelle :** seuls les tarifs du Sénégal (SN/XOF) sont semés dans la migration. Les fonctions refusent donc un achat dans un autre pays tant que son tarif et sa devise n'ont pas été configurés et validés. Le choix de PayDunya ne signifie pas que tous les pays sont déjà ouverts. Aucun paiement réel n'est activé tant que les secrets, le compte marchand et les fonctions ne sont pas configurés et testés.
