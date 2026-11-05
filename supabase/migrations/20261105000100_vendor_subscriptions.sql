@@ -74,7 +74,7 @@ create table if not exists public.payment_webhook_events (
 insert into public.subscription_plans (slug, country_code, currency, amount)
 values
   ('starter','SN','XOF',3000),
-  ('pro','SN','XOF',5984),
+  ('pro','SN','XOF',6000),
   ('premium','SN','XOF',10000),
   -- Plan technique non achetable : permet l'essai Pro même avant la configuration
   -- des prix locaux dans les autres pays africains.
