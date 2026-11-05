@@ -173,7 +173,12 @@ function admin() {
       if (w) w.location = r.data.signedUrl; else window.open(r.data.signedUrl, "_blank");
     },
     setStatus: async function (v, patch) {
-      var r = await db.from("vendors").update(patch).eq("id", v.id);
+      var status = patch.id_status;
+      var r = await db.rpc("admin_set_vendor_status", {
+        p_vendor_id: v.id,
+        p_status: status,
+        p_reason: patch.id_reject_reason || null
+      });
       if (r.error) { alert("Erreur : " + r.error.message); return; }
       Object.assign(v, patch);
     },
@@ -189,7 +194,10 @@ function admin() {
       var s = this.shopOf(v); if (!s) return;
       var to = !s.suspended;
       if (!confirm((to ? "Suspendre" : "Réactiver") + " la boutique de " + v.full_name + " ?")) return;
-      var r = await db.from("shops").update({ suspended: to }).eq("id", s.id);
+      var r = await db.rpc("admin_set_shop_suspended", {
+        p_shop_id: String(s.id),
+        p_suspended: to
+      });
       if (r.error) { alert("Erreur : " + r.error.message); return; }
       s.suspended = to;
     }
