@@ -48,8 +48,11 @@ create policy shops_admin_select on public.shops
 create policy shops_owner_insert on public.shops
   for insert to authenticated with check (owner = (select auth.uid()));
 create policy shops_owner_update on public.shops
-  for update to authenticated using (owner = (select auth.uid()))
-  with check (owner = (select auth.uid()));
+  for update to authenticated using (
+    owner = (select auth.uid()) and suspended is not true
+  ) with check (
+    owner = (select auth.uid()) and suspended is not true
+  );
 
 -- Le vendeur ne doit pas pouvoir modifier les colonnes de suspension/ownership.
 revoke update on public.shops from authenticated;
