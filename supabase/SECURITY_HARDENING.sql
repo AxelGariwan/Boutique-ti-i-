@@ -127,7 +127,8 @@ create policy orders_owner_update on public.orders
     or exists (select 1 from public.admins a where a.user_id = (select auth.uid()))
   );
 revoke insert, delete on public.orders from anon, authenticated;
-grant select, update on public.orders to authenticated;
+grant select on public.orders to authenticated;
+grant update (status) on public.orders to authenticated;
 
 -- Documents d'identité : bucket privé, chemin commençant par l'UID du propriétaire.
 drop policy if exists id_docs_owner_read on storage.objects;
