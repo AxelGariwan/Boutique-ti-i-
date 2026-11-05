@@ -381,15 +381,19 @@ function app() {
     },
 
     onId: function (e) {
-      var x = e.target.files[0];
+      var x = e.target.files && e.target.files[0];
       this.f.idErr = "";
+      this.f.idFile = "";
+      this.f.idBlob = null;
       if (!x) return;
       if (!ID_EXT[x.type]) {
         this.f.idErr = "Format non accepté (JPG, PNG, WEBP ou PDF).";
+        e.target.value = "";
         return;
       }
-      if (x.size > 5 * 1024 * 1024) {
-        alert("Le fichier est trop volumineux (maximum 5 Mo).");
+      if (x.size <= 0 || x.size > 5 * 1024 * 1024) {
+        this.f.idErr = "Le fichier doit peser entre 1 octet et 5 Mo.";
+        e.target.value = "";
         return;
       }
       this.f.idFile = x.name;
@@ -398,14 +402,28 @@ function app() {
 
     // Envoi de la pièce d'identité dans le bucket PRIVÉ "id-docs" + enregistrement du chemin dans "vendors"
     uploadIdDoc: async function (uid, file, consent) {
+      if (!uid || !file || !ID_EXT[file.type] || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+        return { error: { message: "Document invalide : JPG, PNG, WEBP ou PDF, 5 Mo maximum." } };
+      }
+      var current = await db.auth.getUser();
+      if (current.error || !current.data.user || current.data.user.id !== uid) {
+        return { error: { message: "Session invalide. Reconnectez-vous avant d'envoyer votre document." } };
+      }
       var ext = ID_EXT[file.type];
-      if (!ext) return { error: { message: "Format non accepté (JPG, PNG, WEBP ou PDF)." } };
       var path = uid + "/identity_" + Date.now() + "." + ext;
-      var up = await db.storage.from("id-docs").upload(path, file, { contentType: file.type });
+      var up = await db.storage.from("id-docs").upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
       if (up.error) return up;
       var patch = { id_doc_path: path };
       if (consent) patch.id_consent_at = new Date().toISOString();
-      return await db.from("vendors").update(patch).eq("id", uid);
+      var saved = await db.from("vendors").update(patch).eq("id", uid);
+      if (saved.error) {
+        await db.storage.from("id-docs").remove([path]);
+        return saved;
+      }
+      return saved;
     },
 
     submitIdVerification: async function () {
@@ -489,8 +507,12 @@ function app() {
       var f = this.f, m = this.authMode;
       var email = f.email.trim().toLowerCase();
 
-      if (m === "signup" && !f.idFile) {
-        this.authErr = "Veuillez fournir une pièce d'identité pour valider la boutique.";
+      if (!email || (m === "signup" && (!f.fullName.trim() || !f.shopName.trim() || !f.idBlob))) {
+        this.authErr = "Renseignez un email valide, votre nom, le nom de la boutique et une pièce d'identité.";
+        return;
+      }
+      if (!f.password || f.password.length < 8) {
+        this.authErr = "Utilisez un mot de passe d'au moins 8 caractères.";
         return;
       }
 
@@ -585,8 +607,6 @@ function app() {
           if (r.error) throw r.error;
 
           try { await db.auth.signOut({ scope: "local" }); } catch (e) {}
-          localStorage.clear();
-          sessionStorage.clear();
           alert("Votre compte a été supprimé.");
           location.reload();
         } catch (err) {
