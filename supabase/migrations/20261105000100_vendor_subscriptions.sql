@@ -282,7 +282,8 @@ begin
 end;
 $$;
 
-revoke all on function public.start_pro_trial_for_new_shop() from public, anon, authenticated;
+revoke all on function public.prepare_pro_trial_for_new_shop() from public, anon, authenticated;
+revoke all on function public.create_pro_trial_subscription() from public, anon, authenticated;
 revoke all on function public.confirm_vendor_subscription_payment(uuid, text) from public, anon, authenticated;
 grant execute on function public.confirm_vendor_subscription_payment(uuid, text) to service_role;
 
