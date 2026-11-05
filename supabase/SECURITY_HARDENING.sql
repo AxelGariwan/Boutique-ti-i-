@@ -102,7 +102,7 @@ begin
     where id = p_vendor_id;
   if not found then raise exception 'Vendeur introuvable'; end if;
 end;
-$$;
+$policy$;
 revoke all on function public.admin_set_vendor_status(uuid, text, text) from public;
 grant execute on function public.admin_set_vendor_status(uuid, text, text) to authenticated;
 
@@ -185,17 +185,29 @@ create policy shop_media_public_read on storage.objects
   for select to anon, authenticated using (bucket_id = 'shop-media');
 create policy shop_media_owner_insert on storage.objects
   for insert to authenticated with check (
-    bucket_id = 'shop-media' and (storage.foldername(name))[1] = (select auth.uid())::text
+    bucket_id = 'shop-media'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (select 1 from public.shops s
+      where s.owner = (select auth.uid()) and s.suspended is not true)
   );
 create policy shop_media_owner_update on storage.objects
   for update to authenticated using (
-    bucket_id = 'shop-media' and (storage.foldername(name))[1] = (select auth.uid())::text
+    bucket_id = 'shop-media'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (select 1 from public.shops s
+      where s.owner = (select auth.uid()) and s.suspended is not true)
   ) with check (
-    bucket_id = 'shop-media' and (storage.foldername(name))[1] = (select auth.uid())::text
+    bucket_id = 'shop-media'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (select 1 from public.shops s
+      where s.owner = (select auth.uid()) and s.suspended is not true)
   );
 create policy shop_media_owner_delete on storage.objects
   for delete to authenticated using (
-    bucket_id = 'shop-media' and (storage.foldername(name))[1] = (select auth.uid())::text
+    bucket_id = 'shop-media'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (select 1 from public.shops s
+      where s.owner = (select auth.uid()) and s.suspended is not true)
   );
 
 commit;
