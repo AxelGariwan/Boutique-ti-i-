@@ -314,12 +314,28 @@ function app() {
       return new Intl.NumberFormat("fr-FR").format(amount) + " XOF";
     },
 
-    requestPlan: function (planId) {
-      if (planId === this.shop.plan) {
-        alert("Cette formule est déjà indiquée sur votre boutique. Le statut réel doit être vérifié dans votre espace abonnement.");
+    requestPlan: async function (planId) {
+      if (!this.authed || !this.shop.sid) {
+        alert("Connectez-vous à votre espace vendeur avant de souscrire à un abonnement.");
         return;
       }
-      alert("Le paiement sécurisé des abonnements n'est pas encore activé. Aucun changement de formule ni débit n'a été effectué. Réessayez lorsque le prestataire de paiement sera connecté.");
+      if (!["starter", "pro", "premium"].includes(planId)) {
+        alert("Formule invalide.");
+        return;
+      }
+      try {
+        var result = await db.functions.invoke("create-subscription-checkout", {
+          body: { shopId: this.shop.sid, planSlug: planId }
+        });
+        if (result.error || !result.data || !result.data.checkoutUrl) {
+          var message = result.data && result.data.error ? result.data.error : "Impossible de préparer le paiement. Réessayez plus tard.";
+          alert(message);
+          return;
+        }
+        window.location.assign(result.data.checkoutUrl);
+      } catch (error) {
+        alert("Une erreur est survenue lors de la création du paiement. Aucun abonnement n'a été activé.");
+      }
     },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
