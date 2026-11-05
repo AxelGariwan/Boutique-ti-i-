@@ -145,6 +145,7 @@ grant select on public.subscription_payments to authenticated;
 revoke all on public.payment_webhook_events from anon, authenticated;
 revoke all on public.subscription_plans from public, anon, authenticated;
 grant select on public.subscription_plans to anon, authenticated;
+grant all on public.subscription_plans, public.vendor_subscriptions, public.subscription_payments, public.payment_webhook_events to service_role;
 
 -- Toute activation d'essai est faite côté base, jamais depuis le navigateur.
 -- BEFORE INSERT : renseigne les champs du magasin. AFTER INSERT : crée l'abonnement
