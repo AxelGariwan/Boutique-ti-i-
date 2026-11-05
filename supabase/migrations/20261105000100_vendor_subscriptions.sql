@@ -75,9 +75,13 @@ insert into public.subscription_plans (slug, country_code, currency, amount)
 values
   ('starter','SN','XOF',3000),
   ('pro','SN','XOF',5984),
-  ('premium','SN','XOF',10000)
+  ('premium','SN','XOF',10000),
+  -- Plan technique non achetable : permet l'essai Pro même avant la configuration
+  -- des prix locaux dans les autres pays africains.
+  ('pro','ZZ','XXX',0)
 on conflict (slug, country_code, currency)
-do update set amount = excluded.amount, is_active = true;
+do update set amount = excluded.amount, is_active = case
+  when excluded.country_code = 'ZZ' then false else true end;
 
 -- Reprise prudente des essais historiques encore valides (sans inventer de paiements).
 -- Les boutiques sans trial_end futur ne sont pas marquées comme payantes.
@@ -167,7 +171,14 @@ begin
   limit 1;
 
   if v_plan_id is null then
-    raise exception 'Tarif Pro indisponible : impossible de démarrer l’essai gratuit';
+    select p.id into v_plan_id
+    from public.subscription_plans p
+    where p.slug = 'pro' and p.country_code = 'ZZ' and p.currency = 'XXX'
+    limit 1;
+  end if;
+
+  if v_plan_id is null then
+    raise exception 'Modèle technique Pro indisponible';
   end if;
 
   new.plan := 'pro';
@@ -196,6 +207,13 @@ begin
     and p.currency = upper(coalesce(new.currency, 'XOF'))
     and p.is_active = true
   limit 1;
+
+  if v_plan_id is null then
+    select p.id into v_plan_id
+    from public.subscription_plans p
+    where p.slug = 'pro' and p.country_code = 'ZZ' and p.currency = 'XXX'
+    limit 1;
+  end if;
 
   insert into public.vendor_subscriptions
     (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
