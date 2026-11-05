@@ -9,6 +9,22 @@ alter table public.vendors enable row level security;
 alter table public.orders enable row level security;
 alter table public.admins enable row level security;
 
+-- Retire les anciennes policies de ces quatre tables pour éviter qu'une ancienne
+-- policy permissive (OR logique entre policies) annule le durcissement.
+do $
+declare p record;
+begin
+  for p in
+    select schemaname, tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in ('shops', 'vendors', 'orders', 'admins')
+  loop
+    execute format('drop policy %I on %I.%I', p.policyname, p.schemaname, p.tablename);
+  end loop;
+end;
+$;
+
 -- Les administrateurs ne peuvent lire que leur propre ligne admins.
 drop policy if exists admins_read_self on public.admins;
 create policy admins_read_self on public.admins
