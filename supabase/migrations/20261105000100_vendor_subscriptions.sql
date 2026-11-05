@@ -79,6 +79,30 @@ values
 on conflict (slug, country_code, currency)
 do update set amount = excluded.amount, is_active = true;
 
+-- Reprise prudente des essais historiques encore valides (sans inventer de paiements).
+-- Les boutiques sans trial_end futur ne sont pas marquées comme payantes.
+insert into public.vendor_subscriptions
+  (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
+select
+  s.id,
+  p.id,
+  'trialing',
+  now(),
+  s.trial_end,
+  s.trial_end,
+  false
+from public.shops s
+join public.subscription_plans p
+  on p.slug = case when s.plan in ('starter','pro','premium') then s.plan else 'pro' end
+ and p.currency = upper(coalesce(nullif(s.currency,''), 'XOF'))
+ and p.country_code = case
+   when upper(coalesce(s.country,'')) in ('SN','SENEGAL','SÉNÉGAL') then 'SN'
+   else 'SN'
+ end
+where s.trial_end is not null
+  and s.trial_end > now()
+on conflict do nothing;
+
 alter table public.subscription_plans enable row level security;
 alter table public.vendor_subscriptions enable row level security;
 alter table public.subscription_payments enable row level security;
