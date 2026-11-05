@@ -590,19 +590,12 @@ function app() {
           clearTimeout(tmr);
           this.authed = false; // empêche l'enregistrement automatique de recréer la boutique
 
-          // Nettoyage des fichiers (photos + pièce d'identité) : on continue même si une étape échoue
-          var self = this, buckets = ["shop-media", "id-docs"];
-          for (var i = 0; i < buckets.length; i++) {
-            try {
-              var l = await db.storage.from(buckets[i]).list(this.uid);
-              if (l.data && l.data.length) {
-                await db.storage.from(buckets[i]).remove(l.data.map(function (x) { return self.uid + "/" + x.name; }));
-              }
-            } catch (e) {}
-          }
-
-          if (this.shop.sid) {
-            await db.from("shops").delete().eq("id", this.shop.sid);
+          // La suppression des données et des fichiers doit être atomique côté serveur.
+          // Ne pas supprimer directement la boutique : un ancien trigger peut supprimer auth.users
+          // avant l'appel RPC et laisser une suppression partielle.
+          var current = await db.auth.getUser();
+          if (current.error || !current.data.user || current.data.user.id !== this.uid) {
+            throw new Error("Session invalide. Reconnectez-vous avant de supprimer le compte.");
           }
           var r = await db.rpc("delete_my_account");
           if (r.error) throw r.error;
