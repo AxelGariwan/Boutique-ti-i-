@@ -246,13 +246,20 @@ function app() {
     // Méthode appelée quand on clique sur "Accéder à mon espace vendeur" depuis la page d'accueil SaaS
     openVendorSpace: async function() {
       this.loading = true;
+      this.authErr = "";
       try {
-        var session = (await db.auth.getSession()).data.session;
-        await this.onSession(session);
+        var result = await db.auth.getSession();
+        if (result.error) throw result.error;
+        await this.onSession(result.data.session);
+        this.tab = "vendor";
+      } catch (err) {
+        this.authErr = this.authMsg(err);
+        this.authed = false;
+        this.ready = true;
+        this.tab = "vendor";
       } finally {
         this.loading = false;
       }
-      this.tab = "vendor";
     },
 
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
@@ -330,15 +337,26 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
+      if (!session || !session.user || !session.user.id) {
+        this.uid = "";
+        this.authed = false;
+        this.orders = [];
+        this.shop = blankShop();
+        this.ready = true;
+        return;
+      }
       this.uid = session.user.id;
-      var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
-      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
-      var v = vq.data || {};
+      this.authed = false;
+      var results = await Promise.all([
+        db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle(),
+        db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle()
+      ]);
+      if (results[0].error) throw results[0].error;
+      if (results[1].error) throw results[1].error;
+      var s = results[0], v = results[1].data || {};
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
       } else {
-        // Aucune boutique en base : on prépare la boutique avec les infos du vendeur (et non la boutique par défaut)
         var m = session.user.user_metadata || {};
         var b = blankShop();
         b.name = v.shop_name || m.shop_name || b.name;
@@ -350,7 +368,9 @@ function app() {
         this.shop = norm(b);
       }
       this.shop.verified = (v.id_status === "approved");
-      this.authed = true; this.ready = true;
+      this.shop.suspended = !!(s.data && s.data.suspended);
+      this.authed = true;
+      this.ready = true;
       await this.loadOrders();
       this.updateStats();
     },
@@ -362,15 +382,19 @@ function app() {
     },
 
     onId: function (e) {
-      var x = e.target.files[0];
+      var x = e.target.files && e.target.files[0];
       this.f.idErr = "";
+      this.f.idFile = "";
+      this.f.idBlob = null;
       if (!x) return;
       if (!ID_EXT[x.type]) {
         this.f.idErr = "Format non accepté (JPG, PNG, WEBP ou PDF).";
+        e.target.value = "";
         return;
       }
-      if (x.size > 5 * 1024 * 1024) {
-        alert("Le fichier est trop volumineux (maximum 5 Mo).");
+      if (x.size <= 0 || x.size > 5 * 1024 * 1024) {
+        this.f.idErr = "Le fichier doit peser entre 1 octet et 5 Mo.";
+        e.target.value = "";
         return;
       }
       this.f.idFile = x.name;
@@ -379,14 +403,28 @@ function app() {
 
     // Envoi de la pièce d'identité dans le bucket PRIVÉ "id-docs" + enregistrement du chemin dans "vendors"
     uploadIdDoc: async function (uid, file, consent) {
+      if (!uid || !file || !ID_EXT[file.type] || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+        return { error: { message: "Document invalide : JPG, PNG, WEBP ou PDF, 5 Mo maximum." } };
+      }
+      var current = await db.auth.getUser();
+      if (current.error || !current.data.user || current.data.user.id !== uid) {
+        return { error: { message: "Session invalide. Reconnectez-vous avant d'envoyer votre document." } };
+      }
       var ext = ID_EXT[file.type];
-      if (!ext) return { error: { message: "Format non accepté (JPG, PNG, WEBP ou PDF)." } };
       var path = uid + "/identity_" + Date.now() + "." + ext;
-      var up = await db.storage.from("id-docs").upload(path, file, { contentType: file.type });
+      var up = await db.storage.from("id-docs").upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
       if (up.error) return up;
       var patch = { id_doc_path: path };
       if (consent) patch.id_consent_at = new Date().toISOString();
-      return await db.from("vendors").update(patch).eq("id", uid);
+      var saved = await db.from("vendors").update(patch).eq("id", uid);
+      if (saved.error) {
+        await db.storage.from("id-docs").remove([path]);
+        return saved;
+      }
+      return saved;
     },
 
     submitIdVerification: async function () {
@@ -470,8 +508,14 @@ function app() {
       var f = this.f, m = this.authMode;
       var email = f.email.trim().toLowerCase();
 
-      if (m === "signup" && !f.idFile) {
-        this.authErr = "Veuillez fournir une pièce d'identité pour valider la boutique.";
+      if (!email || (m === "signup" && (!f.fullName.trim() || !f.shopName.trim() || !f.idBlob))) {
+        this.authErr = "Renseignez un email valide, votre nom, le nom de la boutique et une pièce d'identité.";
+        return;
+      }
+      if (!f.password || (m === "signup" && f.password.length < 8)) {
+        this.authErr = m === "signup"
+          ? "Utilisez un mot de passe d'au moins 8 caractères."
+          : "Veuillez saisir votre mot de passe.";
         return;
       }
 
@@ -514,12 +558,20 @@ function app() {
     },
 
     logout: async function () {
+      this.busy = true;
       try {
-        await db.auth.signOut();
-      } catch (e) {}
-      localStorage.clear();
-      sessionStorage.clear();
-      location.reload();
+        var result = await db.auth.signOut();
+        if (result.error) throw result.error;
+        this.uid = "";
+        this.authed = false;
+        this.orders = [];
+        this.shop = blankShop();
+        location.reload();
+      } catch (err) {
+        this.busy = false;
+        alert("La déconnexion n'a pas pu être confirmée. Vérifiez votre connexion puis réessayez.");
+        console.error("Échec de la déconnexion :", err);
+      }
     },
 
     cancelSubscription: function() {
@@ -540,26 +592,17 @@ function app() {
           clearTimeout(tmr);
           this.authed = false; // empêche l'enregistrement automatique de recréer la boutique
 
-          // Nettoyage des fichiers (photos + pièce d'identité) : on continue même si une étape échoue
-          var self = this, buckets = ["shop-media", "id-docs"];
-          for (var i = 0; i < buckets.length; i++) {
-            try {
-              var l = await db.storage.from(buckets[i]).list(this.uid);
-              if (l.data && l.data.length) {
-                await db.storage.from(buckets[i]).remove(l.data.map(function (x) { return self.uid + "/" + x.name; }));
-              }
-            } catch (e) {}
-          }
-
-          if (this.shop.sid) {
-            await db.from("shops").delete().eq("id", this.shop.sid);
+          // La suppression des données et des fichiers doit être atomique côté serveur.
+          // Ne pas supprimer directement la boutique : un ancien trigger peut supprimer auth.users
+          // avant l'appel RPC et laisser une suppression partielle.
+          var current = await db.auth.getUser();
+          if (current.error || !current.data.user || current.data.user.id !== this.uid) {
+            throw new Error("Session invalide. Reconnectez-vous avant de supprimer le compte.");
           }
           var r = await db.rpc("delete_my_account");
           if (r.error) throw r.error;
 
           try { await db.auth.signOut({ scope: "local" }); } catch (e) {}
-          localStorage.clear();
-          sessionStorage.clear();
           alert("Votre compte a été supprimé.");
           location.reload();
         } catch (err) {
@@ -578,10 +621,33 @@ function app() {
       clearTimeout(tmr); tmr = setTimeout(function () { self.save(); }, 1000);
     },
     save: async function () {
-      if (this.deleting || !this.authed) return;
-      if (!this.shop.sid) this.shop.sid = rnd(8);
-      var r = await db.from("shops").upsert({ id: this.shop.sid, owner: this.uid, data: this.shop }, { onConflict: "id" });
-      if (r && r.error) console.error("Sauvegarde de la boutique échouée :", r.error.message);
+      if (this.deleting || !this.authed || !this.uid || this.shop.suspended) return;
+      try {
+        var current = await db.auth.getUser();
+        if (current.error || !current.data.user || current.data.user.id !== this.uid) {
+          this.authed = false;
+          this.uid = "";
+          this.orders = [];
+          return;
+        }
+        var r;
+        if (this.shop.sid) {
+          // UPDATE ne touche que data : owner et suspended restent non modifiables par le vendeur.
+          r = await db.from("shops").update({ data: this.shop })
+            .eq("id", this.shop.sid).eq("owner", current.data.user.id);
+        } else {
+          var newId = rnd(8);
+          r = await db.from("shops").insert({
+            id: newId,
+            owner: current.data.user.id,
+            data: this.shop
+          });
+          if (!r.error) this.shop.sid = newId;
+        }
+        if (r && r.error) throw r.error;
+      } catch (err) {
+        console.error("Sauvegarde de la boutique échouée :", err && err.message ? err.message : err);
+      }
     },
 
     loadRemote: async function (id) {
@@ -604,8 +670,8 @@ function app() {
         this.tab = "client";
 
         try { db.rpc("track_view", { p_key: "shop:" + id }); } catch (e) {}
-        this.shop.visits = (this.shop.visits || 0) + 1;
-        await db.from("shops").update({ data: this.shop }).eq("id", id);
+        // Les statistiques sont mises à jour côté serveur par track_view.
+        // Ne jamais modifier directement la ligne shops depuis une session publique.
       } catch (e) {
         this.remoteErr = "Boutique introuvable ou en cours de validation.";
       }
