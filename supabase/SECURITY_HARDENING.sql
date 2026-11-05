@@ -57,7 +57,9 @@ create policy shops_owner_update on public.shops
 -- Le vendeur ne doit pas pouvoir modifier les colonnes de suspension/ownership.
 revoke update on public.shops from authenticated;
 grant update (data) on public.shops to authenticated;
-grant select, insert on public.shops to authenticated;
+revoke insert on public.shops from authenticated;
+grant select on public.shops to authenticated;
+grant insert (id, owner, data) on public.shops to authenticated;
 
 -- Profil vendeur : lecture personnelle et lecture admin.
 drop policy if exists vendors_owner_select on public.vendors;
@@ -150,6 +152,7 @@ grant select on public.orders to authenticated;
 grant update (status) on public.orders to authenticated;
 
 -- Documents d'identité : bucket privé, chemin commençant par l'UID du propriétaire.
+update storage.buckets set public = false where id = 'id-docs';
 drop policy if exists id_docs_owner_read on storage.objects;
 drop policy if exists id_docs_owner_insert on storage.objects;
 drop policy if exists id_docs_owner_delete on storage.objects;
