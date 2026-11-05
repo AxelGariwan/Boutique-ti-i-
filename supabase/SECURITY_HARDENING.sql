@@ -11,7 +11,7 @@ alter table public.admins enable row level security;
 
 -- Retire les anciennes policies de ces quatre tables pour éviter qu'une ancienne
 -- policy permissive (OR logique entre policies) annule le durcissement.
-do $
+do $policies$
 declare p record;
 begin
   for p in
@@ -23,7 +23,7 @@ begin
     execute format('drop policy %I on %I.%I', p.policyname, p.schemaname, p.tablename);
   end loop;
 end;
-$;
+$policies$;
 
 -- Les administrateurs ne peuvent lire que leur propre ligne admins.
 drop policy if exists admins_read_self on public.admins;
