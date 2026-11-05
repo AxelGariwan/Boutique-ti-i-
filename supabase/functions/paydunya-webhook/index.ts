@@ -28,8 +28,21 @@ Deno.serve(async (req) => {
 
     const form = await req.formData();
     const rawData = form.get("data");
-    if (typeof rawData !== "string") return new Response("Missing data", { status: 400 });
-    const data = JSON.parse(rawData);
+    // PayDunya envoie un formulaire URL-encoded avec un tableau "data".
+    // Selon le parseur HTTP, il arrive sous forme JSON ou de clés bracketées.
+    let data: Record<string, any>;
+    if (typeof rawData === "string") {
+      data = JSON.parse(rawData);
+    } else {
+      data = {
+        hash: form.get("data[hash]") || form.get("data.hash"),
+        status: form.get("data[status]") || form.get("data.status"),
+        invoice: {
+          token: form.get("data[invoice][token]") || form.get("data.invoice.token"),
+          total_amount: form.get("data[invoice][total_amount]") || form.get("data.invoice.total_amount"),
+        },
+      };
+    }
     const receivedHash = String(data.hash || "");
     const expectedHash = await sha512(masterKey);
     if (!safeEqual(receivedHash.toLowerCase(), expectedHash)) {
@@ -67,11 +80,13 @@ Deno.serve(async (req) => {
     const invoice = confirmed.invoice || confirmed.data?.invoice || {};
     const status = String(confirmed.status || confirmed.data?.status || "").toLowerCase();
     const amount = Number(invoice.total_amount ?? confirmed.data?.invoice?.total_amount);
-    const currency = String(invoice.currency || confirmed.data?.invoice?.currency || payment.currency).toUpperCase();
+    const confirmedToken = String(invoice.token || confirmed.data?.invoice?.token || "");
+    const confirmHash = String(confirmed.hash || confirmed.data?.hash || "");
 
-    if (!confirmResponse.ok || confirmed.response_code !== "00" || status !== "completed" ||
-        !Number.isFinite(amount) || amount !== Number(payment.amount) ||
-        currency !== String(payment.currency).toUpperCase()) {
+    if (!confirmResponse.ok || confirmed.response_code !== "00" ||
+        !safeEqual(confirmHash.toLowerCase(), expectedHash) ||
+        confirmedToken !== token || status !== "completed" ||
+        !Number.isFinite(amount) || amount !== Number(payment.amount)) {
       return new Response("Payment not confirmed or details mismatch", { status: 409 });
     }
 
