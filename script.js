@@ -213,7 +213,7 @@ function app() {
 
     plans: [
       { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
-      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5984, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
+      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 6000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
       { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11"] }
     ],
 
