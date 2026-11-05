@@ -18,7 +18,7 @@ La migration ajoute :
 - vendor_subscriptions : état d'abonnement du vendeur.
 - subscription_payments : transactions d'abonnement.
 - payment_webhook_events : registre d'événements webhook idempotents.
-- Deux triggers pour donner 30 jours Pro aux nouvelles boutiques.
+- Deux triggers pour donner 30 jours Pro aux nouvelles boutiques, y compris dans un pays dont le tarif local n'est pas encore configuré (plan technique ZZ/XXX non achetable).
 - Une reprise limitée aux essais historiques dont shops.trial_end est encore dans le futur.
 - Une fonction serveur confirm_vendor_subscription_payment, exécutable uniquement par service_role.
 
@@ -29,7 +29,7 @@ Elle s'appuie sur shops.id, shops.owner_id, shops.country, shops.currency, shops
 1. Ne pas déployer l'ancien fichier supabase/SECURITY_HARDENING.sql : il référence des tables et colonnes absentes de la base réelle.
 2. Faire une sauvegarde Supabase.
 3. Vérifier les valeurs actuelles de shops.country et shops.currency, puis exécuter la migration dans l'éditeur SQL Supabase.
-4. Vérifier les trois tarifs dans subscription_plans, et les abonnements générés dans vendor_subscriptions.
+4. Vérifier les trois tarifs Sénégal dans subscription_plans, le plan technique Pro ZZ/XXX non achetable, et les abonnements générés dans vendor_subscriptions.
 5. Ne pas activer les paiements en production tant que la fonction Edge de création de checkout et le webhook signé du prestataire ne sont pas configurés et testés.
 
 ## Étapes obligatoires avant paiement réel
