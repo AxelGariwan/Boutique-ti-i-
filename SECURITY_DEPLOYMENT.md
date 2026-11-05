@@ -12,11 +12,13 @@
 ## Déploiement obligatoire
 
 1. Ouvrir Supabase > SQL Editor.
-2. Faire une sauvegarde/export de la base.
-3. Vérifier que les colonnes correspondent : shops.owner, shops.id, shops.data, shops.suspended; vendors.id, vendors.id_status, vendors.id_reject_reason, vendors.id_doc_path, vendors.id_consent_at; orders.shop_id, orders.status; admins.user_id.
-4. Vérifier que vendors.id et shops.owner utilisent des UUID et que le type de shops.id peut être converti en texte.
-5. Exécuter `supabase/SECURITY_HARDENING.sql` sur un environnement de test d'abord.
-6. Tester inscription, connexion, dépôt de pièce, affichage public, commande, mise à jour du statut, suspension et suppression de compte.
+2. Exécuter d'abord `supabase/SECURITY_DIAGNOSTICS.sql` (lecture seule) et conserver les résultats.
+3. Faire une sauvegarde/export de la base.
+4. Comparer les résultats du diagnostic aux hypothèses de la migration. Ne pas exécuter la migration tant que les types, colonnes, triggers et policies Storage ne sont pas confirmés.
+5. Vérifier que les colonnes correspondent : shops.owner, shops.id, shops.data, shops.suspended; vendors.id, vendors.id_status, vendors.id_reject_reason, vendors.id_doc_path, vendors.id_consent_at; orders.shop_id, orders.status; admins.user_id.
+6. Vérifier que vendors.id et shops.owner utilisent des UUID et que le type de shops.id correspond aux fonctions RPC.
+7. Exécuter `supabase/SECURITY_HARDENING.sql` sur un environnement de test d'abord, après adaptation au diagnostic.
+8. Tester inscription, connexion, dépôt de pièce, affichage public, commande, mise à jour du statut, suspension et suppression de compte.
 
 **Ne pas exécuter l'ancien FIX_ALL.SQL.** Il crée notamment des politiques shops_insert et shops_select avec `true`, ce qui autorise l'accès public, et son déclencheur de suppression est risqué.
 
@@ -34,3 +36,9 @@
 ## Important
 
 Le fichier SQL est une migration à appliquer dans Supabase; le pousser sur GitHub ne modifie pas automatiquement la base distante. Les changements JavaScript/HTML de cette branche ne deviennent actifs sur le site qu'après fusion/déploiement. La sécurité réelle dépend de RLS et des fonctions SQL appliquées sur Supabase.
+
+## Risques fonctionnels repérés à traiter
+
+- `place_order` reçoit actuellement `p_total` calculé dans le navigateur et aucun détail fiable des lignes de panier. La fonction doit recalculer le prix et le total à partir du catalogue serveur, contrôler le stock et enregistrer les lignes de commande.
+- Le flux de carte bancaire actuel ne contacte pas de prestataire de paiement : il ne doit pas présenter une carte comme réellement débitée ou un paiement comme confirmé. Intégrer un PSP et ne jamais stocker les numéros/CVV dans l'application.
+- Le flux de suppression appelait auparavant la suppression directe de la boutique avant `delete_my_account`. Cela a été retiré dans la branche pour éviter le déclencheur dangereux de `FIX_ALL.SQL`.
