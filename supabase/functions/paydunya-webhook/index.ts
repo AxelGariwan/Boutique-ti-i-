@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     // Ne jamais activer sur la seule base de la notification : on relit la facture
     // directement chez PayDunya avant toute confirmation.
     const confirmResponse = await fetch(
-      `https://app.paydunya.com/api/v1/checkout-invoice/confirm/${encodeURIComponent(token)}`,
+      `https://app.paydunya.com/sandbox-api/v1/checkout-invoice/confirm/${encodeURIComponent(token)}`,
       {
         method: "GET",
         headers: {
