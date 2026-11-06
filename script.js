@@ -661,10 +661,10 @@ function app() {
       }
 
       if (this.pay === CARD) {
-        this.modal = 'cardPayment';
-      } else {
-        this.finalizeOrder();
+        alert("Le paiement par carte bancaire n'est pas encore disponible. Choisissez un autre moyen de paiement.");
+        return;
       }
+      this.finalizeOrder();
     },
 
     processCardPayment: function () {
