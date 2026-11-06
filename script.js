@@ -474,6 +474,10 @@ function app() {
         this.authErr = "Nom, nom de boutique et pièce d'identité sont obligatoires.";
         return;
       }
+      if (m === "signup" && !f.idConsent) {
+        this.authErr = "Veuillez accepter le traitement de votre pièce d'identité avant de continuer.";
+        return;
+      }
       this.busy = true;
       try {
         if (!this.otpSent) {
@@ -503,6 +507,10 @@ function app() {
 
       if (m === "signup" && !f.idFile) {
         this.authErr = "Veuillez fournir une pièce d'identité pour valider la boutique.";
+        return;
+      }
+      if (m === "signup" && !f.idConsent) {
+        this.authErr = "Veuillez accepter le traitement de votre pièce d'identité avant de continuer.";
         return;
       }
 
