@@ -487,7 +487,7 @@ function app() {
           var v = await db.auth.verifyOtp({ phone: phone, token: String(this.otp || "").trim(), type: "sms" });
           if (v.error) { this.authErr = this.authMsg(v.error); return; }
           if (m === "signup" && f.idBlob && v.data && v.data.user) {
-            var up = await this.uploadIdDoc(v.data.user.id, f.idBlob, false);
+            var up = await this.uploadIdDoc(v.data.user.id, f.idBlob, true);
             if (up && up.error) alert("Compte créé, mais l'envoi de la pièce d'identité a échoué. Vous pourrez la renvoyer depuis votre tableau de bord.");
           }
           location.reload();
@@ -527,7 +527,7 @@ function app() {
 
           if (r.data.session) {
             if (r.data.user && f.idBlob) {
-              var up = await this.uploadIdDoc(r.data.user.id, f.idBlob, false);
+              var up = await this.uploadIdDoc(r.data.user.id, f.idBlob, true);
               if (up && up.error) alert("Compte créé, mais l'envoi de la pièce d'identité a échoué. Vous pourrez la renvoyer depuis votre tableau de bord.");
             }
             location.reload();
