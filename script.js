@@ -209,7 +209,6 @@ function app() {
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
-    cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
       { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
@@ -664,16 +663,6 @@ function app() {
         alert("Le paiement par carte bancaire n'est pas encore disponible. Choisissez un autre moyen de paiement.");
         return;
       }
-      this.finalizeOrder();
-    },
-
-    processCardPayment: function () {
-      if (!this.cardData.number || !this.cardData.exp || !this.cardData.cvv) {
-        alert("Veuillez remplir toutes les informations de la carte bancaire.");
-        return;
-      }
-      this.modal = '';
-      this.cardData = { number: "", exp: "", cvv: "" };
       this.finalizeOrder();
     },
 
