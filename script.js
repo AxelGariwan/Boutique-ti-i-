@@ -409,15 +409,14 @@ function app() {
     },
 
     // Envoi de la pièce d'identité dans le bucket PRIVÉ "id-docs" + enregistrement du chemin dans "vendors"
-    uploadIdDoc: async function (uid, file, consent) {
+    uploadIdDoc: async function (uid, file) {
       var ext = ID_EXT[file.type];
       if (!ext) return { error: { message: "Format non accepté (JPG, PNG, WEBP ou PDF)." } };
       var path = uid + "/identity_" + Date.now() + "." + ext;
       var up = await db.storage.from("id-docs").upload(path, file, { contentType: file.type });
       if (up.error) return up;
-      var patch = { id_doc_path: path };
-      if (consent) patch.id_consent_at = new Date().toISOString();
-      return await db.from("vendors").update(patch).eq("id", uid);
+      // Le trigger Supabase enregistre id_consent_at côté base de données.
+      return await db.from("vendors").update({ id_doc_path: path }).eq("id", uid);
     },
 
     submitIdVerification: async function () {
