@@ -1,0 +1,27 @@
+# Secrets et variables locales — ne jamais publier
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+
+# Données privées et documents d'identité
+/secrets/
+/private/
+/private-data/
+/uploads/
+/identity-documents/
+/id-docs/
+*.身份证
+*.id-document
+*.passport
+
+# Fichiers locaux / sauvegardes
+.DS_Store
+Thumbs.db
+*.log
+*.dump
+*.sql.gz
