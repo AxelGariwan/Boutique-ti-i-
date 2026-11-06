@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       },
     };
 
-    const response = await fetch("https://app.paydunya.com/api/v1/checkout-invoice/create", {
+    const response = await fetch("https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
