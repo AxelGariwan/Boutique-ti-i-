@@ -229,6 +229,10 @@
       </label>
       <p x-show="f.idErr" class="text-red-600 text-xs mt-1" x-text="f.idErr"></p>
       <p x-show="f.idFile&&!f.idErr" class="text-emerald-700 text-xs mt-1"><span x-text="t('idSaved')"></span> : <span x-text="f.idFile"></span></p>
+      <label class="flex items-start gap-2 text-xs text-slate-600 cursor-pointer mt-2">
+       <input type="checkbox" x-model="f.idConsent" class="mt-0.5 rounded border-slate-300 text-emerald-600">
+       <span x-text="t('idConsentText')"></span>
+      </label>
      </div>
     </div>
    </template>
