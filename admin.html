@@ -177,13 +177,28 @@ function admin() {
       if (r.error) { alert("Erreur : " + r.error.message); return; }
       Object.assign(v, patch);
     },
-    approve: function (v) {
-      if (confirm("Valider l’identité de " + v.full_name + " ? Sa boutique deviendra visible des clients.")) this.setStatus(v, { id_status: "approved", id_reject_reason: null });
+    approve: async function (v) {
+      if (!confirm("Valider l’identité de " + v.full_name + " ? Sa boutique deviendra visible des clients.")) return;
+      var auth = await db.auth.getUser();
+      if (auth.error || !auth.data.user) { alert("Session administrateur expirée. Reconnectez-vous."); return; }
+      await this.setStatus(v, {
+        id_status: "approved",
+        id_reject_reason: null,
+        id_verified_at: new Date().toISOString(),
+        id_verified_by: auth.data.user.id
+      });
     },
-    reject: function (v) {
+    reject: async function (v) {
       var why = prompt("Motif du refus (affiché au vendeur) :", "Pièce illisible ou non valide");
       if (why === null) return;
-      this.setStatus(v, { id_status: "rejected", id_reject_reason: why.trim() || "Pièce non valide" });
+      var auth = await db.auth.getUser();
+      if (auth.error || !auth.data.user) { alert("Session administrateur expirée. Reconnectez-vous."); return; }
+      await this.setStatus(v, {
+        id_status: "rejected",
+        id_reject_reason: why.trim() || "Pièce non valide",
+        id_verified_at: null,
+        id_verified_by: null
+      });
     },
     toggleSuspend: async function (v) {
       var s = this.shopOf(v); if (!s) return;
