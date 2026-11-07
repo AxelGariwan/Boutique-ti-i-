@@ -206,6 +206,7 @@ function app() {
   return {
     remote: false, loading: !!shopId, remoteErr: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
+    statusSyncTimer: null, statusEventsBound: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
@@ -364,7 +365,7 @@ function app() {
       if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
       this.uid = session.user.id;
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
-      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
+      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status,id_reject_reason,id_doc_path").eq("id", this.uid).maybeSingle();
       var v = vq.data || {};
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
@@ -381,9 +382,48 @@ function app() {
         this.shop = norm(b);
       }
       this.shop.verified = (v.id_status === "approved");
+      this.shop.suspended = !!(s.data && s.data.suspended);
+      this.idStatus = v.id_status || "pending";
+      this.idRejectReason = v.id_reject_reason || "";
+      this.idDocPath = v.id_doc_path || null;
       this.authed = true; this.ready = true;
       await this.loadOrders();
       this.updateStats();
+      this.startVendorStatusSync();
+    },
+
+    // Synchronise le statut d'identité et la suspension sans reconnexion.
+    // Le polling fonctionne même si Realtime n'est pas activé sur la table vendors.
+    syncVendorState: async function () {
+      if (!this.authed || !this.uid || shopId) return;
+      var results = await Promise.all([
+        db.from("vendors").select("id_status,id_reject_reason,id_doc_path").eq("id", this.uid).maybeSingle(),
+        db.from("shops").select("suspended").eq("owner", this.uid).maybeSingle()
+      ]);
+      var vr = results[0], sr = results[1];
+      if (!vr.error && vr.data) {
+        this.idStatus = vr.data.id_status || "pending";
+        this.idRejectReason = vr.data.id_reject_reason || "";
+        this.idDocPath = vr.data.id_doc_path || null;
+        this.shop.verified = vr.data.id_status === "approved";
+      }
+      if (!sr.error && sr.data) this.shop.suspended = !!sr.data.suspended;
+    },
+
+    startVendorStatusSync: function () {
+      var self = this;
+      if (this.statusSyncTimer) window.clearInterval(this.statusSyncTimer);
+      this.syncVendorState();
+      this.statusSyncTimer = window.setInterval(function () {
+        if (document.visibilityState === "visible") self.syncVendorState();
+      }, 10000);
+      if (!this.statusEventsBound) {
+        window.addEventListener("focus", function () { self.syncVendorState(); });
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") self.syncVendorState();
+        });
+        this.statusEventsBound = true;
+      }
     },
 
     updateStats: function() {
@@ -436,6 +476,11 @@ function app() {
         }
         var r = await this.uploadIdDoc(this.uid, this.f.idBlob, true);
         if (r.error) throw r.error;
+        this.idStatus = "pending";
+        this.idRejectReason = "";
+        this.idDocPath = null;
+        this.shop.verified = false;
+        await this.syncVendorState();
         alert("Document envoyé avec succès !");
       } catch (err) {
         alert("Erreur lors de l'envoi." + (err && err.message ? "\n" + err.message : ""));
@@ -552,6 +597,7 @@ function app() {
     },
 
     logout: async function () {
+      if (this.statusSyncTimer) { window.clearInterval(this.statusSyncTimer); this.statusSyncTimer = null; }
       try {
         await db.auth.signOut();
       } catch (e) {}
