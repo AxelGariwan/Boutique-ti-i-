@@ -3,7 +3,7 @@
 ## Règles métier retenues
 
 - Essai gratuit : 30 jours sur la formule Pro.
-- Tarifs initiaux Sénégal : Starter 3 000 XOF/mois, Pro 5 984 XOF/mois, Premium 10 000 XOF/mois.
+- Tarifs initiaux Sénégal : Starter 3 000 XOF/mois, Pro 6 000 XOF/mois, Premium 10 000 XOF/mois.
 - Le renouvellement est manuel au lancement (auto_renew = false).
 - Les paiements des commandes clients restent séparés des paiements d'abonnement vendeur.
 - Le prix et la devise sont lus dans subscription_plans, jamais acceptés comme vérité depuis le navigateur.
@@ -22,13 +22,13 @@ La migration ajoute :
 - Une reprise limitée aux essais historiques dont shops.trial_end est encore dans le futur.
 - Une fonction serveur confirm_vendor_subscription_payment, exécutable uniquement par service_role.
 
-Elle s'appuie sur shops.id, shops.owner_id, shops.country, shops.currency, shops.plan et shops.trial_end. Elle ne crée pas de table vendors ou admins.
+Attention : cette migration est une ébauche et NE DOIT PAS être exécutée sur la base actuelle. Le schéma réel utilise public.shops.id (text), public.shops.owner (uuid) et public.shops.data (jsonb), et non shops.owner_id/country/currency/plan/trial_end. Les informations pays/devise/formule/fin d'essai sont conservées dans les données de boutique et/ou le profil vendeur. La migration doit être réécrite avant tout déploiement afin d'utiliser les vrais types et champs. Elle ne crée pas de table vendors ou admins.
 
 ## Déploiement prudent
 
 1. Ne pas déployer l'ancien fichier supabase/SECURITY_HARDENING.sql : il référence des tables et colonnes absentes de la base réelle.
 2. Faire une sauvegarde Supabase.
-3. Vérifier les valeurs actuelles de shops.country et shops.currency, puis exécuter la migration dans l'éditeur SQL Supabase.
+3. Ne PAS exécuter la migration actuelle : elle est incompatible avec le schéma réel (shops.id est text et les colonnes owner_id/country/currency/plan/trial_end n'existent pas). Attendre une migration corrigée et vérifiée.
 4. Vérifier les trois tarifs Sénégal dans subscription_plans, le plan technique Pro ZZ/XXX non achetable, et les abonnements générés dans vendor_subscriptions.
 5. Ne pas activer les paiements en production tant que la fonction Edge de création de checkout et le webhook signé du prestataire ne sont pas configurés et testés.
 
@@ -36,7 +36,7 @@ Elle s'appuie sur shops.id, shops.owner_id, shops.country, shops.currency, shops
 
 Le serveur devra :
 1. authentifier l'utilisateur Supabase ;
-2. vérifier que auth.uid() possède le shop_id demandé via shops.owner_id ;
+2. vérifier que auth.uid() possède le shop_id demandé via shops.owner ;
 3. charger le plan actif correspondant au pays et à la devise de la boutique ;
 4. créer un paiement pending avec montant/devise calculés côté serveur et une clé d'idempotence ;
 5. appeler l'API officielle du prestataire avec les secrets conservés dans Supabase Edge Function Secrets ;
@@ -44,7 +44,7 @@ Le serveur devra :
 7. vérifier la signature du webhook, la référence, le montant, la devise et l'état auprès du prestataire ;
 8. enregistrer l'événement webhook de façon idempotente, puis appeler confirm_vendor_subscription_payment avec le rôle serveur.
 
-Le fournisseur de paiement n'est pas encore choisi. Cette migration prépare le modèle de données, mais ne prétend pas qu'un paiement Wave, Orange Money ou autre est déjà opérationnel. L'API exacte et les signatures webhook seront ajoutées après sélection du prestataire et obtention des identifiants marchands.
+PayDunya est le prestataire retenu pour une première intégration en mode TEST. L'intégration n'est pas prête pour la production : le modèle SQL et la fonction checkout doivent d'abord être adaptés au schéma réel, puis le protocole webhook doit être validé avec des paiements de test.
 
 ## Contrôles à effectuer après migration
 
@@ -79,7 +79,7 @@ Les variables Supabase `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_
 
 ### Déploiement et tests
 
-1. Exécuter la migration `20261105000100_vendor_subscriptions.sql` après revue de la structure réelle de la base.
+1. Ne pas exécuter la migration `20261105000100_vendor_subscriptions.sql` dans son état actuel ; attendre sa réécriture et sa validation sur le schéma réel.
 2. Déployer les deux Edge Functions.
 3. Configurer les secrets PayDunya en mode TEST et l'URL IPN.
 4. Effectuer un paiement test pour Starter (3 000 XOF), Pro (6 000 XOF) et Premium (10 000 XOF).
