@@ -170,12 +170,12 @@ function admin() {
     shopLink: function (v) { var s = this.shopOf(v); return s ? location.origin + location.pathname.replace(/admin\.html$/, "") + "?b=" + s.id : "#"; },
 
     viewDoc: async function (v) {
+      var w = window.open("", "_blank");
       // Relire le chemin depuis la base pour ne jamais ouvrir une ancienne pièce conservée en mémoire.
       var latest = await db.from("vendors").select("id_doc_path,id_status").eq("id", v.id).maybeSingle();
-      if (latest.error || !latest.data || !latest.data.id_doc_path) { alert("Aucun document disponible. Actualisez la liste."); return; }
+      if (latest.error || !latest.data || !latest.data.id_doc_path) { if (w) w.close(); alert("Aucun document disponible. Actualisez la liste."); return; }
       v.id_doc_path = latest.data.id_doc_path;
       v.id_status = latest.data.id_status;
-      var w = window.open("", "_blank");
       var r = await db.storage.from("id-docs").createSignedUrl(v.id_doc_path, 120);
       if (r.error) { if (w) w.close(); alert("Impossible d’ouvrir la pièce : " + r.error.message); return; }
       if (w) w.location = r.data.signedUrl; else window.open(r.data.signedUrl, "_blank");
