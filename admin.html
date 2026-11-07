@@ -120,7 +120,7 @@ var db = supabase.createClient(SB_URL, SB_KEY);
 function admin() {
   return {
     ready: false, ok: false, busy: false, err: "", tab: "vendors", filter: "all", q: "",
-    f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
+    f: { email: "", password: "" }, vendors: [], shops: [], orders: [], refreshTimer: null,
 
     init: async function () {
       var s = await db.auth.getSession();
@@ -140,8 +140,11 @@ function admin() {
       var r = await db.from("admins").select("user_id").eq("user_id", uid).maybeSingle();
       if (!r.data) { this.err = "Ce compte n’a pas les droits administrateur."; await db.auth.signOut(); this.ok = false; return; }
       this.ok = true; await this.reload();
+      if (this.refreshTimer) window.clearInterval(this.refreshTimer);
+      var self = this;
+      this.refreshTimer = window.setInterval(function () { if (self.ok && document.visibilityState === "visible") self.reload(); }, 15000);
     },
-    logout: async function () { await db.auth.signOut(); this.ok = false; this.vendors = []; this.shops = []; this.orders = []; },
+    logout: async function () { if (this.refreshTimer) window.clearInterval(this.refreshTimer); this.refreshTimer = null; await db.auth.signOut(); this.ok = false; this.vendors = []; this.shops = []; this.orders = []; },
     reload: async function () {
       var a = await db.from("vendors").select("*").order("created_at", { ascending: false });
       var b = await db.from("shops").select("id,owner,suspended,updated_at,data");
@@ -168,30 +171,57 @@ function admin() {
 
     viewDoc: async function (v) {
       var w = window.open("", "_blank");
+      // Relire le chemin depuis la base pour ne jamais ouvrir une ancienne pièce conservée en mémoire.
+      var latest = await db.from("vendors").select("id_doc_path,id_status").eq("id", v.id).maybeSingle();
+      if (latest.error || !latest.data || !latest.data.id_doc_path) { if (w) w.close(); alert("Aucun document disponible. Actualisez la liste."); return; }
+      v.id_doc_path = latest.data.id_doc_path;
+      v.id_status = latest.data.id_status;
       var r = await db.storage.from("id-docs").createSignedUrl(v.id_doc_path, 120);
       if (r.error) { if (w) w.close(); alert("Impossible d’ouvrir la pièce : " + r.error.message); return; }
       if (w) w.location = r.data.signedUrl; else window.open(r.data.signedUrl, "_blank");
     },
     setStatus: async function (v, patch) {
-      var r = await db.from("vendors").update(patch).eq("id", v.id);
-      if (r.error) { alert("Erreur : " + r.error.message); return; }
-      Object.assign(v, patch);
+      var r = await db.from("vendors").update(patch).eq("id", v.id)
+        .select("id,id_status,id_verified_at,id_verified_by,id_doc_path,id_reject_reason").maybeSingle();
+      if (r.error) { alert("Erreur lors de la mise à jour : " + r.error.message); return false; }
+      if (!r.data) { alert("Aucune ligne mise à jour. Vérifiez les droits administrateur (RLS) et la session."); return false; }
+      Object.assign(v, r.data);
+      await this.reload();
+      return true;
     },
-    approve: function (v) {
-      if (confirm("Valider l’identité de " + v.full_name + " ? Sa boutique deviendra visible des clients.")) this.setStatus(v, { id_status: "approved", id_reject_reason: null });
+    approve: async function (v) {
+      if (!confirm("Valider l’identité de " + v.full_name + " ? Sa boutique deviendra visible des clients.")) return;
+      var auth = await db.auth.getUser();
+      if (auth.error || !auth.data.user) { alert("Session administrateur expirée. Reconnectez-vous."); return; }
+      var saved = await this.setStatus(v, {
+        id_status: "approved",
+        id_reject_reason: null,
+        id_verified_at: new Date().toISOString(),
+        id_verified_by: auth.data.user.id
+      });
+      if (saved) alert("Identité validée. Le tableau de bord vendeur se mettra à jour automatiquement.");
     },
-    reject: function (v) {
+    reject: async function (v) {
       var why = prompt("Motif du refus (affiché au vendeur) :", "Pièce illisible ou non valide");
       if (why === null) return;
-      this.setStatus(v, { id_status: "rejected", id_reject_reason: why.trim() || "Pièce non valide" });
+      var auth = await db.auth.getUser();
+      if (auth.error || !auth.data.user) { alert("Session administrateur expirée. Reconnectez-vous."); return; }
+      await this.setStatus(v, {
+        id_status: "rejected",
+        id_reject_reason: why.trim() || "Pièce non valide",
+        id_verified_at: null,
+        id_verified_by: null
+      });
     },
     toggleSuspend: async function (v) {
       var s = this.shopOf(v); if (!s) return;
       var to = !s.suspended;
       if (!confirm((to ? "Suspendre" : "Réactiver") + " la boutique de " + v.full_name + " ?")) return;
-      var r = await db.from("shops").update({ suspended: to }).eq("id", s.id);
+      var r = await db.from("shops").update({ suspended: to }).eq("id", s.id).select("id,suspended").maybeSingle();
       if (r.error) { alert("Erreur : " + r.error.message); return; }
-      s.suspended = to;
+      if (!r.data) { alert("Aucune boutique mise à jour. Vérifiez les droits administrateur."); return; }
+      s.suspended = !!r.data.suspended;
+      await this.reload();
     }
   };
 }

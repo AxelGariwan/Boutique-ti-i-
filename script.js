@@ -206,14 +206,14 @@ function app() {
   return {
     remote: false, loading: !!shopId, remoteErr: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
+    statusSyncTimer: null, statusEventsBound: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
-    cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
-      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 2500, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
-      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
+      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
+      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 6000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
       { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11"] }
     ],
 
@@ -305,6 +305,38 @@ function app() {
       var pid = this.shop.plan || "pro";
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
     },
+
+    formatSubscriptionPrice: function (amount) {
+      var country = String(this.shop.country || "").trim().toLowerCase();
+      if (this.shop.currency !== "XOF" || (country !== "sénégal" && country !== "senegal" && country !== "sn")) {
+        return "Tarif local à confirmer";
+      }
+      return new Intl.NumberFormat("fr-FR").format(amount) + " XOF";
+    },
+
+    requestPlan: async function (planId) {
+      if (!this.authed || !this.shop.sid) {
+        alert("Connectez-vous à votre espace vendeur avant de souscrire à un abonnement.");
+        return;
+      }
+      if (!["starter", "pro", "premium"].includes(planId)) {
+        alert("Formule invalide.");
+        return;
+      }
+      try {
+        var result = await db.functions.invoke("create-subscription-checkout", {
+          body: { shopId: this.shop.sid, planSlug: planId }
+        });
+        if (result.error || !result.data || !result.data.checkoutUrl) {
+          var message = result.data && result.data.error ? result.data.error : "Impossible de préparer le paiement. Réessayez plus tard.";
+          alert(message);
+          return;
+        }
+        window.location.assign(result.data.checkoutUrl);
+      } catch (error) {
+        alert("Une erreur est survenue lors de la création du paiement. Aucun abonnement n'a été activé.");
+      }
+    },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
     },
@@ -333,7 +365,7 @@ function app() {
       if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
       this.uid = session.user.id;
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
-      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
+      var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status,id_reject_reason,id_doc_path").eq("id", this.uid).maybeSingle();
       var v = vq.data || {};
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
@@ -350,9 +382,48 @@ function app() {
         this.shop = norm(b);
       }
       this.shop.verified = (v.id_status === "approved");
+      this.shop.suspended = !!(s.data && s.data.suspended);
+      this.idStatus = v.id_status || "pending";
+      this.idRejectReason = v.id_reject_reason || "";
+      this.idDocPath = v.id_doc_path || null;
       this.authed = true; this.ready = true;
       await this.loadOrders();
       this.updateStats();
+      this.startVendorStatusSync();
+    },
+
+    // Synchronise le statut d'identité et la suspension sans reconnexion.
+    // Le polling fonctionne même si Realtime n'est pas activé sur la table vendors.
+    syncVendorState: async function () {
+      if (!this.authed || !this.uid || shopId) return;
+      var results = await Promise.all([
+        db.from("vendors").select("id_status,id_reject_reason,id_doc_path").eq("id", this.uid).maybeSingle(),
+        db.from("shops").select("suspended").eq("owner", this.uid).maybeSingle()
+      ]);
+      var vr = results[0], sr = results[1];
+      if (!vr.error && vr.data) {
+        this.idStatus = vr.data.id_status || "pending";
+        this.idRejectReason = vr.data.id_reject_reason || "";
+        this.idDocPath = vr.data.id_doc_path || null;
+        this.shop.verified = vr.data.id_status === "approved";
+      }
+      if (!sr.error && sr.data) this.shop.suspended = !!sr.data.suspended;
+    },
+
+    startVendorStatusSync: function () {
+      var self = this;
+      if (this.statusSyncTimer) window.clearInterval(this.statusSyncTimer);
+      this.syncVendorState();
+      this.statusSyncTimer = window.setInterval(function () {
+        if (document.visibilityState === "visible") self.syncVendorState();
+      }, 10000);
+      if (!this.statusEventsBound) {
+        window.addEventListener("focus", function () { self.syncVendorState(); });
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") self.syncVendorState();
+        });
+        this.statusEventsBound = true;
+      }
     },
 
     updateStats: function() {
@@ -378,15 +449,14 @@ function app() {
     },
 
     // Envoi de la pièce d'identité dans le bucket PRIVÉ "id-docs" + enregistrement du chemin dans "vendors"
-    uploadIdDoc: async function (uid, file, consent) {
+    uploadIdDoc: async function (uid, file) {
       var ext = ID_EXT[file.type];
       if (!ext) return { error: { message: "Format non accepté (JPG, PNG, WEBP ou PDF)." } };
       var path = uid + "/identity_" + Date.now() + "." + ext;
       var up = await db.storage.from("id-docs").upload(path, file, { contentType: file.type });
       if (up.error) return up;
-      var patch = { id_doc_path: path };
-      if (consent) patch.id_consent_at = new Date().toISOString();
-      return await db.from("vendors").update(patch).eq("id", uid);
+      // Le trigger Supabase enregistre id_consent_at côté base de données.
+      return await db.from("vendors").update({ id_doc_path: path }).eq("id", uid);
     },
 
     submitIdVerification: async function () {
@@ -406,6 +476,11 @@ function app() {
         }
         var r = await this.uploadIdDoc(this.uid, this.f.idBlob, true);
         if (r.error) throw r.error;
+        this.idStatus = "pending";
+        this.idRejectReason = "";
+        this.idDocPath = null;
+        this.shop.verified = false;
+        await this.syncVendorState();
         alert("Document envoyé avec succès !");
       } catch (err) {
         alert("Erreur lors de l'envoi." + (err && err.message ? "\n" + err.message : ""));
@@ -443,6 +518,10 @@ function app() {
         this.authErr = "Nom, nom de boutique et pièce d'identité sont obligatoires.";
         return;
       }
+      if (m === "signup" && !f.idConsent) {
+        this.authErr = "Veuillez accepter le traitement de votre pièce d'identité avant de continuer.";
+        return;
+      }
       this.busy = true;
       try {
         if (!this.otpSent) {
@@ -456,7 +535,7 @@ function app() {
           var v = await db.auth.verifyOtp({ phone: phone, token: String(this.otp || "").trim(), type: "sms" });
           if (v.error) { this.authErr = this.authMsg(v.error); return; }
           if (m === "signup" && f.idBlob && v.data && v.data.user) {
-            var up = await this.uploadIdDoc(v.data.user.id, f.idBlob, false);
+            var up = await this.uploadIdDoc(v.data.user.id, f.idBlob, true);
             if (up && up.error) alert("Compte créé, mais l'envoi de la pièce d'identité a échoué. Vous pourrez la renvoyer depuis votre tableau de bord.");
           }
           location.reload();
@@ -472,6 +551,10 @@ function app() {
 
       if (m === "signup" && !f.idFile) {
         this.authErr = "Veuillez fournir une pièce d'identité pour valider la boutique.";
+        return;
+      }
+      if (m === "signup" && !f.idConsent) {
+        this.authErr = "Veuillez accepter le traitement de votre pièce d'identité avant de continuer.";
         return;
       }
 
@@ -496,7 +579,7 @@ function app() {
 
           if (r.data.session) {
             if (r.data.user && f.idBlob) {
-              var up = await this.uploadIdDoc(r.data.user.id, f.idBlob, false);
+              var up = await this.uploadIdDoc(r.data.user.id, f.idBlob, true);
               if (up && up.error) alert("Compte créé, mais l'envoi de la pièce d'identité a échoué. Vous pourrez la renvoyer depuis votre tableau de bord.");
             }
             location.reload();
@@ -514,6 +597,7 @@ function app() {
     },
 
     logout: async function () {
+      if (this.statusSyncTimer) { window.clearInterval(this.statusSyncTimer); this.statusSyncTimer = null; }
       try {
         await db.auth.signOut();
       } catch (e) {}
@@ -523,10 +607,7 @@ function app() {
     },
 
     cancelSubscription: function() {
-      if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous basculerez sur le plan Starter à l'échéance.")) {
-        this.shop.plan = "starter";
-        alert("Votre abonnement a bien été résilié.");
-      }
+      alert("La résiliation en ligne sera disponible lorsque le système d'abonnement serveur sera activé. Aucun changement n'a été effectué sur votre formule.");
     },
 
     // Suppression RÉELLE : appelle la fonction serveur delete_my_account() qui supprime l'utilisateur
@@ -632,19 +713,9 @@ function app() {
       }
 
       if (this.pay === CARD) {
-        this.modal = 'cardPayment';
-      } else {
-        this.finalizeOrder();
-      }
-    },
-
-    processCardPayment: function () {
-      if (!this.cardData.number || !this.cardData.exp || !this.cardData.cvv) {
-        alert("Veuillez remplir toutes les informations de la carte bancaire.");
+        alert("Le paiement par carte bancaire n'est pas encore disponible. Choisissez un autre moyen de paiement.");
         return;
       }
-      this.modal = '';
-      this.cardData = { number: "", exp: "", cvv: "" };
       this.finalizeOrder();
     },
 
