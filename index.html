@@ -7,7 +7,9 @@
 
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23059669%22/><text x=%2250%22 y=%2265%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>Bt</text></svg>">
 
-<style>[x-cloak]{display:none !important}</style>
+<style>[x-cloak]{display:none !important}
+@media (max-width: 767px){body:has(.vendor-mobile-nav){padding-bottom:6.5rem}.vendor-mobile-nav{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}}
+</style>
 
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
@@ -260,10 +262,10 @@
  </div>
 
  <!-- Espace Vendeur — Dashboard Moderne en Colonnes entièrement traduit -->
- <div x-show="!loading&&!remoteErr&&tab==='vendor'&&authed" x-cloak class="grid grid-cols-12 gap-6">
+ <div x-show="!loading&&!remoteErr&&tab==='vendor'&&authed" x-cloak class="grid grid-cols-12 gap-6 pb-28 md:pb-0">
   
   <!-- Sidebar Latérale Interactive -->
-  <aside class="col-span-12 md:col-span-3 space-y-3 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm h-fit">
+  <aside class="hidden md:block md:col-span-3 space-y-3 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm h-fit">
    <div class="flex items-center gap-3 pb-4 border-b border-slate-100 mb-2">
     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-800 flex items-center justify-center text-white font-black text-xl shadow-md ring-2 ring-emerald-200">Bti</div>
     <div class="min-w-0">
@@ -479,9 +481,48 @@
    </div>
 
   </main>
+
+  <!-- Navigation flottante mobile : mêmes rubriques que le Dashboard existant -->
+  <nav class="vendor-mobile-nav md:hidden fixed bottom-3 left-3 right-3 z-40 bg-white/95 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-2xl px-2 pt-2 flex items-center justify-around gap-1" aria-label="Navigation vendeur">
+   <button type="button" @click="subTab='home'" :class="subTab==='home'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
+    <i data-lucide="house" class="w-5 h-5"></i><span x-text="t('navHome')"></span>
+   </button>
+   <button type="button" @click="subTab='inventory'" :class="subTab==='inventory'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
+    <i data-lucide="package" class="w-5 h-5"></i><span>Inventaire</span>
+   </button>
+   <button type="button" @click="modal='aiComingSoon'" class="shrink-0 -mt-7 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-xl shadow-emerald-600/30 border-4 border-white flex flex-col items-center justify-center">
+    <i data-lucide="bot" class="w-5 h-5"></i><span class="text-[9px] font-black">IA</span>
+   </button>
+   <button type="button" @click="subTab='orders'" :class="subTab==='orders'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
+    <i data-lucide="shopping-cart" class="w-5 h-5"></i><span x-text="t('navOrders')"></span>
+   </button>
+   <button type="button" @click="subTab='settings'" :class="subTab==='settings'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
+    <i data-lucide="settings" class="w-5 h-5"></i><span>Paramètres</span>
+   </button>
+  </nav>
+
+  <!-- Assistant IA sur ordinateur -->
+  <button type="button" @click="modal='aiComingSoon'" class="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-sm px-5 py-3 shadow-xl shadow-emerald-900/20 hover:scale-105 transition">
+   <i data-lucide="bot" class="w-5 h-5"></i><span>Assistant IA</span>
+  </button>
  </div>
 
 </main>
+</div>
+
+<!-- Modal de présentation de l'assistant IA (fonctionnalités à développer ensuite) -->
+<div x-show="modal==='aiComingSoon'" x-cloak class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+ <section class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+  <div class="mx-auto w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+   <i data-lucide="bot" class="w-9 h-9"></i>
+  </div>
+  <div>
+   <h2 class="text-lg font-black text-slate-900">Assistant IA Boutique ti i</h2>
+   <p class="text-sm text-slate-600 mt-2">Votre assistant intelligent arrive bientôt. Il pourra vous aider à comprendre vos ventes, gérer vos produits et améliorer votre boutique.</p>
+  </div>
+  <p class="text-xs text-slate-400">L'assistant n'est pas encore activé. Son développement constitue la prochaine étape.</p>
+  <button type="button" @click="modal=''" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm">Compris</button>
+ </section>
 </div>
 
 <!-- Modal Gestion des Abonnements -->
