@@ -556,7 +556,7 @@
       </ul>
      </div>
 
-     <button type="button" @click="shop.plan=p.id; modal='subSuccess'" 
+     <button type="button" @click="requestPlan(p.id)" :disabled="checkoutBusy" 
              :class="shop.plan===p.id ? 'bg-emerald-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'"
              class="w-full py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
              x-text="shop.plan===p.id ? t('currentPlan') : t('choosePlan')">
