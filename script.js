@@ -210,7 +210,7 @@ function app() {
   var tmr;
   var shopId = new URLSearchParams(location.search).get("b");
   return {
-    remote: false, loading: !!shopId, remoteErr: "",
+    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
@@ -310,6 +310,35 @@ function app() {
     get currentPlanObj() {
       var pid = this.shop.plan || "pro";
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
+    },
+    requestPlan: async function (planId) {
+      if (!this.authed) {
+        alert("Connectez-vous à votre espace vendeur avant de souscrire.");
+        return;
+      }
+      if (!["starter", "pro", "premium"].includes(planId)) {
+        alert("Formule invalide.");
+        return;
+      }
+      if (this.checkoutBusy) return;
+      this.checkoutBusy = true;
+      try {
+        if (!this.shop.sid) this.shop.sid = rnd(8);
+        await this.save();
+        var result = await db.functions.invoke("create-subscription-checkout", {
+          body: { shopId: this.shop.sid, planSlug: planId }
+        });
+        if (result.error || !result.data || !result.data.checkoutUrl) {
+          var message = result.data && result.data.error ? result.data.error : "Impossible de préparer le paiement. Réessayez plus tard.";
+          alert(message);
+          return;
+        }
+        window.location.assign(result.data.checkoutUrl);
+      } catch (error) {
+        alert("Une erreur est survenue. Aucun abonnement n’a été activé.");
+      } finally {
+        this.checkoutBusy = false;
+      }
     },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
