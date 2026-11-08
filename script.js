@@ -311,6 +311,12 @@ function app() {
       var pid = this.shop.plan || "pro";
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
     },
+    formatSubscriptionPrice: function (amount) {
+      var country = String(this.shop.country || "").trim().toLowerCase();
+      var isSenegal = country === "sn" || country === "senegal" || country === "sénégal";
+      if (!isSenegal || this.shop.currency !== "XOF") return "Tarif local à confirmer";
+      return new Intl.NumberFormat("fr-FR").format(amount) + " XOF";
+    },
     requestPlan: async function (planId) {
       if (!this.authed) {
         alert("Connectez-vous à votre espace vendeur avant de souscrire.");
@@ -320,11 +326,18 @@ function app() {
         alert("Formule invalide.");
         return;
       }
+      var country = String(this.shop.country || "").trim().toLowerCase();
+      var isSenegal = country === "sn" || country === "senegal" || country === "sénégal";
+      if (!isSenegal || this.shop.currency !== "XOF") {
+        alert("Les paiements d’abonnement ne sont pas encore activés pour votre pays. Aucun montant ne sera prélevé.");
+        return;
+      }
       if (this.checkoutBusy) return;
       this.checkoutBusy = true;
       try {
         if (!this.shop.sid) this.shop.sid = rnd(8);
-        await this.save();
+        var saved = await this.save();
+        if (saved && saved.error) throw saved.error;
         var result = await db.functions.invoke("create-subscription-checkout", {
           body: { shopId: this.shop.sid, planSlug: planId }
         });
@@ -617,6 +630,7 @@ function app() {
       if (!this.shop.sid) this.shop.sid = rnd(8);
       var r = await db.from("shops").upsert({ id: this.shop.sid, owner: this.uid, data: this.shop }, { onConflict: "id" });
       if (r && r.error) console.error("Sauvegarde de la boutique échouée :", r.error.message);
+      return r;
     },
 
     loadRemote: async function (id) {
