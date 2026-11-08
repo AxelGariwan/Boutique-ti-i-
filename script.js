@@ -59,6 +59,8 @@ var TR = {
     f1:"Jusqu'à 10 articles", f2:"Gestion des commandes", f3:"Paiement optionnel",
     f4:"Articles illimités", f5:"Tableau de bord & Visites", f6:"Gestion des stocks", f7:"Badge Vendeur Vérifié",
     f8:"Tout ce qui est dans Pro", f9:"Mise en avant des produits", f10:"Boutique WhatsApp Direct", f11:"Support Prioritaire 24/7",
+    f12:"IA Pro : questions sur ventes, commandes et stocks", f13:"Analyses et recommandations personnalisées par l’IA", f14:"Conseils pour améliorer la boutique",
+    f15:"IA Premium : création et optimisation de fiches produits", f16:"Actions sur la boutique après votre confirmation", f17:"Aide avancée à la gestion de l’inventaire", f18:"Automatisations et tâches répétitives assistées par IA",
     orderSuccessTitle:"Commande enregistrée et payée !", orderSuccessDesc:"Votre code de suivi unique a été généré. Conservez-le précieusement pour suivre l'état de votre commande.",
     trackingCodeLabel:"Votre Code de Suivi Unique :", copy:"Copier", copied:"Copié !", sendOrderWa:"Envoyer la confirmation au vendeur sur WhatsApp", close:"Fermer",
     client:"Client", status:"Statut", statusPending:"Payé / En attente", statusProcessing:"En cours de préparation / expédition", statusCompleted:"Livrée / Terminée",
@@ -89,6 +91,8 @@ var TR = {
     f1:"Up to 10 products", f2:"Order management", f3:"Optional payment",
     f4:"Unlimited products", f5:"Dashboard & Visits", f6:"Inventory management", f7:"Verified Vendor Badge",
     f8:"Everything in Pro", f9:"Product promotion", f10:"Direct WhatsApp Button", f11:"Priority Support 24/7",
+    f12:"Pro AI: answers about sales, orders and stock", f13:"AI insights and personalized recommendations", f14:"Tips to improve your shop",
+    f15:"Premium AI: create and optimize product listings", f16:"Shop changes after your confirmation", f17:"Advanced inventory assistance", f18:"AI-assisted workflows and repetitive tasks",
     orderSuccessTitle:"Order Placed & Paid!", orderSuccessDesc:"Your unique tracking code has been generated. Keep it safe to track your order.",
     trackingCodeLabel:"Your Unique Tracking Code:", copy:"Copy", copied:"Copied!", sendOrderWa:"Send order to vendor on WhatsApp", close:"Close",
     client:"Client", status:"Status", statusPending:"Paid / Pending", statusProcessing:"Processing / Shipping", statusCompleted:"Delivered / Completed",
@@ -118,6 +122,8 @@ var TR = {
     subStarter:"Para empezar suavemente", subPro:"Para vendedores regulares", subPremium:"Para maximizar ventas",
     f1:"Hasta 10 productos", f2:"Gestión de pedidos", f3:"Pago opcional",
     f4:"Productos ilimitados", f5:"Panel y visitas", f6:"Control de inventario", f7:"Insignia de vendedor verificado",
+    f12:"IA Pro: respuestas sobre ventas, pedidos y stock", f13:"Análisis y recomendaciones personalizadas", f14:"Consejos para mejorar la tienda",
+    f15:"IA Premium: creación y optimización de productos", f16:"Cambios en la tienda con tu confirmación", f17:"Asistencia avanzada de inventario", f18:"Automatización de tareas repetitivas con IA",
     f8:"Todo lo de Pro", f9:"Promoción de productos", f10:"Botón directo WhatsApp", f11:"Soporte prioritario 24/7",
     orderSuccessTitle:"¡Pedido realizado y pagado!", orderSuccessDesc:"Se ha generado tu código de seguimiento único.",
     trackingCodeLabel:"Tu Código de Seguimiento Único:", copy:"Copiar", copied:"¡Copiado!", sendOrderWa:"Enviar pedido al vendedor por WhatsApp", close:"Cerrar",
@@ -212,9 +218,9 @@ function app() {
     cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
-      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 2500, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
-      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7"] },
-      { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11"] }
+      { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
+      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5984, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7", "f12", "f13", "f14"] },
+      { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11", "f15", "f16", "f17", "f18"] }
     ],
 
     f: { fullName: "", shopName: "", country: "Sénégal", location: "", phone: "", email: "", password: "", idFile: "", idErr: "", idBlob: null, idConsent: false },
