@@ -94,8 +94,8 @@ begin
 
   v_month_start := date_trunc('month', now());
 
-  select coalesce(sum(cost_usd), 0), count(*)
-    into v_spent, v_user_requests
+  select coalesce(sum(cost_usd), 0)
+    into v_spent
   from public.ai_usage_events
   where created_at >= v_month_start;
 
@@ -105,7 +105,7 @@ begin
   where status = 'pending'
     and created_at >= v_month_start;
 
-  select count(*) + v_user_requests
+  select count(*)
     into v_user_requests
   from public.ai_usage_events
   where user_id = p_user_id
