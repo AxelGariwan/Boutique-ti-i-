@@ -114,8 +114,8 @@ Deno.serve(async (req) => {
       custom_data: { payment_id: paymentId, shop_id: shop.id, plan: plan.slug },
       actions: {
         callback_url: callbackUrl,
-        return_url: "https://boutique-ti-i-eight.vercel.app/?subscription=return",
-        cancel_url: "https://boutique-ti-i-eight.vercel.app/?subscription=cancelled",
+        return_url: `https://boutique-ti-i-eight.vercel.app/?subscription=return&payment_id=${encodeURIComponent(paymentId)}`,
+        cancel_url: `https://boutique-ti-i-eight.vercel.app/?subscription=cancelled&payment_id=${encodeURIComponent(paymentId)}`,
       },
     };
 
