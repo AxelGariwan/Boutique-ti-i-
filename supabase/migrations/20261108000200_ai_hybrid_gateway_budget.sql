@@ -94,6 +94,12 @@ begin
 
   v_month_start := date_trunc('month', now());
 
+  -- Libere les reservations abandonnees pour ne pas bloquer le budget indefiniment.
+  update public.ai_usage_reservations
+  set status = 'released', settled_at = now()
+  where status = 'pending'
+    and created_at < now() - interval '30 minutes';
+
   select coalesce(sum(cost_usd), 0)
     into v_spent
   from public.ai_usage_events
