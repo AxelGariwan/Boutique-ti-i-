@@ -571,10 +571,7 @@ function app() {
     },
 
     cancelSubscription: function() {
-      if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous basculerez sur le plan Starter à l'échéance.")) {
-        this.shop.plan = "starter";
-        alert("Votre abonnement a bien été résilié.");
-      }
+      alert("La résiliation en ligne n’est pas encore disponible. Les abonnements PayDunya sont configurés sans renouvellement automatique.");
     },
 
     // Suppression RÉELLE : appelle la fonction serveur delete_my_account() qui supprime l'utilisateur
