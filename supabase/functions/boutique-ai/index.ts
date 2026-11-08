@@ -307,19 +307,53 @@ Deno.serve(async (req) => {
     }));
 
     // Aggregate orders only. Customer names, phone numbers, addresses and payment details are never sent to an AI provider.
-    let orderSummary = { count30d: 0, revenue30d: 0, pendingCount: 0 };
+    // Dans le schema actuel, orders.total est du texte (et non bigint).
+    // On normalise les montants entiers XOF/XAF sans supposer que la colonne est numérique.
+    const parseOrderAmount = (value: unknown): number | null => {
+      if (typeof value === "number") return Number.isFinite(value) && value >= 0 ? value : null;
+      const digits = String(value ?? "").trim().replace(/[^0-9-]/g, "");
+      if (!digits || digits === "-") return null;
+      const amount = Number(digits);
+      return Number.isSafeInteger(amount) && amount >= 0 ? amount : null;
+    };
+
+    let orderSummary: {
+      available: boolean;
+      count30d: number;
+      revenue30d: number | null;
+      pendingCount: number | null;
+      invalidAmountCount: number;
+      sampleLimited: boolean;
+    } = {
+      available: false,
+      count30d: 0,
+      revenue30d: null,
+      pendingCount: null,
+      invalidAmountCount: 0,
+      sampleLimited: false,
+    };
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: orders, error: ordersError } = await admin
       .from("orders")
       .select("total,status,created_at")
       .eq("shop_id", shopId)
       .gte("created_at", since)
+      .order("created_at", { ascending: false })
       .limit(500);
-    if (!ordersError && Array.isArray(orders)) {
+
+    if (ordersError) {
+      // Ne jamais présenter un échec de lecture comme zéro vente.
+      console.error("AI orders summary unavailable:", ordersError.message);
+    } else if (Array.isArray(orders)) {
+      const amounts = orders.map((o: any) => parseOrderAmount(o.total));
+      const validAmounts = amounts.filter((amount): amount is number => amount !== null);
       orderSummary = {
+        available: true,
         count30d: orders.length,
-        revenue30d: orders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0),
+        revenue30d: validAmounts.reduce((sum, amount) => sum + amount, 0),
         pendingCount: orders.filter((o: any) => /attente|pending|processing/i.test(String(o.status || ""))).length,
+        invalidAmountCount: amounts.length - validAmounts.length,
+        sampleLimited: orders.length === 500,
       };
     }
 
