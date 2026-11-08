@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23059669%22/><text x=%2250%22 y=%2265%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>Bt</text></svg>">
 
 <style>[x-cloak]{display:none !important}
-@media (max-width: 767px){body:has(.vendor-mobile-nav){padding-bottom:6.5rem}.vendor-mobile-nav{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}}
+@media (max-width: 767px){.vendor-mobile-nav{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}}
 </style>
 
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -488,7 +488,7 @@
     <i data-lucide="house" class="w-5 h-5"></i><span x-text="t('navHome')"></span>
    </button>
    <button type="button" @click="subTab='inventory'" :class="subTab==='inventory'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="package" class="w-5 h-5"></i><span>Inventaire</span>
+    <i data-lucide="package" class="w-5 h-5"></i><span x-text="t('navInventory')"></span>
    </button>
    <button type="button" @click="modal='aiComingSoon'" class="shrink-0 -mt-7 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-xl shadow-emerald-600/30 border-4 border-white flex flex-col items-center justify-center">
     <i data-lucide="bot" class="w-5 h-5"></i><span class="text-[9px] font-black">IA</span>
@@ -497,7 +497,7 @@
     <i data-lucide="shopping-cart" class="w-5 h-5"></i><span x-text="t('navOrders')"></span>
    </button>
    <button type="button" @click="subTab='settings'" :class="subTab==='settings'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="settings" class="w-5 h-5"></i><span>Paramètres</span>
+    <i data-lucide="settings" class="w-5 h-5"></i><span x-text="t('navSettings')"></span>
    </button>
   </nav>
 
