@@ -434,8 +434,10 @@ function app() {
         } else if (payment.status === "paid") {
           alert("Paiement confirmé par PayDunya. Votre abonnement est activé.");
           await this.onSession((await db.auth.getSession()).data.session);
-        } else if (payment.status === "failed" || resultType === "cancelled") {
-          alert("Paiement annulé ou refusé. Aucun nouvel abonnement n'a été activé.");
+        } else if (payment.status === "failed") {
+          alert("PayDunya a confirmé l'annulation ou le refus du paiement. Aucun nouvel abonnement n'a été activé.");
+        } else if (resultType === "cancelled") {
+          alert("Vous êtes revenu après avoir interrompu le paiement, mais son annulation n'est pas encore confirmée par PayDunya. Ne relancez pas le paiement tout de suite : vérifiez le statut dans quelques instants.");
         } else {
           alert("Votre paiement est encore en cours de vérification. Ne payez pas une deuxième fois tout de suite : actualisez votre espace vendeur dans quelques instants.");
         }
