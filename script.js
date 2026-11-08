@@ -41,7 +41,7 @@ var PM_LIST = [
 
 var TR = {
   fr:{
-    tagline:"Plateforme E-Commerce", clientSpace:"Voir la Boutique", vendorSpace:"Espace Vendeur", availableProducts:"Catalogue des Articles", add:"Ajouter", outOfStock:"Rupture", cartTitle:"Mon Panier", emptyCart:"Votre panier est vide", total:"Total", placeOrder:"Valider et Payer", clientDetails:"Coordonnées", pay:"Mode de paiement", mapLinkOpt:"Lien de localisation GPS (ex: Google Maps, facultatif)",
+    tagline:"Plateforme E-Commerce", aiTitle:"Assistant IA Boutique ti i", aiIntro:"Posez une question sur vos ventes, vos commandes, vos stocks ou votre boutique.", aiPlaceholder:"Écrivez votre question…", aiSend:"Envoyer", aiThinking:"Analyse en cours…", aiGreeting:"Bonjour ! Je peux vous aider à analyser votre boutique.", clientSpace:"Voir la Boutique", vendorSpace:"Espace Vendeur", availableProducts:"Catalogue des Articles", add:"Ajouter", outOfStock:"Rupture", cartTitle:"Mon Panier", emptyCart:"Votre panier est vide", total:"Total", placeOrder:"Valider et Payer", clientDetails:"Coordonnées", pay:"Mode de paiement", mapLinkOpt:"Lien de localisation GPS (ex: Google Maps, facultatif)",
     loading:"Chargement...", createShop:"Créer ma boutique", owner:"Propriétaire", location:"Localisation", enterShop:"Entrer dans la Boutique", country:"Pays", currency:"Devise", shareShop:"Partager cette boutique", homePage:"Voir la page d’accueil", noProducts:"Aucun article pour le moment.",
     fullName:"Nom & Prénom", shopName:"Nom de la boutique", phone:"Téléphone / WhatsApp", address:"Adresse", payHint:"Le vendeur vous indiquera comment procéder.",
     createShopTitle:"Créer sa Boutique — 1 mois d’essai", loginTitle:"Connexion Vendeur", whatsappNumber:"Numéro WhatsApp", idDocLabel:"Pièce d’identité (obligatoire pour validation)", idSaved:"Pièce enregistrée", email:"Email", password:"Mot de passe", hide:"Masquer", show:"Voir", pleaseWait:"Veuillez patienter...", createShopBtn:"Créer ma boutique", loginBtn:"Se connecter", noAccount:"Pas de compte ? Créer ma boutique", hasAccount:"Déjà un compte ? Se connecter",
@@ -73,7 +73,7 @@ var TR = {
     cancelSubBtn:"Résilier l'abonnement", deleteAccountBtn:"Supprimer définitivement mon compte"
   },
   en:{
-    tagline:"E-Commerce Platform", clientSpace:"View Shop", vendorSpace:"Vendor Area", availableProducts:"Products", add:"Add", outOfStock:"Out of Stock", cartTitle:"Cart", emptyCart:"Empty cart", total:"Total", placeOrder:"Checkout & Pay", clientDetails:"Details", pay:"Payment method", mapLinkOpt:"GPS Location link (optional)",
+    tagline:"E-Commerce Platform", aiTitle:"Boutique ti i AI Assistant", aiIntro:"Ask a question about your sales, orders, inventory or shop.", aiPlaceholder:"Write your question…", aiSend:"Send", aiThinking:"Thinking…", aiGreeting:"Hello! I can help you understand your shop.", clientSpace:"View Shop", vendorSpace:"Vendor Area", availableProducts:"Products", add:"Add", outOfStock:"Out of Stock", cartTitle:"Cart", emptyCart:"Empty cart", total:"Total", placeOrder:"Checkout & Pay", clientDetails:"Details", pay:"Payment method", mapLinkOpt:"GPS Location link (optional)",
     loading:"Loading...", createShop:"Create my shop", owner:"Owner", location:"Location", enterShop:"Enter Shop", country:"Country", currency:"Currency", shareShop:"Share shop", homePage:"Home page", noProducts:"No products yet.",
     fullName:"Full Name", shopName:"Shop Name", phone:"Phone / WhatsApp", address:"Address", payHint:"The vendor will instruct you.",
     createShopTitle:"Create Shop — 1 month trial", loginTitle:"Vendor Login", whatsappNumber:"WhatsApp Number", idDocLabel:"ID Document (required)", idSaved:"ID Saved", email:"Email", password:"Password", hide:"Hide", show:"Show", pleaseWait:"Please wait...", createShopBtn:"Create Shop", loginBtn:"Login", noAccount:"No account? Create shop", hasAccount:"Already have an account? Login",
@@ -105,7 +105,7 @@ var TR = {
     cancelSubBtn:"Cancel subscription", deleteAccountBtn:"Delete my account permanently"
   },
   es:{
-    tagline:"Plataforma E-Commerce", clientSpace:"Ver Tienda", vendorSpace:"Área Vendedor", availableProducts:"Productos", add:"Añadir", outOfStock:"Agotado", cartTitle:"Cesta", emptyCart:"Cesta vacía", total:"Total", placeOrder:"Pagar y Pedir", clientDetails:"Detalles", pay:"Método de pago", mapLinkOpt:"Enlace de ubicación GPS (opcional)",
+    tagline:"Plataforma E-Commerce", aiTitle:"Asistente IA de Boutique ti i", aiIntro:"Pregunta sobre tus ventas, pedidos, inventario o tienda.", aiPlaceholder:"Escribe tu pregunta…", aiSend:"Enviar", aiThinking:"Analizando…", aiGreeting:"¡Hola! Puedo ayudarte a analizar tu tienda.", clientSpace:"Ver Tienda", vendorSpace:"Área Vendedor", availableProducts:"Productos", add:"Añadir", outOfStock:"Agotado", cartTitle:"Cesta", emptyCart:"Cesta vacía", total:"Total", placeOrder:"Pagar y Pedir", clientDetails:"Detalles", pay:"Método de pago", mapLinkOpt:"Enlace de ubicación GPS (opcional)",
     loading:"Cargando...", createShop:"Crear tienda", owner:"Propietario", location:"Ubicación", enterShop:"Entrar a la tienda", country:"País", currency:"Moneda", shareShop:"Compartir", homePage:"Inicio", noProducts:"No hay productos.",
     fullName:"Nombre y Apellido", shopName:"Nombre de tienda", phone:"Teléfono / WhatsApp", address:"Dirección", payHint:"El vendedor te indicará el pago.",
     createShopTitle:"Crear Tienda — 1 mes de prueba", loginTitle:"Acceso Vendedor", whatsappNumber:"Número WhatsApp", idDocLabel:"Documento de identidad", idSaved:"Documento guardado", email:"Correo", password:"Contraseña", hide:"Ocultar", show:"Ver", pleaseWait:"Espere...", createShopBtn:"Crear Tienda", loginBtn:"Iniciar sesión", noAccount:"¿Sin cuenta? Crear tienda", hasAccount:"¿Ya tienes cuenta? Entrar",
@@ -137,7 +137,7 @@ var TR = {
     cancelSubBtn:"Cancelar suscripción", deleteAccountBtn:"Eliminar mi cuenta permanentemente"
   },
   ar:{
-    tagline:"منصة التجارة الإلكترونية", clientSpace:"عرض المتجر", vendorSpace:"مساحة البائع", availableProducts:"المنتجات", add:"إضافة", outOfStock:"نفذت الكمية", cartTitle:"السلة", emptyCart:"السلة فارغة", total:"المجموع", placeOrder:"الدفع وإتمام الطلب", clientDetails:"التفاصيل", pay:"طريقة الدفع", mapLinkOpt:"رابط الموقع الجغرافي (اختياري)",
+    tagline:"منصة التجارة الإلكترونية", aiTitle:"مساعد Boutique ti i الذكي", aiIntro:"اسأل عن المبيعات والطلبات والمخزون أو متجرك.", aiPlaceholder:"اكتب سؤالك…", aiSend:"إرسال", aiThinking:"جارٍ التحليل…", aiGreeting:"مرحباً! يمكنني مساعدتك في تحليل متجرك.", clientSpace:"عرض المتجر", vendorSpace:"مساحة البائع", availableProducts:"المنتجات", add:"إضافة", outOfStock:"نفذت الكمية", cartTitle:"السلة", emptyCart:"السلة فارغة", total:"المجموع", placeOrder:"الدفع وإتمام الطلب", clientDetails:"التفاصيل", pay:"طريقة الدفع", mapLinkOpt:"رابط الموقع الجغرافي (اختياري)",
     loading:"جاري التحميل...", createShop:"إنشاء متجري", owner:"المالك", location:"الموقع", enterShop:"دخول المتجر", country:"الدولة", currency:"العملة", shareShop:"مشاركة المتجر", homePage:"الصفحة الرئيسية", noProducts:"لا توجد منتجات.",
     fullName:"الاسم الكامل", shopName:"اسم المتجر", phone:"الهاتف / واتساب", address:"العنوان", payHint:"سيقوم البائع بتوجيهك.",
     createShopTitle:"إنشاء متجر — تجربة شهر", loginTitle:"تسجيل دخول البائع", whatsappNumber:"رقم الواتساب", idDocLabel:"هوية شخصية مطلوبة", idSaved:"تم حفظ الهوية", email:"البريد الإلكتروني", password:"كلمة المرور", hide:"إخفاء", show:"إظهار", pleaseWait:"يرجى الانتظار...", createShopBtn:"إنشاء متجري", loginBtn:"تسجيل الدخول", noAccount:"ليس لديك حساب؟ إنشاء متجر", hasAccount:"لديك حساب بالفعل؟ تسجيل الدخول",
@@ -211,6 +211,7 @@ function app() {
   var shopId = new URLSearchParams(location.search).get("b");
   return {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
+    aiInput: "", aiMessages: [], aiBusy: false, aiError: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
@@ -261,6 +262,49 @@ function app() {
       this.tab = "vendor";
     },
 
+    openAiAssistant: function () {
+      if (!this.authed || !this.shop.sid) {
+        alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA.");
+        return;
+      }
+      if (!["pro", "premium"].includes(String(this.shop.plan || "").toLowerCase())) {
+        alert("L'assistant IA est réservé aux formules Pro et Premium.");
+        return;
+      }
+      if (!this.aiMessages.length) {
+        this.aiMessages.push({ role: "assistant", content: this.t("aiGreeting") });
+      }
+      this.aiError = "";
+      this.modal = "aiChat";
+    },
+    sendAiMessage: async function () {
+      var message = String(this.aiInput || "").trim();
+      if (!message || this.aiBusy) return;
+      this.aiMessages.push({ role: "user", content: message });
+      this.aiInput = "";
+      this.aiBusy = true;
+      this.aiError = "";
+      var history = this.aiMessages.slice(-7, -1).map(function (item) {
+        return { role: item.role, content: item.content };
+      });
+      try {
+        var result = await db.functions.invoke("boutique-ai", {
+          body: { shopId: this.shop.sid, message: message, history: history, locale: this.lang }
+        });
+        if (result.error || !result.data || !result.data.answer) {
+          var msg = result.data && result.data.error
+            ? result.data.error
+            : "L'assistant IA est momentanément indisponible. Réessayez plus tard.";
+          this.aiError = msg;
+        } else {
+          this.aiMessages.push({ role: "assistant", content: result.data.answer });
+        }
+      } catch (error) {
+        this.aiError = "Impossible de contacter l'assistant IA. Vérifiez votre connexion puis réessayez.";
+      } finally {
+        this.aiBusy = false;
+      }
+    },
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
     statusLabel: function (s) {
       var k = String(s || "pending");
