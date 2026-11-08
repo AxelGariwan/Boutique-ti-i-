@@ -490,7 +490,7 @@
    <button type="button" @click="subTab='inventory'" :class="subTab==='inventory'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
     <i data-lucide="package" class="w-5 h-5"></i><span x-text="t('navInventory')"></span>
    </button>
-   <button type="button" @click="modal='aiComingSoon'" class="shrink-0 -mt-7 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-xl shadow-emerald-600/30 border-4 border-white flex flex-col items-center justify-center">
+   <button type="button" @click="openAiAssistant()" class="shrink-0 -mt-7 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-xl shadow-emerald-600/30 border-4 border-white flex flex-col items-center justify-center">
     <i data-lucide="bot" class="w-5 h-5"></i><span class="text-[9px] font-black">IA</span>
    </button>
    <button type="button" @click="subTab='orders'" :class="subTab==='orders'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
@@ -502,7 +502,7 @@
   </nav>
 
   <!-- Assistant IA sur ordinateur -->
-  <button type="button" @click="modal='aiComingSoon'" class="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-sm px-5 py-3 shadow-xl shadow-emerald-900/20 hover:scale-105 transition">
+  <button type="button" @click="openAiAssistant()" class="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-sm px-5 py-3 shadow-xl shadow-emerald-900/20 hover:scale-105 transition">
    <i data-lucide="bot" class="w-5 h-5"></i><span>Assistant IA</span>
   </button>
  </div>
@@ -510,18 +510,33 @@
 </main>
 </div>
 
-<!-- Modal de présentation de l'assistant IA (fonctionnalités à développer ensuite) -->
-<div x-show="modal==='aiComingSoon'" x-cloak class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
- <section class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
-  <div class="mx-auto w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-   <i data-lucide="bot" class="w-9 h-9"></i>
+<!-- Assistant IA conversationnel -->
+<div x-show="modal==='aiChat'" x-cloak class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+ <section class="bg-white w-full sm:max-w-2xl h-[92dvh] sm:h-[min(760px,85vh)] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden">
+  <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-5 py-4 flex items-center justify-between">
+   <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><i data-lucide="bot" class="w-6 h-6"></i></div>
+    <div><h2 class="font-black" x-text="t('aiTitle')"></h2><p class="text-xs text-emerald-50" x-text="t('aiIntro')"></p></div>
+   </div>
+   <button type="button" @click="modal=''" aria-label="Fermer" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25">✕</button>
+  </header>
+  <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50" id="ai-chat-messages">
+   <template x-for="(item,index) in aiMessages" :key="index">
+    <div class="flex" :class="item.role==='user'?'justify-end':'justify-start'">
+     <div class="max-w-[88%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap break-words"
+       :class="item.role==='user'?'bg-emerald-600 text-white rounded-br-md':'bg-white border border-slate-200 text-slate-800 rounded-bl-md shadow-sm'"
+       x-text="item.content"></div>
+    </div>
+   </template>
+   <div x-show="aiBusy" class="flex justify-start"><div class="bg-white border border-slate-200 rounded-2xl rounded-bl-md px-4 py-3 text-sm text-slate-500" x-text="t('aiThinking')"></div></div>
+   <p x-show="aiError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3" x-text="aiError"></p>
   </div>
-  <div>
-   <h2 class="text-lg font-black text-slate-900">Assistant IA Boutique ti i</h2>
-   <p class="text-sm text-slate-600 mt-2">Votre assistant intelligent arrive bientôt. Il pourra vous aider à comprendre vos ventes, gérer vos produits et améliorer votre boutique.</p>
-  </div>
-  <p class="text-xs text-slate-400">L'assistant n'est pas encore activé. Son développement constitue la prochaine étape.</p>
-  <button type="button" @click="modal=''" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm">Compris</button>
+  <form @submit.prevent="sendAiMessage()" class="p-3 sm:p-4 border-t border-slate-200 bg-white flex items-end gap-2">
+   <textarea x-model="aiInput" rows="2" maxlength="4000" :placeholder="t('aiPlaceholder')" class="flex-1 resize-none border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" :disabled="aiBusy"></textarea>
+   <button type="submit" :disabled="aiBusy || !aiInput.trim()" class="shrink-0 w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white flex items-center justify-center" :aria-label="t('aiSend')">
+    <i data-lucide="send" class="w-5 h-5"></i>
+   </button>
+  </form>
  </section>
 </div>
 
