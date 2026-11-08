@@ -69,6 +69,7 @@ var TR = {
     statVisits:"Visites du site", statRevenue:"Chiffre d'affaires", statOrders:"Commandes reçues",
     viewSub:"Voir abonnement",
     navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique",
+    securityTitle:"Sécurité du compte", currentPassword:"Mot de passe actuel", newPassword:"Nouveau mot de passe", confirmPassword:"Confirmer le nouveau mot de passe", changePasswordBtn:"Modifier le mot de passe", passwordChanged:"Mot de passe modifié avec succès.", passwordMismatch:"Les deux nouveaux mots de passe ne correspondent pas.", passwordTooShort:"Le nouveau mot de passe doit contenir au moins 8 caractères.", passwordChangeError:"Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel et réessayez.",
     dangerZoneTitle:"Zone de Danger — Abonnement & Compte", dangerZoneDesc:"Vous pouvez résilier votre abonnement ou supprimer définitivement votre compte.",
     cancelSubBtn:"Résilier l'abonnement", deleteAccountBtn:"Supprimer définitivement mon compte"
   },
@@ -101,6 +102,7 @@ var TR = {
     statVisits:"Site Visits", statRevenue:"Total Revenue", statOrders:"Orders Received",
     viewSub:"View subscription",
     navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings",
+    securityTitle:"Account security", currentPassword:"Current password", newPassword:"New password", confirmPassword:"Confirm new password", changePasswordBtn:"Change password", passwordChanged:"Password changed successfully.", passwordMismatch:"The new passwords do not match.", passwordTooShort:"The new password must contain at least 8 characters.", passwordChangeError:"Could not change the password. Check your current password and try again.",
     dangerZoneTitle:"Danger Zone — Subscription & Account", dangerZoneDesc:"You can cancel your subscription or permanently delete your account.",
     cancelSubBtn:"Cancel subscription", deleteAccountBtn:"Delete my account permanently"
   },
@@ -212,6 +214,7 @@ function app() {
   return {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
     aiInput: "", aiMessages: [], aiBusy: false, aiError: "",
+    passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
@@ -267,10 +270,6 @@ function app() {
         alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA.");
         return;
       }
-      if (!["pro", "premium"].includes(String(this.shop.plan || "").toLowerCase())) {
-        alert("L'assistant IA est réservé aux formules Pro et Premium.");
-        return;
-      }
       if (!this.aiMessages.length) {
         this.aiMessages.push({ role: "assistant", content: this.t("aiGreeting") });
       }
@@ -288,19 +287,29 @@ function app() {
         return { role: item.role, content: item.content };
       });
       try {
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult && sessionResult.data && sessionResult.data.session;
+        if (!session || !session.access_token) {
+          this.aiError = "Votre session vendeur a expiré. Déconnectez-vous puis reconnectez-vous.";
+          return;
+        }
         var result = await db.functions.invoke("boutique-ai", {
           body: { shopId: this.shop.sid, message: message, history: history, locale: this.lang }
         });
         if (result.error || !result.data || !result.data.answer) {
-          var msg = result.data && result.data.error
-            ? result.data.error
-            : "L'assistant IA est momentanément indisponible. Réessayez plus tard.";
-          this.aiError = msg;
+          var msg = result.data && result.data.error ? result.data.error : "";
+          if (!msg && result.error && result.error.context) {
+            try {
+              var detail = await result.error.context.clone().json();
+              msg = detail.error || detail.message || "";
+            } catch (parseError) {}
+          }
+          this.aiError = msg || (result.error && result.error.message) || "L'assistant IA est momentanément indisponible. Réessayez plus tard.";
         } else {
           this.aiMessages.push({ role: "assistant", content: result.data.answer });
         }
       } catch (error) {
-        this.aiError = "Impossible de contacter l'assistant IA. Vérifiez votre connexion puis réessayez.";
+        this.aiError = (error && error.message) || "Impossible de contacter l'assistant IA. Vérifiez votre connexion puis réessayez.";
       } finally {
         this.aiBusy = false;
       }
@@ -647,6 +656,38 @@ function app() {
           location.reload();
         }
       } finally { this.busy = false; }
+    },
+
+    changePassword: async function () {
+      var form = this.passwordForm;
+      if (!form.current || !form.next || !form.confirm) {
+        alert("Veuillez remplir les trois champs du mot de passe.");
+        return;
+      }
+      if (form.next.length < 8) {
+        alert(this.t("passwordTooShort"));
+        return;
+      }
+      if (form.next !== form.confirm) {
+        alert(this.t("passwordMismatch"));
+        return;
+      }
+      this.passwordBusy = true;
+      try {
+        var userResult = await db.auth.getUser();
+        var user = userResult && userResult.data && userResult.data.user;
+        if (userResult.error || !user || !user.email) throw new Error("Session vendeur introuvable. Reconnectez-vous.");
+        var reauth = await db.auth.signInWithPassword({ email: user.email, password: form.current });
+        if (reauth.error) throw new Error("Le mot de passe actuel est incorrect.");
+        var update = await db.auth.updateUser({ password: form.next });
+        if (update.error) throw update.error;
+        this.passwordForm = { current: "", next: "", confirm: "" };
+        alert(this.t("passwordChanged"));
+      } catch (error) {
+        alert((error && error.message) || this.t("passwordChangeError"));
+      } finally {
+        this.passwordBusy = false;
+      }
     },
 
     logout: async function () {
