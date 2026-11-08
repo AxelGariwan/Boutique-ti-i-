@@ -86,9 +86,26 @@ Deno.serve(async (req) => {
     if (!confirmResponse.ok || confirmed.response_code !== "00" ||
         !safeEqual(confirmHash, expectedHash) ||
         confirmedToken !== token || String(confirmed.mode || "").toLowerCase() !== "test" ||
-        status !== "completed" ||
         !Number.isFinite(amount) || amount !== Number(payment.amount)) {
       return new Response("Payment not confirmed or details mismatch", { status: 409 });
+    }
+
+    // A provider-confirmed cancellation/failure is recorded, never activated.
+    if (status === "cancelled" || status === "failed") {
+      const { error: failedUpdateError } = await admin
+        .from("subscription_payments")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("id", payment.id)
+        .eq("status", "pending");
+      if (failedUpdateError) {
+        console.error("Payment failure status update failed:", failedUpdateError.message);
+        return new Response("Could not record payment failure", { status: 500 });
+      }
+      return new Response("Payment not completed", { status: 200 });
+    }
+
+    if (status !== "completed") {
+      return new Response("Payment is not completed", { status: 409 });
     }
 
     const { error: activationError } = await admin.rpc("confirm_vendor_subscription_payment", {
