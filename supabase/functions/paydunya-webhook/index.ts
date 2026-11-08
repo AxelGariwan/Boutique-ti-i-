@@ -85,7 +85,8 @@ Deno.serve(async (req) => {
 
     if (!confirmResponse.ok || confirmed.response_code !== "00" ||
         !safeEqual(confirmHash, expectedHash) ||
-        confirmedToken !== token || status !== "completed" ||
+        confirmedToken !== token || String(confirmed.mode || "").toLowerCase() !== "test" ||
+        status !== "completed" ||
         !Number.isFinite(amount) || amount !== Number(payment.amount)) {
       return new Response("Payment not confirmed or details mismatch", { status: 409 });
     }
