@@ -401,6 +401,48 @@ function app() {
       this.authed = true; this.ready = true;
       await this.loadOrders();
       this.updateStats();
+      await this.checkSubscriptionReturn();
+    },
+
+    checkSubscriptionReturn: async function () {
+      var params = new URLSearchParams(location.search);
+      var resultType = params.get("subscription");
+      var paymentId = params.get("payment_id");
+      if (!["return", "cancelled"].includes(resultType) || !paymentId || !this.authed) return;
+
+      // Remove callback parameters immediately so refreshes do not replay the status check.
+      params.delete("subscription");
+      params.delete("payment_id");
+      var cleanUrl = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
+      history.replaceState({}, document.title, cleanUrl);
+
+      try {
+        var payment = null;
+        for (var attempt = 0; attempt < 8; attempt++) {
+          var response = await db.from("subscription_payments")
+            .select("status,amount,currency")
+            .eq("id", paymentId)
+            .maybeSingle();
+          if (response.error) throw response.error;
+          payment = response.data;
+          if (!payment || payment.status !== "pending") break;
+          await new Promise(function(resolve) { setTimeout(resolve, 1500); });
+        }
+
+        if (!payment) {
+          alert("Retour de paiement reçu, mais la transaction n'est pas visible pour cette boutique. Aucun abonnement n'a été activé par le navigateur.");
+        } else if (payment.status === "paid") {
+          alert("Paiement confirmé par PayDunya. Votre abonnement est activé.");
+          await this.onSession((await db.auth.getSession()).data.session);
+        } else if (payment.status === "failed" || resultType === "cancelled") {
+          alert("Paiement annulé ou refusé. Aucun nouvel abonnement n'a été activé.");
+        } else {
+          alert("Votre paiement est encore en cours de vérification. Ne payez pas une deuxième fois tout de suite : actualisez votre espace vendeur dans quelques instants.");
+        }
+      } catch (error) {
+        console.error("Subscription return status check failed:", error);
+        alert("Impossible de vérifier le statut du paiement pour le moment. Votre abonnement ne sera activé qu'après confirmation serveur.");
+      }
     },
 
     updateStats: function() {
