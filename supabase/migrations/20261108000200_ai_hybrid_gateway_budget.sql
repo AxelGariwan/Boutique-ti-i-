@@ -30,7 +30,7 @@ create index if not exists ai_usage_reservations_created_idx
 
 create table if not exists public.ai_usage_events (
   id uuid primary key default gen_random_uuid(),
-  reservation_id uuid not null unique references public.ai_usage_reservations(id) on delete restrict,
+  reservation_id uuid not null unique references public.ai_usage_reservations(id) on delete cascade,
   user_id uuid not null,
   shop_id text not null references public.shops(id) on delete cascade,
   provider text not null,
