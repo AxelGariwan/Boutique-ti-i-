@@ -7,7 +7,7 @@ const allowedOrigins = new Set([
 ]);
 
 type ProviderConfig = {
-  name: "openai" | "gemini" | "mistral";
+  name: "groq" | "openai" | "gemini" | "mistral";
   key: string;
   model: string;
   inputRate: number;
@@ -40,8 +40,23 @@ function positiveRate(value: string | undefined, fallback?: number) {
 
 function providerConfigs(): ProviderConfig[] {
   const configs: ProviderConfig[] = [];
+
+  // Groq Free is the default launch provider. Its free-tier usage is not billed;
+  // the zero rates keep the internal USD budget from pretending it is a cash charge.
+  const groqKey = Deno.env.get("GROQ_API_KEY");
+  if (groqKey) {
+    configs.push({
+      name: "groq",
+      key: groqKey,
+      model: Deno.env.get("GROQ_MODEL") || "openai/gpt-oss-20b",
+      inputRate: 0,
+      outputRate: 0,
+    });
+  }
+
+  // Paid providers are opt-in only; never fall back to a paid API by default.
   const openaiKey = Deno.env.get("OPENAI_API_KEY");
-  if (openaiKey) {
+  if (openaiKey && Deno.env.get("AI_ENABLE_OPENAI") === "true") {
     configs.push({
       name: "openai",
       key: openaiKey,
@@ -75,7 +90,7 @@ function providerConfigs(): ProviderConfig[] {
     });
   }
 
-  const order = (Deno.env.get("AI_PROVIDER_ORDER") || "openai,gemini,mistral")
+  const order = (Deno.env.get("AI_PROVIDER_ORDER") || "groq")
     .split(",").map((x) => x.trim().toLowerCase());
   return order.flatMap((name) => configs.filter((c) => c.name === name));
 }
@@ -96,6 +111,31 @@ function actualCost(config: ProviderConfig, inputTokens: number, outputTokens: n
 }
 
 async function callProvider(config: ProviderConfig, systemPrompt: string, userPrompt: string) {
+  if (config.name === "groq") {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${config.key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        max_tokens: 700,
+        temperature: 0.4,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error?.message || "Groq indisponible");
+    const output = result.choices?.[0]?.message?.content;
+    if (typeof output !== "string" || !output) throw new Error("Réponse Groq vide");
+    return {
+      text: output,
+      inputTokens: Number(result.usage?.prompt_tokens || 0),
+      outputTokens: Number(result.usage?.completion_tokens || 0),
+    };
+  }
+
   if (config.name === "openai") {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
