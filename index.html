@@ -544,7 +544,7 @@
       <h4 class="font-black text-base text-slate-900" x-text="t(p.nameKey)"></h4>
       <p class="text-[11px] text-slate-500" x-text="t(p.subtitleKey)"></p>
       <div class="text-lg font-black text-slate-900 pt-1">
-       <span x-text="convertPrice(p.price)"></span> <span class="text-[10px] font-normal text-slate-500" x-text="t('perMonth')"></span>
+       <span x-text="formatSubscriptionPrice(p.price)"></span> <span class="text-[10px] font-normal text-slate-500" x-text="t('perMonth')"></span>
       </div>
       <ul class="pt-2 space-y-1.5 text-xs text-slate-600 border-t border-slate-100 mt-2">
        <template x-for="featKey in p.featureKeys" :key="featKey">
