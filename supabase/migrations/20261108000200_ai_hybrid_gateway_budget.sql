@@ -111,6 +111,13 @@ begin
   where user_id = p_user_id
     and created_at >= v_month_start;
 
+  select v_user_requests + count(*)
+    into v_user_requests
+  from public.ai_usage_reservations
+  where user_id = p_user_id
+    and status = 'pending'
+    and created_at >= v_month_start;
+
   if v_user_requests >= p_max_requests_per_month then
     return jsonb_build_object('allowed', false, 'reason', 'monthly_user_quota');
   end if;
