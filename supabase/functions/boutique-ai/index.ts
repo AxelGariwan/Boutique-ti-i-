@@ -81,13 +81,14 @@ function providerConfigs(): ProviderConfig[] {
 }
 
 function estimateTokens(text: string) {
-  return Math.ceil(text.length / 4);
+  // Estimation volontairement prudente pour reserver le budget avant l'appel fournisseur.
+  return Math.ceil(text.length / 2);
 }
 
 function estimateCost(configs: ProviderConfig[], inputTokens: number, outputTokens: number) {
   return Math.max(...configs.map((p) =>
     (inputTokens * p.inputRate + outputTokens * p.outputRate) / 1_000_000
-  )) * 1.25;
+  )) * 2.0;
 }
 
 function actualCost(config: ProviderConfig, inputTokens: number, outputTokens: number) {
@@ -348,13 +349,15 @@ Deno.serve(async (req) => {
       return reply({ error: "Les fournisseurs IA sont momentanément indisponibles. Réessayez plus tard." }, 502, origin);
     }
 
-    const cost = actualCost(selected, answer.inputTokens, answer.outputTokens);
+    const actualInputTokens = answer.inputTokens > 0 ? answer.inputTokens : inputTokensEstimate;
+    const actualOutputTokens = answer.outputTokens > 0 ? answer.outputTokens : estimateTokens(answer.text);
+    const cost = actualCost(selected, actualInputTokens, actualOutputTokens);
     const settled = await admin.rpc("settle_ai_budget", {
       p_reservation_id: reservationId,
       p_provider: selected.name,
       p_model: selected.model,
-      p_input_tokens: answer.inputTokens,
-      p_output_tokens: answer.outputTokens,
+      p_input_tokens: actualInputTokens,
+      p_output_tokens: actualOutputTokens,
       p_actual_cost_usd: cost,
     });
     if (settled.error) {
@@ -366,7 +369,7 @@ Deno.serve(async (req) => {
     return reply({
       answer: answer.text,
       provider: selected.name,
-      usage: { inputTokens: answer.inputTokens, outputTokens: answer.outputTokens },
+      usage: { inputTokens: actualInputTokens, outputTokens: actualOutputTokens },
     }, 200, origin);
   } catch (error) {
     console.error("Boutique ti i AI gateway error:", error);
