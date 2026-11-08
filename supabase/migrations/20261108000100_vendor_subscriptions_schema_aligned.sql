@@ -106,6 +106,59 @@ where v.trial_end is not null
       and vs.status in ('trialing','active','past_due')
   );
 
+-- Création automatique de l'essai pour les nouvelles boutiques.
+-- Le profil vendeur possède déjà trial_end (défaut : 30 jours après création).
+-- Le déclencheur ne touche ni au profil vendeur ni à la vérification d'identité.
+create or replace function public.create_initial_vendor_trial()
+returns trigger
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_trial_end timestamptz;
+  v_vendor_created timestamptz;
+  v_trial_plan_id uuid;
+begin
+  select trial_end, created_at
+    into v_trial_end, v_vendor_created
+  from public.vendors
+  where id = new.owner;
+
+  if v_trial_end is null or v_trial_end <= now() then
+    return new;
+  end if;
+
+  select id into v_trial_plan_id
+  from public.subscription_plans
+  where slug = 'pro'
+    and country_code = 'ZZ'
+    and currency = 'XXX'
+    and is_active = false
+  limit 1;
+
+  if v_trial_plan_id is null then
+    raise exception 'Plan technique d’essai introuvable';
+  end if;
+
+  insert into public.vendor_subscriptions
+    (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
+  values
+    (new.id, v_trial_plan_id, 'trialing',
+     coalesce(v_vendor_created, now()), v_trial_end, v_trial_end, false)
+  on conflict (shop_id)
+    where status in ('trialing','active','past_due')
+    do nothing;
+
+  return new;
+end;
+$function$;
+
+drop trigger if exists shops_create_initial_trial on public.shops;
+create trigger shops_create_initial_trial
+after insert on public.shops
+for each row execute function public.create_initial_vendor_trial();
+
 alter table public.subscription_plans enable row level security;
 alter table public.vendor_subscriptions enable row level security;
 alter table public.subscription_payments enable row level security;
