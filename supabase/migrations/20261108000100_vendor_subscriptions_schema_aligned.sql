@@ -159,6 +159,53 @@ create trigger shops_create_initial_trial
 after insert on public.shops
 for each row execute function public.create_initial_vendor_trial();
 
+-- Sécurise aussi le cas où le profil vendeur est créé après la boutique.
+-- Le déclencheur ne modifie aucune donnée du profil.
+create or replace function public.create_trials_for_vendor_profile()
+returns trigger
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_trial_plan_id uuid;
+begin
+  if new.trial_end is null or new.trial_end <= now() then
+    return new;
+  end if;
+
+  select id into v_trial_plan_id
+  from public.subscription_plans
+  where slug = 'pro'
+    and country_code = 'ZZ'
+    and currency = 'XXX'
+    and is_active = false
+  limit 1;
+
+  if v_trial_plan_id is null then
+    raise exception 'Plan technique d’essai introuvable';
+  end if;
+
+  insert into public.vendor_subscriptions
+    (shop_id, plan_id, status, starts_at, expires_at, trial_ends_at, auto_renew)
+  select
+    s.id, v_trial_plan_id, 'trialing',
+    coalesce(new.created_at, now()), new.trial_end, new.trial_end, false
+  from public.shops s
+  where s.owner = new.id
+  on conflict (shop_id)
+    where status in ('trialing','active','past_due')
+    do nothing;
+
+  return new;
+end;
+$function$;
+
+drop trigger if exists vendors_create_initial_trials on public.vendors;
+create trigger vendors_create_initial_trials
+after insert or update of trial_end on public.vendors
+for each row execute function public.create_trials_for_vendor_profile();
+
 alter table public.subscription_plans enable row level security;
 alter table public.vendor_subscriptions enable row level security;
 alter table public.subscription_payments enable row level security;
