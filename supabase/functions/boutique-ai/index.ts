@@ -310,11 +310,21 @@ Deno.serve(async (req) => {
     // Dans le schema actuel, orders.total est du texte (et non bigint).
     // On normalise les montants entiers XOF/XAF sans supposer que la colonne est numérique.
     const parseOrderAmount = (value: unknown): number | null => {
-      if (typeof value === "number") return Number.isFinite(value) && value >= 0 ? value : null;
-      const digits = String(value ?? "").trim().replace(/[^0-9-]/g, "");
-      if (!digits || digits === "-") return null;
-      const amount = Number(digits);
-      return Number.isSafeInteger(amount) && amount >= 0 ? amount : null;
+      if (typeof value === "number") {
+        return Number.isSafeInteger(value) && value >= 0 ? value : null;
+      }
+
+      // Les montants XOF/XAF sont des entiers. On accepte les espaces
+      // et libellés de devise, mais on rejette les séparateurs ambigus
+      // (virgule/point) au lieu de transformer silencieusement 12.50 en 1250.
+      const normalized = String(value ?? "")
+        .trim()
+        .replace(/[\\s\\u00a0]/g, "")
+        .replace(/(?:FCFA|XOF|XAF|CFA)/gi, "");
+
+      if (!/^\\d+$/.test(normalized)) return null;
+      const amount = Number(normalized);
+      return Number.isSafeInteger(amount) ? amount : null;
     };
 
     let orderSummary: {
