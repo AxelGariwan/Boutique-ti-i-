@@ -295,6 +295,9 @@ declare
   v_expiry timestamptz;
   v_subscription_id uuid;
   v_plan_slug text;
+  v_current_status text;
+  v_plan_amount bigint;
+  v_plan_currency text;
 begin
   select * into v_payment
   from public.subscription_payments
@@ -317,15 +320,33 @@ begin
 
   if not found then raise exception 'Boutique introuvable'; end if;
 
-  select slug into v_plan_slug
+  select slug, amount, currency
+    into v_plan_slug, v_plan_amount, v_plan_currency
   from public.subscription_plans
   where id = v_payment.plan_id;
 
-  select greatest(coalesce(max(vs.expires_at), now()), now())
-    into v_expiry
+  if v_plan_slug is null or v_payment.provider <> 'paydunya'
+     or v_payment.amount <> v_plan_amount
+     or v_payment.currency <> v_plan_currency then
+    raise exception 'Incohérence entre le paiement et le forfait';
+  end if;
+
+  select vs.status, vs.expires_at
+    into v_current_status, v_expiry
   from public.vendor_subscriptions vs
   where vs.shop_id = v_payment.shop_id
-    and vs.status in ('trialing','active','past_due');
+    and vs.status in ('trialing','active','past_due')
+  order by vs.created_at desc
+  limit 1
+  for update;
+
+  -- Un achat pendant l’essai démarre immédiatement.
+  -- Un abonnement déjà payé est prolongé à son échéance.
+  if v_current_status = 'active' and v_expiry > now() then
+    null;
+  else
+    v_expiry := now();
+  end if;
 
   update public.subscription_payments
     set status = 'paid',
