@@ -73,7 +73,7 @@ create table if not exists public.payment_webhook_events (
 insert into public.subscription_plans (slug, country_code, currency, amount, is_active)
 values
   ('starter','SN','XOF',3000,true),
-  ('pro','SN','XOF',5984,true),
+  ('pro','SN','XOF',6000,true),
   ('premium','SN','XOF',10000,true),
   -- Plan technique non achetable, uniquement pour référencer les essais historiques
   -- des pays dont le tarif local n'est pas encore activé.
