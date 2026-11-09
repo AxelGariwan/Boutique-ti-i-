@@ -432,7 +432,7 @@ Deno.serve(async (req) => {
     const historyText = history.map((item: any) =>
       (item.role === "assistant" ? "Assistant" : "Vendeur") + ": " + item.content
     ).join("\n");
-    const userPrompt = \`Langue: \${locale}\nHistorique de cette conversation:\n\${historyText}\nQuestion actuelle: \${message}\nDonnées de boutique (JSON): \${JSON.stringify(context)}\nDonne une réponse immédiatement exploitable, sans inventer de données.\`;
+    const userPrompt = `Langue: ${locale}\nHistorique de cette conversation:\n${historyText}\nQuestion actuelle: ${message}\nDonnées de boutique (JSON): ${JSON.stringify(context)}\nDonne une réponse immédiatement exploitable, sans inventer de données.`;
 
     const inputTokensEstimate = estimateTokens(systemPrompt + userPrompt) + 300;
     const outputTokensEstimate = 700;
