@@ -1,0 +1,22 @@
+﻿# Dependencies
+node_modules/
+
+# Supabase local temporary files
+supabase/.temp/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
