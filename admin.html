@@ -137,9 +137,10 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
           <template x-for="day in chartDays" :key="day.key"><div class="min-w-0 flex flex-col items-center gap-2"><span class="text-[10px] admin-muted" x-text="day.count"></span><div class="w-full max-w-12 rounded-t-lg bg-gradient-to-t from-red-700 to-rose-400" :style="'height:'+Math.max(5,day.count/chartMax*92)+'px'"></div><span class="text-[10px] admin-muted" x-text="day.label"></span></div></template>
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Panier moyen · période choisie</p><template x-for="row in selectedStats.amounts" :key="row.currency"><p class="text-sm font-bold mt-2" x-text="formatMoney(row.count?row.amount/row.count:0,row.currency)+' · '+row.currency"></p></template><p x-show="!selectedStats.amounts.length" class="text-xs admin-muted mt-2">Pas encore de données.</p></article>
         <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes en attente</p><p class="text-3xl font-black mt-2" x-text="selectedStats.pending"></p><p class="text-[11px] admin-muted mt-1">Paiement à confirmer</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">En préparation</p><p class="text-3xl font-black mt-2" x-text="selectedStats.processing"></p><p class="text-[11px] admin-muted mt-1">Commandes en cours</p></article>
         <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes terminées</p><p class="text-3xl font-black mt-2" x-text="selectedStats.completed"></p><p class="text-[11px] admin-muted mt-1">Selon le statut de livraison</p></article>
       </div>
       <p class="text-[11px] admin-muted">Les montants sont regroupés par devise pour éviter d’additionner des FCFA, des dirhams ou d’autres monnaies. Les statistiques utilisent les commandes chargées depuis Supabase (maximum 10 000 commandes récentes).</p>
@@ -288,7 +289,7 @@ function admin() {
         grouped[currency].amount+=amount;grouped[currency].count++;
       },this);
       var statuses=rows.map(function(o){return String(o.status||"").toLowerCase();});
-      return {count:rows.length,amounts:Object.keys(grouped).sort().map(function(k){return grouped[k];}),pending:statuses.filter(function(s){return s.indexOf("attente")>=0||s.indexOf("pending")>=0;}).length,completed:statuses.filter(function(s){return s.indexOf("termin")>=0||s.indexOf("livr")>=0||s.indexOf("completed")>=0;}).length};
+      return {count:rows.length,amounts:Object.keys(grouped).sort().map(function(k){return grouped[k];}),pending:statuses.filter(function(s){return s.indexOf("attente")>=0||s.indexOf("pending")>=0;}).length,processing:statuses.filter(function(s){return s.indexOf("préparation")>=0||s.indexOf("preparation")>=0||s.indexOf("processing")>=0||s.indexOf("expédition")>=0;}).length,completed:statuses.filter(function(s){return s.indexOf("termin")>=0||s.indexOf("livr")>=0||s.indexOf("completed")>=0;}).length};
     },
     formatMoney: function(value,currency) { return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(value||0))+" "+currency; },
     count: function (st) { return this.vendors.filter(function (v) { return v.id_status === st && v.id_doc_path; }).length; },
