@@ -87,3 +87,18 @@ html[data-theme="dark"] .divide-gray-100>:not([hidden])~:not([hidden]),html[data
 html[data-theme="dark"] .bg-rose-50{background-color:#451d28!important}
 html[data-theme="dark"] .bg-rose-100{background-color:#542333!important}
 html[data-theme="dark"] .text-black{color:#e5edf7!important}
+
+
+/* Corrections du thème sombre et du bloc de vérification */
+html[data-theme="dark"]{background-color:#0b1220!important}
+html[data-theme="dark"] body{background-color:#0b1220!important}
+html[data-theme="dark"] footer.bg-white{background:#111c2e!important;border-color:#29384d!important;color:#a3b2c7!important}
+html[data-theme="dark"] footer .text-slate-600{color:#c0ccdc!important}
+html[data-theme="dark"] .bti-id-verification{background:#202b3d!important;border-color:#46546a!important;color:#e5edf7!important}
+html[data-theme="dark"] .bti-id-verification h2{color:#f3dfb0!important}
+html[data-theme="dark"] .bti-id-verification p{color:#cbd5e1!important}
+html[data-theme="dark"] .bti-id-verification label{color:#dbe4f0!important}
+html[data-theme="dark"] .bti-id-verification label.flex{background:#29384d!important;border-color:#52627a!important}
+html[data-theme="dark"] .bti-id-verification label span{color:#e5edf7!important}
+html[data-theme="dark"] .bti-id-verification label span.bg-amber-100{background:#3a4658!important;color:#f3dfb0!important}
+html[data-theme="dark"] .bti-id-verification input[type="checkbox"]{accent-color:#34d399}
