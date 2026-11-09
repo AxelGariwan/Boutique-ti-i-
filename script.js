@@ -907,6 +907,12 @@ function app() {
             alert((r.data && r.data.error) || "Votre commande n'a pas pu être enregistrée. Vérifiez le stock ou réessayez dans quelques minutes.");
             return;
           }
+          if (!r.data.id) {
+            alert("La commande a été enregistrée, mais son identifiant n'a pas été retourné. Actualisez la page avant de modifier son statut.");
+            await this.loadOrders();
+            return;
+          }
+          newOrder.id = r.data.id;
           orderTotal = Number(r.data.total);
           newOrder.total = orderTotal;
           newOrder.items = Array.isArray(r.data.items) ? r.data.items : [];
@@ -936,7 +942,7 @@ function app() {
 
     openWhatsAppOrder: function () {
       var wa = (this.shop.wa || "").replace(/\D/g, "");
-      var msg = "Bonjour, voici ma commande confirmée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-");
+      var msg = "Bonjour, voici ma commande enregistrée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-");
       window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(msg), "_blank");
       this.modal = '';
     },
