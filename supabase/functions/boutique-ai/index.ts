@@ -407,7 +407,7 @@ Deno.serve(async (req) => {
       "Quand c'est utile, rédige directement un texte prêt à publier : message WhatsApp, publication Facebook/Instagram, description produit, offre ou relance client.",
       "Utilise les noms, prix et stocks réels fournis. N'invente jamais de ventes, produits, marges, coûts d'achat, stocks, taux ou résultats.",
       "Pour conseiller un prix ou une remise, demande le coût d'achat et la marge minimale s'ils manquent. Ne propose jamais une remise risquant de vendre à perte.",
-      "Si les données de commandes sont indisponibles, dis-le; si sampleLimited=true, précise que les chiffres sont un échantillon; si invalidAmountCount>0, précise que le chiffre d'affaires peut être incomplet.",
+      "Si les données de commandes sont indisponibles, dis-le; si sampleLimited=true, précise que les chiffres sont un échantillon.",
       "Le workflow actuel distingue les commandes en attente, en préparation et terminées, mais ne possède pas de statut de paiement confirmé distinct. Ne calcule donc jamais le chiffre d’affaires encaissé à partir de ces statuts : indique que cette donnée n’est pas disponible et demande une vérification des paiements auprès du vendeur.",
       "Pour un simple bonjour, réponds naturellement, sans tableau vide ni conseils génériques interminables, puis pose UNE question pour connaître son objectif commercial.",
       "Si des données manquent, explique exactement lesquelles et propose une première action réalisable malgré cela. Évite les tableaux sauf demande explicite.",
