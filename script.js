@@ -455,7 +455,7 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
+      if (!session) { this.authed = false; this.shop = blankShop(); this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.ready = true; return; }
       this.uid = session.user.id;
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
       var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
