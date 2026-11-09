@@ -223,3 +223,10 @@ html[data-theme="dark"] body:not(.admin-page) textarea::placeholder{
 /* Le sélecteur de thème reste compact dans les deux en-têtes admin */
 .admin-top [data-bti-theme-slot] .bti-theme-toggle{min-height:32px!important;padding:6px 9px!important;font-size:11px!important}
 html[data-theme="dark"] .admin-top [data-bti-theme-slot] .bti-theme-toggle{background:#351923!important;border-color:#fda4af!important;color:#fff!important}
+
+
+/* Devise XOF dans l'en-tête Boutique ti i : texte blanc en mode sombre */
+html[data-theme="dark"] header h1 [x-text="shop.currency"]{
+  color:#ffffff!important;
+  background:#047857!important;
+}
