@@ -112,7 +112,7 @@ begin
     v_line_total := v_price * v_quantity;
     v_total := v_total + v_line_total;
 
-    if v_total > 9000000000000000000 then
+    if v_total > 9007199254740991 then
       return jsonb_build_object('ok', false, 'error', 'Le montant de la commande est trop élevé.');
     end if;
 
