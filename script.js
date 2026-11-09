@@ -68,7 +68,7 @@ var TR = {
     cardModalTitle:"Paiement Sécurisé par Carte Bancaire", cardModalDesc:"Entrez les informations de votre carte pour régler votre commande en toute sécurité.", cardNumber:"Numéro de carte", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Payer en ligne", cancel:"Annuler",
     statVisits:"Visites du site", statRevenue:"Chiffre d'affaires", statOrders:"Commandes reçues",
     viewSub:"Voir abonnement",
-    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique", navAccount:"Mon compte", accountInfoTitle:"Informations du compte", accountInfoDesc:"Ces informations sont personnelles et indépendantes des paramètres de votre boutique.", accountEmail:"Adresse e-mail du compte", noAccountEmail:"Aucune adresse e-mail associée", accountEmailReadonly:"L'adresse e-mail est liée à votre authentification et ne peut pas être modifiée ici.", accountPhone:"Numéro de téléphone du compte", accountPhoneHint:"Format international conseillé. Ce numéro ne modifie pas le WhatsApp public de la boutique.", saveAccountPhone:"Enregistrer le numéro", accountPhoneSaved:"Numéro du compte mis à jour. Le WhatsApp public de la boutique n'a pas été modifié.",
+    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique", navAccount:"Mon compte", accountInfoTitle:"Informations du compte", accountInfoDesc:"Ces informations sont personnelles et indépendantes des paramètres de votre boutique.", accountEmail:"Adresse e-mail du compte", noAccountEmail:"Aucune adresse e-mail associée", accountEmailReadonly:"L'adresse e-mail est liée à votre authentification et ne peut pas être modifiée ici.", accountPhone:"Numéro de téléphone du compte", accountPhoneHint:"Format international conseillé. Ce numéro sert de contact de compte ; il ne modifie ni le WhatsApp public de la boutique ni le numéro de connexion WhatsApp.", saveAccountPhone:"Enregistrer le numéro", accountPhoneSaved:"Numéro du compte mis à jour. Le WhatsApp public de la boutique n'a pas été modifié.",
     securityTitle:"Sécurité du compte", currentPassword:"Mot de passe actuel", newPassword:"Nouveau mot de passe", confirmPassword:"Confirmer le nouveau mot de passe", changePasswordBtn:"Modifier le mot de passe", passwordChanged:"Mot de passe modifié avec succès.", passwordMismatch:"Les deux nouveaux mots de passe ne correspondent pas.", passwordTooShort:"Le nouveau mot de passe doit contenir au moins 8 caractères.", passwordChangeError:"Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel et réessayez.",
     dangerZoneTitle:"Zone de Danger — Abonnement & Compte", dangerZoneDesc:"Vous pouvez résilier votre abonnement ou supprimer définitivement votre compte.",
     cancelSubBtn:"Résilier l'abonnement", deleteAccountBtn:"Supprimer définitivement mon compte"
@@ -101,7 +101,7 @@ var TR = {
     cardModalTitle:"Secure Credit Card Payment", cardModalDesc:"Enter your card details to securely pay for your order.", cardNumber:"Card Number", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Pay Online", cancel:"Cancel",
     statVisits:"Site Visits", statRevenue:"Total Revenue", statOrders:"Orders Received",
     viewSub:"View subscription",
-    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings", navAccount:"My Account", accountInfoTitle:"Account information", accountInfoDesc:"These personal details are separate from your shop settings.", accountEmail:"Account email address", noAccountEmail:"No email address linked", accountEmailReadonly:"Your email is linked to authentication and cannot be changed here.", accountPhone:"Account phone number", accountPhoneHint:"Use international format. This does not change the shop's public WhatsApp number.", saveAccountPhone:"Save phone number", accountPhoneSaved:"Account phone number updated. The shop's public WhatsApp number was not changed.",
+    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings", navAccount:"My Account", accountInfoTitle:"Account information", accountInfoDesc:"These personal details are separate from your shop settings.", accountEmail:"Account email address", noAccountEmail:"No email address linked", accountEmailReadonly:"Your email is linked to authentication and cannot be changed here.", accountPhone:"Account phone number", accountPhoneHint:"Use international format. This is your account contact number; it does not change the shop's public WhatsApp number or your WhatsApp login number.", saveAccountPhone:"Save phone number", accountPhoneSaved:"Account phone number updated. The shop's public WhatsApp number was not changed.",
     securityTitle:"Account security", currentPassword:"Current password", newPassword:"New password", confirmPassword:"Confirm new password", changePasswordBtn:"Change password", passwordChanged:"Password changed successfully.", passwordMismatch:"The new passwords do not match.", passwordTooShort:"The new password must contain at least 8 characters.", passwordChangeError:"Could not change the password. Check your current password and try again.",
     dangerZoneTitle:"Danger Zone — Subscription & Account", dangerZoneDesc:"You can cancel your subscription or permanently delete your account.",
     cancelSubBtn:"Cancel subscription", deleteAccountBtn:"Delete my account permanently"
@@ -134,7 +134,7 @@ var TR = {
     cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Pagar online", cancel:"Cancelar",
     statVisits:"Visitas", statRevenue:"Ingresos totales", statOrders:"Pedidos recibidos",
     viewSub:"Ver suscripción",
-    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda", navAccount:"Mi cuenta", accountInfoTitle:"Información de la cuenta", accountInfoDesc:"Estos datos personales son independientes de la configuración de tu tienda.", accountEmail:"Correo electrónico de la cuenta", noAccountEmail:"No hay correo asociado", accountEmailReadonly:"El correo está vinculado a tu autenticación y no se puede cambiar aquí.", accountPhone:"Teléfono de la cuenta", accountPhoneHint:"Usa el formato internacional. Esto no cambia el WhatsApp público de la tienda.", saveAccountPhone:"Guardar número", accountPhoneSaved:"Número de cuenta actualizado. El WhatsApp público de la tienda no ha cambiado.",
+    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda", navAccount:"Mi cuenta", accountInfoTitle:"Información de la cuenta", accountInfoDesc:"Estos datos personales son independientes de la configuración de tu tienda.", accountEmail:"Correo electrónico de la cuenta", noAccountEmail:"No hay correo asociado", accountEmailReadonly:"El correo está vinculado a tu autenticación y no se puede cambiar aquí.", accountPhone:"Teléfono de la cuenta", accountPhoneHint:"Usa el formato internacional. Es el teléfono de contacto de tu cuenta; no cambia el WhatsApp público de la tienda ni el número para iniciar sesión.", saveAccountPhone:"Guardar número", accountPhoneSaved:"Número de cuenta actualizado. El WhatsApp público de la tienda no ha cambiado.",
     dangerZoneTitle:"Zona de Peligro — Suscripción y Cuenta", dangerZoneDesc:"Puede cancelar su suscripción o eliminar su cuenta permanentemente.",
     cancelSubBtn:"Cancelar suscripción", deleteAccountBtn:"Eliminar mi cuenta permanentemente"
   },
@@ -164,7 +164,7 @@ var TR = {
     cardModalTitle:"الدفع الآمن بالبطاقة البنكية", cardModalDesc:"أدخل معلومات بطاقتك لدفع قيمة الطلب بأمان تام.", cardNumber:"رقم البطاقة", cardExp:"تاريخ الانتهاء", cardCvv:"رمز الأمان", paySecurely:"ادفع الان", cancel:"إلغاء",
     statVisits:"الزيارات", statRevenue:"إجمالي الإيرادات", statOrders:"الطلبات المستلمة",
     viewSub:"عرض الاشتراك",
-    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر", navAccount:"حسابي", accountInfoTitle:"معلومات الحساب", accountInfoDesc:"هذه المعلومات الشخصية مستقلة عن إعدادات متجرك.", accountEmail:"البريد الإلكتروني للحساب", noAccountEmail:"لا يوجد بريد إلكتروني مرتبط", accountEmailReadonly:"البريد الإلكتروني مرتبط بتسجيل الدخول ولا يمكن تغييره هنا.", accountPhone:"رقم هاتف الحساب", accountPhoneHint:"استخدم التنسيق الدولي. لن يؤدي ذلك إلى تغيير رقم واتساب العام للمتجر.", saveAccountPhone:"حفظ الرقم", accountPhoneSaved:"تم تحديث رقم الحساب. لم يتغير رقم واتساب العام للمتجر.",
+    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر", navAccount:"حسابي", accountInfoTitle:"معلومات الحساب", accountInfoDesc:"هذه المعلومات الشخصية مستقلة عن إعدادات متجرك.", accountEmail:"البريد الإلكتروني للحساب", noAccountEmail:"لا يوجد بريد إلكتروني مرتبط", accountEmailReadonly:"البريد الإلكتروني مرتبط بتسجيل الدخول ولا يمكن تغييره هنا.", accountPhone:"رقم هاتف الحساب", accountPhoneHint:"استخدم التنسيق الدولي. هذا رقم الاتصال الخاص بحسابك ولا يغيّر رقم واتساب العام للمتجر أو رقم تسجيل الدخول.", saveAccountPhone:"حفظ الرقم", accountPhoneSaved:"تم تحديث رقم الحساب. لم يتغير رقم واتساب العام للمتجر.",
     dangerZoneTitle:"منطقة الخطر — الاشتراك والحساب", dangerZoneDesc:"يمكنك إلغاء اشتراكك أو حذف حسابك نهائياً.",
     cancelSubBtn:"إلغاء الاشتراك", deleteAccountBtn:"حذف حسابي نهائياً"
   }
@@ -693,8 +693,9 @@ function app() {
       if (!this.uid) { alert("Session vendeur introuvable. Reconnectez-vous."); return; }
       this.accountSaving = true;
       try {
-        var result = await db.from("vendors").update({ phone: phone }).eq("id", this.uid);
+        var result = await db.from("vendors").update({ phone: phone }).eq("id", this.uid).select("id").maybeSingle();
         if (result.error) throw result.error;
+        if (!result.data) throw new Error("Profil vendeur introuvable ou modification non autorisée.");
         this.accountPhone = phone;
         this.accountPhoneDraft = phone;
         this.accountMessage = this.t("accountPhoneSaved");
@@ -723,8 +724,12 @@ function app() {
       try {
         var userResult = await db.auth.getUser();
         var user = userResult && userResult.data && userResult.data.user;
-        if (userResult.error || !user || !user.email) throw new Error("Session vendeur introuvable. Reconnectez-vous.");
-        var reauth = await db.auth.signInWithPassword({ email: user.email, password: form.current });
+        if (userResult.error || !user) throw new Error("Session vendeur introuvable. Reconnectez-vous.");
+        var credentials = user.email
+          ? { email: user.email, password: form.current }
+          : (user.phone ? { phone: user.phone, password: form.current } : null);
+        if (!credentials) throw new Error("Ce compte ne dispose pas d'un identifiant permettant de vérifier le mot de passe actuel.");
+        var reauth = await db.auth.signInWithPassword(credentials);
         if (reauth.error) throw new Error("Le mot de passe actuel est incorrect.");
         var update = await db.auth.updateUser({ password: form.next });
         if (update.error) throw update.error;
