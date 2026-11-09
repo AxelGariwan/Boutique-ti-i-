@@ -68,6 +68,12 @@ begin
     return jsonb_build_object('ok', false, 'error', 'Cette boutique n’est pas disponible.');
   end if;
 
+  -- Serialize rate-limit checks for this shop and phone.
+  -- Transaction-scoped advisory locks prevent concurrent requests from
+  -- passing the count checks together and exceeding the configured limits.
+  perform pg_advisory_xact_lock(hashtextextended('order-shop:' || p_shop, 0));
+  perform pg_advisory_xact_lock(hashtextextended('order-phone:' || trim(p_phone), 0));
+
   -- Preserve the existing per-shop and per-phone order rate limits.
   if (select count(*) from public.orders
       where shop_id = p_shop and created_at > now() - interval '1 hour') >= 60 then
@@ -93,8 +99,12 @@ begin
       return jsonb_build_object('ok', false, 'error', 'La quantité demandée est trop élevée.');
     end if;
 
+    if coalesce(jsonb_typeof(v_shop_data->'products'), '') <> 'array' then
+      return jsonb_build_object('ok', false, 'error', 'Le catalogue de cette boutique est indisponible.');
+    end if;
+
     select product.value into v_product
-    from jsonb_array_elements(coalesce(v_shop_data->'products', '[]'::jsonb)) as product(value)
+    from jsonb_array_elements(v_shop_data->'products') as product(value)
     where product.value->>'id' = v_product_id
     limit 1;
 
