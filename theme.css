@@ -169,3 +169,57 @@ html[data-theme="dark"] .bti-id-verification input[type="checkbox"]{
     font-size:10px!important;
   }
 }
+
+
+/* Corrections de lisibilité et de navigation en thème sombre */
+html[data-theme="dark"] .bti-danger-zone{
+  background:#251d27!important;
+  border-color:#7f3546!important;
+}
+html[data-theme="dark"] .bti-danger-zone h2{color:#fda4af!important}
+html[data-theme="dark"] .bti-danger-zone p{color:#f1dce3!important}
+html[data-theme="dark"] .bti-danger-zone button:first-child{
+  background:#49351c!important;border-color:#927044!important;color:#ffedc2!important;
+}
+html[data-theme="dark"] .bti-danger-zone button:last-child{
+  background:#991b1b!important;border-color:#b91c1c!important;color:#fff!important;
+}
+html[data-theme="dark"] .bti-logout-card{
+  background:#172337!important;border-color:#35465e!important;
+}
+html[data-theme="dark"] .bti-logout-card button{
+  background:#7f1d1d!important;border-color:#b91c1c!important;color:#fff!important;
+}
+/* Tous les textes neutres de l'espace vendeur deviennent lisibles en sombre */
+html[data-theme="dark"] body:not(.admin-page) .text-slate-900,
+html[data-theme="dark"] body:not(.admin-page) .text-slate-800,
+html[data-theme="dark"] body:not(.admin-page) .text-slate-700,
+html[data-theme="dark"] body:not(.admin-page) .text-slate-600,
+html[data-theme="dark"] body:not(.admin-page) .text-slate-500,
+html[data-theme="dark"] body:not(.admin-page) .text-gray-900,
+html[data-theme="dark"] body:not(.admin-page) .text-gray-800,
+html[data-theme="dark"] body:not(.admin-page) .text-gray-700,
+html[data-theme="dark"] body:not(.admin-page) .text-gray-600{
+  color:#f1f5f9!important;
+}
+html[data-theme="dark"] body:not(.admin-page) .text-slate-400,
+html[data-theme="dark"] body:not(.admin-page) .text-gray-500{
+  color:#cbd5e1!important;
+}
+html[data-theme="dark"] body:not(.admin-page) input,
+html[data-theme="dark"] body:not(.admin-page) textarea,
+html[data-theme="dark"] body:not(.admin-page) select{
+  color:#f8fafc;
+}
+html[data-theme="dark"] body:not(.admin-page) input::placeholder,
+html[data-theme="dark"] body:not(.admin-page) textarea::placeholder{
+  color:#94a3b8!important;
+}
+/* Bouton IA flottant : toujours accessible sur petit écran, au-dessus de la navigation */
+@media(max-width:767px){
+  .vendor-mobile-nav{z-index:40!important}
+  button[aria-label="Ouvrir Xelo IA"]{display:flex!important;bottom:calc(5.25rem + env(safe-area-inset-bottom))!important}
+}
+/* Le sélecteur de thème reste compact dans les deux en-têtes admin */
+.admin-top [data-bti-theme-slot] .bti-theme-toggle{min-height:32px!important;padding:6px 9px!important;font-size:11px!important}
+html[data-theme="dark"] .admin-top [data-bti-theme-slot] .bti-theme-toggle{background:#351923!important;border-color:#fda4af!important;color:#fff!important}
