@@ -340,43 +340,27 @@ Deno.serve(async (req) => {
     // Aggregate orders only. Customer names, phone numbers, addresses and payment details are never sent to an AI provider.
     // Dans le schema actuel, orders.total est du texte (et non bigint).
     // On normalise les montants entiers XOF/XAF sans supposer que la colonne est numérique.
-    const parseOrderAmount = (value: unknown): number | null => {
-      if (typeof value === "number") {
-        return Number.isSafeInteger(value) && value >= 0 ? value : null;
-      }
-
-      // Les montants XOF/XAF sont des entiers. On accepte les espaces
-      // et libellés de devise, mais on rejette les séparateurs ambigus
-      // (virgule/point) au lieu de transformer silencieusement 12.50 en 1250.
-      const normalized = String(value ?? "")
-        .trim()
-        .replace(/[\\s\\u00a0]/g, "")
-        .replace(/(?:FCFA|XOF|XAF|CFA)/gi, "");
-
-      if (!/^\\d+$/.test(normalized)) return null;
-      const amount = Number(normalized);
-      return Number.isSafeInteger(amount) ? amount : null;
-    };
-
     let orderSummary: {
       available: boolean;
       count30d: number;
       revenue30d: number | null;
       pendingCount: number | null;
-      invalidAmountCount: number;
+      processingCount: number | null;
+      completedCount: number | null;
       sampleLimited: boolean;
     } = {
       available: false,
       count30d: 0,
       revenue30d: null,
       pendingCount: null,
-      invalidAmountCount: 0,
+      processingCount: null,
+      completedCount: null,
       sampleLimited: false,
     };
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: orders, error: ordersError } = await admin
       .from("orders")
-      .select("total,status,created_at")
+      .select("status,created_at")
       .eq("shop_id", shopId)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -386,14 +370,18 @@ Deno.serve(async (req) => {
       // Ne jamais présenter un échec de lecture comme zéro vente.
       console.error("AI orders summary unavailable:", ordersError.message);
     } else if (Array.isArray(orders)) {
-      const amounts = orders.map((o: any) => parseOrderAmount(o.total));
-      const validAmounts = amounts.filter((amount): amount is number => amount !== null);
+      const normalizedStatuses = orders.map((o: any) => String(o.status || "").trim().toLowerCase());
       orderSummary = {
         available: true,
         count30d: orders.length,
-        revenue30d: validAmounts.reduce((sum, amount) => sum + amount, 0),
-        pendingCount: orders.filter((o: any) => /attente|pending|processing/i.test(String(o.status || ""))).length,
-        invalidAmountCount: amounts.length - validAmounts.length,
+        // Aucun statut distinct "paiement confirmé" n'existe dans le workflow actuel.
+        // Ne jamais présenter les commandes préparées/livrées comme du chiffre d'affaires encaissé.
+        revenue30d: null,
+        pendingCount: normalizedStatuses.filter((status: string) =>
+          status === "pending" || status.includes("attente de paiement")
+        ).length,
+        processingCount: normalizedStatuses.filter((status: string) => status === "processing").length,
+        completedCount: normalizedStatuses.filter((status: string) => status === "completed").length,
         sampleLimited: orders.length === 500,
       };
     }
@@ -420,6 +408,7 @@ Deno.serve(async (req) => {
       "Utilise les noms, prix et stocks réels fournis. N'invente jamais de ventes, produits, marges, coûts d'achat, stocks, taux ou résultats.",
       "Pour conseiller un prix ou une remise, demande le coût d'achat et la marge minimale s'ils manquent. Ne propose jamais une remise risquant de vendre à perte.",
       "Si les données de commandes sont indisponibles, dis-le; si sampleLimited=true, précise que les chiffres sont un échantillon; si invalidAmountCount>0, précise que le chiffre d'affaires peut être incomplet.",
+      "Le workflow actuel distingue les commandes en attente, en préparation et terminées, mais ne possède pas de statut de paiement confirmé distinct. Ne calcule donc jamais le chiffre d’affaires encaissé à partir de ces statuts : indique que cette donnée n’est pas disponible et demande une vérification des paiements auprès du vendeur.",
       "Pour un simple bonjour, réponds naturellement, sans tableau vide ni conseils génériques interminables, puis pose UNE question pour connaître son objectif commercial.",
       "Si des données manquent, explique exactement lesquelles et propose une première action réalisable malgré cela. Évite les tableaux sauf demande explicite.",
       "Ne demande jamais de mot de passe, code OTP, clé API, document d'identité ou donnée bancaire.",
