@@ -60,3 +60,18 @@ html[data-theme="light"] .admin-panel .bg-amber-500\\/15{background:#fef3c7!impo
 html[data-theme="dark"] .bti-theme-toggle{background:#172337;border-color:#35465e;color:#e5edf7}
 @media(max-width:640px){.bti-theme-toggle{min-height:36px;padding:.45rem .6rem;font-size:11px}}
 @media(prefers-reduced-motion:reduce){html,body{transition:none!important}}
+
+
+/* Pages légales : variables et composants adaptés au thème choisi */
+html[data-theme="dark"] body{--fg:#e5edf7;--muted:#a3b2c7;--bg:#0b1220;--soft:#111c2e;--brand:#34d399;--brand-dark:#6ee7b7;--line:#29384d;--warn-bg:#493817;--warn-fg:#fde68a}
+html[data-theme="dark"] header.site,html[data-theme="dark"] footer.site{background:var(--soft);border-color:var(--line)}
+html[data-theme="dark"] .brand{color:var(--fg)}
+html[data-theme="dark"] th{background:#172337;color:var(--fg)}
+html[data-theme="dark"] td,html[data-theme="dark"] th{border-color:var(--line)}
+html[data-theme="dark"] .note,html[data-theme="dark"] .form-box{background:#111c2e;color:var(--fg);border-color:var(--line)}
+html[data-theme="dark"] .skip{background:#111c2e;color:#e5edf7}
+html[data-theme="dark"] .todo,html[data-theme="dark"] #legal-warning{background:#493817;color:#fde68a;border-color:#b45309}
+html[data-theme="dark"] .btnlink{background:#047857;color:#fff}
+html[data-theme="dark"] a{color:#6ee7b7}
+html[data-theme="dark"] a:hover{color:#a7f3d0}
+html[data-theme="light"] body{--fg:#0f172a;--muted:#475569;--bg:#fff;--soft:#f1f5f9;--brand:#047857;--brand-dark:#065f46;--line:#cbd5e1;--warn-bg:#fef3c7;--warn-fg:#78350f}
