@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-50">
+<html lang="fr" class="h-full bg-[#0b0709]">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,111 +9,121 @@
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<style>[x-cloak]{display:none!important}body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+<style>
+[x-cloak]{display:none!important}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0b0709;color:#f8fafc}
+.admin-shell{min-height:100vh;background:radial-gradient(ellipse at 8% 0%,rgba(239,68,68,.22),transparent 36%),radial-gradient(ellipse at 95% 8%,rgba(190,24,93,.2),transparent 32%),#0b0709}
+.admin-top{background:linear-gradient(105deg,rgba(127,29,29,.96),rgba(153,27,27,.94) 52%,rgba(136,19,55,.94));border:1px solid rgba(254,202,202,.2);box-shadow:0 12px 40px rgba(127,29,29,.22),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(18px)}
+.admin-nav{background:rgba(40,8,14,.3);border:1px solid rgba(255,255,255,.12)}
+.admin-nav button{color:rgba(255,255,255,.75);transition:.2s}
+.admin-nav button.active,.admin-nav button:hover{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.15)}
+.admin-panel{background:linear-gradient(145deg,rgba(31,20,25,.94),rgba(18,13,17,.96));border:1px solid rgba(255,255,255,.09);box-shadow:0 18px 55px rgba(0,0,0,.22)}
+.admin-stat{background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.1)}
+.admin-input{background:rgba(10,8,10,.7);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;outline:none}
+.admin-input:focus{border-color:rgba(248,113,113,.75);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+.admin-table{width:100%;border-collapse:collapse;min-width:820px}
+.admin-table th{background:rgba(255,255,255,.035);color:#a1a1aa;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+.admin-table td,.admin-table th{padding:14px 15px;vertical-align:top}
+.admin-table td{border-top:1px solid rgba(255,255,255,.07);font-size:13px}
+.admin-table tbody tr:hover{background:rgba(255,255,255,.025)}
+.admin-btn{border:1px solid rgba(255,255,255,.13);border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700;transition:.2s}
+.admin-btn:hover{background:rgba(255,255,255,.09)}
+.admin-btn-red{background:#dc2626;color:#fff;border-color:#ef4444}
+.admin-btn-red:hover{background:#b91c1c}
+.admin-muted{color:#a1a1aa}
+.admin-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.03em}
+@media(max-width:640px){.admin-table{min-width:760px}.admin-top{border-radius:18px}.admin-stat{padding:14px}}
+</style>
 </head>
-<body class="h-full text-slate-800 antialiased" x-data="admin()" x-cloak>
+<body class="min-h-full" x-data="admin()" x-cloak>
+<div class="admin-shell">
+  <!-- Connexion : même authentification Supabase et même liste admins -->
+  <div x-show="ready&&!ok" class="min-h-screen grid place-items-center p-4">
+    <form @submit.prevent="login()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-800 grid place-items-center font-black text-lg shadow-lg">Bti</div>
+        <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Boutique ti i</p><h1 class="text-2xl font-black">Admin Console</h1></div>
+      </div>
+      <div><p class="text-sm admin-muted">Espace sécurisé réservé aux administrateurs autorisés.</p></div>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" placeholder="admin@exemple.com" autocomplete="email" class="admin-input w-full"></label>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Mot de passe</span><input type="password" x-model="f.password" placeholder="Votre mot de passe" autocomplete="current-password" class="admin-input w-full"></label>
+      <p x-show="err" class="text-red-300 text-xs" x-text="err"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 disabled:opacity-50 text-white font-bold py-3.5 shadow-lg shadow-red-950/30" x-text="busy?'Connexion…':'Accéder au tableau de bord'"></button>
+      <p class="text-[11px] text-center admin-muted">Accès contrôlé par les droits administrateur Supabase.</p>
+    </form>
+  </div>
 
-<!-- Connexion -->
-<div x-show="ready&&!ok" class="min-h-full grid place-items-center p-4">
- <form @submit.prevent="login()" class="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-sm space-y-3 shadow-sm">
-  <h1 class="font-bold text-lg">Administration</h1>
-  <p class="text-xs text-slate-500">Réservé à l’administrateur de la plateforme.</p>
-  <input type="email" x-model="f.email" placeholder="Email" autocomplete="email" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
-  <input type="password" x-model="f.password" placeholder="Mot de passe" autocomplete="current-password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
-  <p x-show="err" class="text-red-600 text-xs" x-text="err"></p>
-  <button :disabled="busy" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm" x-text="busy?'Connexion…':'Se connecter'"></button>
- </form>
+  <div x-show="ok" class="max-w-[1500px] mx-auto px-3 sm:px-6 py-4 sm:py-7 space-y-6">
+    <header class="admin-top rounded-2xl px-4 sm:px-6 py-3 flex flex-col lg:flex-row items-center justify-between gap-3">
+      <div class="flex items-center justify-between w-full lg:w-auto gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-rose-900 border border-white/20 grid place-items-center font-black shadow-lg">Bti</div>
+          <div><h1 class="font-extrabold tracking-tight text-white">Boutique ti i <span class="text-red-200 font-medium">/ Admin</span></h1><p class="text-[10px] text-red-100/70 tracking-[.16em] uppercase">Control center · V5</p></div>
+        </div>
+        <div class="flex lg:hidden gap-2">
+          <button class="admin-btn text-white" @click="reload()" title="Actualiser">↻</button>
+          <button class="admin-btn text-white" @click="logout()">Sortir</button>
+        </div>
+      </div>
+      <nav class="admin-nav rounded-full p-1 flex flex-wrap items-center justify-center gap-1">
+        <button @click="tab='vendors'" :class="tab==='vendors'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Vendeurs</button>
+        <button @click="tab='orders'" :class="tab==='orders'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Commandes</button>
+      </nav>
+      <div class="hidden lg:flex items-center gap-2">
+        <span class="text-[11px] text-red-100/70 mr-2">Administration sécurisée</span>
+        <button class="admin-btn text-white" @click="reload()">↻ Actualiser</button>
+        <button class="admin-btn admin-btn-red" @click="logout()">Déconnexion</button>
+      </div>
+    </header>
+
+    <section class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div><p class="text-[11px] uppercase tracking-[.2em] text-red-300 font-bold">Vue d’ensemble</p><h2 class="text-2xl sm:text-3xl font-black tracking-tight">Tableau de bord</h2><p class="admin-muted text-sm mt-1">Suivez les vendeurs, les vérifications et les commandes de la plateforme.</p></div>
+      <p class="text-xs admin-muted">Données synchronisées depuis Supabase</p>
+    </section>
+
+    <section class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Vendeurs inscrits</p><span class="text-xl">♙</span></div><p class="text-3xl sm:text-4xl font-black mt-3 tabular-nums" x-text="vendors.length"></p><p class="text-[11px] text-red-300 mt-2">Comptes vendeurs</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Identités à vérifier</p><span class="text-xl">◷</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-amber-300 tabular-nums" x-text="count('pending')"></p><p class="text-[11px] text-amber-200 mt-2">Documents en attente</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Vendeurs validés</p><span class="text-xl">✓</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-emerald-300 tabular-nums" x-text="count('approved')"></p><p class="text-[11px] text-emerald-200 mt-2">Identités approuvées</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Commandes reçues</p><span class="text-xl">▤</span></div><p class="text-3xl sm:text-4xl font-black mt-3 tabular-nums" x-text="orders.length"></p><p class="text-[11px] text-red-300 mt-2">Commandes chargées</p></article>
+    </section>
+
+    <!-- Gestion des vendeurs et vérification d'identité -->
+    <section x-show="tab==='vendors'" class="admin-panel rounded-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-white/10 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div><h3 class="font-bold text-lg">Vendeurs & boutiques</h3><p class="text-xs admin-muted mt-1">Examinez les profils, contrôlez les pièces d’identité et gérez l’accès aux boutiques.</p></div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select x-model="filter" class="admin-input sm:min-w-[150px]"><option value="all">Tous les vendeurs</option><option value="pending">À vérifier</option><option value="approved">Validés</option><option value="rejected">Refusés</option></select>
+          <input x-model="q" placeholder="Rechercher un vendeur, une boutique…" class="admin-input sm:w-72">
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-table"><thead><tr><th>Boutique</th><th>Vendeur</th><th>Pays</th><th>Vérification</th><th>Inscription</th><th>Actions</th></tr></thead>
+          <tbody><template x-for="v in list" :key="v.id"><tr>
+            <td><p class="font-bold text-white" x-text="shopName(v)"></p><p class="text-xs admin-muted mt-1" x-text="productsOf(v)+' article(s)'"></p><a x-show="shopOf(v)" :href="shopLink(v)" target="_blank" rel="noopener" class="text-xs text-red-300 underline mt-1 inline-block">Ouvrir la boutique ↗</a><span x-show="shopOf(v)&&shopOf(v).suspended" class="admin-pill bg-red-500/15 text-red-300 mt-2">SUSPENDUE</span></td>
+            <td><p class="font-semibold" x-text="v.full_name"></p><p class="text-xs admin-muted mt-1" x-text="v.email"></p><p class="text-xs admin-muted" x-text="v.phone"></p></td>
+            <td x-text="v.country||'—'"></td>
+            <td><span class="admin-pill" :class="v.id_status==='approved'?'bg-emerald-500/15 text-emerald-300':(v.id_status==='rejected'?'bg-red-500/15 text-red-300':'bg-amber-500/15 text-amber-200')" x-text="v.id_status==='approved'?'Validée':(v.id_status==='rejected'?'Refusée':(v.id_doc_path?'À vérifier':'Pièce manquante'))"></span><p x-show="v.id_status==='rejected'&&v.id_reject_reason" class="text-xs admin-muted mt-2 max-w-48" x-text="v.id_reject_reason"></p></td>
+            <td class="text-xs admin-muted" x-text="new Date(v.created_at).toLocaleDateString('fr-FR')"></td>
+            <td><div class="flex flex-wrap gap-2 min-w-36"><button x-show="v.id_doc_path" class="admin-btn" @click="viewDoc(v)">Voir la pièce</button><button x-show="v.id_doc_path&&v.id_status!=='approved'" class="admin-btn text-emerald-300" @click="approve(v)">Valider</button><button x-show="v.id_doc_path&&v.id_status!=='rejected'" class="admin-btn text-red-300" @click="reject(v)">Refuser</button><button x-show="shopOf(v)" class="admin-btn" @click="toggleSuspend(v)" x-text="shopOf(v)&&shopOf(v).suspended?'Réactiver':'Suspendre'"></button></div></td>
+          </tr></template></tbody>
+        </table>
+        <p x-show="!list.length" class="p-6 text-sm admin-muted">Aucun vendeur correspondant à cette recherche.</p>
+      </div>
+    </section>
+
+    <!-- Suivi des commandes -->
+    <section x-show="tab==='orders'" class="admin-panel rounded-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-white/10"><h3 class="font-bold text-lg">Commandes de la plateforme</h3><p class="text-xs admin-muted mt-1">Vue globale des commandes enregistrées, sans modifier leur statut.</p></div>
+      <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Date</th><th>Boutique</th><th>Référence</th><th>Client</th><th>Total indiqué</th><th>Paiement</th><th>Statut</th></tr></thead><tbody>
+        <template x-for="o in orders" :key="o.id"><tr><td class="text-xs admin-muted" x-text="new Date(o.created_at).toLocaleString('fr-FR')"></td><td class="font-semibold" x-text="shopNameById(o.shop_id)"></td><td class="text-xs" x-text="o.ref"></td><td><p x-text="o.customer_name"></p><p class="text-xs admin-muted" x-text="o.customer_phone"></p></td><td class="font-bold" x-text="o.total"></td><td class="text-xs admin-muted" x-text="o.pay_mode"></td><td><span class="admin-pill bg-white/10 text-slate-200" x-text="o.status"></span></td></tr></template>
+      </tbody></table><p x-show="!orders.length" class="p-6 text-sm admin-muted">Aucune commande enregistrée.</p></div>
+    </section>
+    <footer class="text-center text-[11px] text-zinc-600 py-2">Boutique ti i · Administration · Accès réservé</footer>
+  </div>
 </div>
-
-<!-- Tableau de bord -->
-<div x-show="ok" class="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
- <div class="flex items-center justify-between gap-3">
-  <h1 class="font-bold text-xl">Administration — Boutique ti i</h1>
-  <div class="flex gap-3 text-sm">
-   <button class="underline text-emerald-700" @click="reload()">Actualiser</button>
-   <button class="underline text-red-600" @click="logout()">Déconnexion</button>
-  </div>
- </div>
-
- <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-  <div class="bg-white border rounded-xl p-3"><p class="text-xs text-slate-500">Vendeurs</p><p class="text-2xl font-bold" x-text="vendors.length"></p></div>
-  <div class="bg-white border rounded-xl p-3"><p class="text-xs text-slate-500">Pièces à vérifier</p><p class="text-2xl font-bold text-amber-600" x-text="count('pending')"></p></div>
-  <div class="bg-white border rounded-xl p-3"><p class="text-xs text-slate-500">Vendeurs validés</p><p class="text-2xl font-bold text-emerald-700" x-text="count('approved')"></p></div>
-  <div class="bg-white border rounded-xl p-3"><p class="text-xs text-slate-500">Commandes</p><p class="text-2xl font-bold" x-text="orders.length"></p></div>
- </div>
-
- <div class="flex gap-2 text-sm">
-  <button @click="tab='vendors'" :class="tab==='vendors'?'bg-slate-900 text-white':'bg-white border'" class="px-3 py-1.5 rounded-lg">Vendeurs et boutiques</button>
-  <button @click="tab='orders'" :class="tab==='orders'?'bg-slate-900 text-white':'bg-white border'" class="px-3 py-1.5 rounded-lg">Commandes</button>
- </div>
-
- <!-- Vendeurs -->
- <div x-show="tab==='vendors'" class="space-y-3">
-  <div class="flex flex-wrap gap-2 items-center">
-   <select x-model="filter" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white">
-    <option value="all">Tous</option><option value="pending">À vérifier</option><option value="approved">Validés</option><option value="rejected">Refusés</option>
-   </select>
-   <input x-model="q" placeholder="Rechercher (nom, email, boutique, pays…)" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[200px] bg-white">
-  </div>
-  <div class="bg-white border rounded-xl overflow-x-auto">
-   <table class="w-full text-sm">
-    <thead class="bg-slate-50 text-xs text-slate-500 text-left">
-     <tr><th class="p-3">Boutique</th><th class="p-3">Vendeur</th><th class="p-3">Pays</th><th class="p-3">Identité</th><th class="p-3">Inscrit le</th><th class="p-3">Actions</th></tr>
-    </thead>
-    <tbody>
-     <template x-for="v in list" :key="v.id">
-      <tr class="border-t align-top">
-       <td class="p-3">
-        <b x-text="shopName(v)"></b>
-        <p class="text-xs text-slate-500" x-text="productsOf(v)+' article(s)'"></p>
-        <a x-show="shopOf(v)" :href="shopLink(v)" target="_blank" rel="noopener" class="text-xs text-emerald-700 underline">Voir la boutique</a>
-        <span x-show="shopOf(v)&&shopOf(v).suspended" class="ml-1 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold">SUSPENDUE</span>
-       </td>
-       <td class="p-3"><p x-text="v.full_name"></p><p class="text-xs text-slate-500" x-text="v.email"></p><p class="text-xs text-slate-500" x-text="v.phone"></p></td>
-       <td class="p-3" x-text="v.country"></td>
-       <td class="p-3">
-        <span class="text-xs font-bold px-2 py-0.5 rounded-full" :class="v.id_status==='approved'?'bg-emerald-100 text-emerald-700':(v.id_status==='rejected'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700')" x-text="v.id_status==='approved'?'Validée':(v.id_status==='rejected'?'Refusée':(v.id_doc_path?'À vérifier':'Pièce manquante'))"></span>
-        <p x-show="v.id_status==='rejected'&&v.id_reject_reason" class="text-xs text-slate-500 mt-1" x-text="v.id_reject_reason"></p>
-       </td>
-       <td class="p-3 text-xs" x-text="new Date(v.created_at).toLocaleDateString('fr-FR')"></td>
-       <td class="p-3 space-y-1 text-xs">
-        <button x-show="v.id_doc_path" class="block underline text-slate-700" @click="viewDoc(v)">Voir la pièce</button>
-        <button x-show="v.id_doc_path&&v.id_status!=='approved'" class="block underline text-emerald-700 font-bold" @click="approve(v)">Valider</button>
-        <button x-show="v.id_doc_path&&v.id_status!=='rejected'" class="block underline text-red-600" @click="reject(v)">Refuser</button>
-        <button x-show="shopOf(v)" class="block underline text-slate-700" @click="toggleSuspend(v)" x-text="shopOf(v)&&shopOf(v).suspended?'Réactiver la boutique':'Suspendre la boutique'"></button>
-       </td>
-      </tr>
-     </template>
-    </tbody>
-   </table>
-   <p x-show="!list.length" class="p-4 text-sm text-slate-500">Aucun vendeur.</p>
-  </div>
- </div>
-
- <!-- Commandes -->
- <div x-show="tab==='orders'" class="bg-white border rounded-xl overflow-x-auto">
-  <table class="w-full text-sm">
-   <thead class="bg-slate-50 text-xs text-slate-500 text-left">
-    <tr><th class="p-3">Date</th><th class="p-3">Boutique</th><th class="p-3">Réf.</th><th class="p-3">Client</th><th class="p-3">Total</th><th class="p-3">Paiement</th><th class="p-3">Statut</th></tr>
-   </thead>
-   <tbody>
-    <template x-for="o in orders" :key="o.id">
-     <tr class="border-t">
-      <td class="p-3 text-xs" x-text="new Date(o.created_at).toLocaleString('fr-FR')"></td>
-      <td class="p-3" x-text="shopNameById(o.shop_id)"></td>
-      <td class="p-3" x-text="o.ref"></td>
-      <td class="p-3"><p x-text="o.customer_name"></p><p class="text-xs text-slate-500" x-text="o.customer_phone"></p></td>
-      <td class="p-3" x-text="o.total"></td>
-      <td class="p-3 text-xs" x-text="o.pay_mode"></td>
-      <td class="p-3 text-xs" x-text="o.status"></td>
-     </tr>
-    </template>
-   </tbody>
-  </table>
-  <p x-show="!orders.length" class="p-4 text-sm text-slate-500">Aucune commande.</p>
- </div>
-</div>
-
 <script src="config.js"></script>
 <script>
 var db = supabase.createClient(SB_URL, SB_KEY);
