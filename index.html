@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-50">
+<html lang="fr" class="min-h-full bg-slate-50">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
-<body class="h-full text-slate-800 antialiased font-sans flex flex-col justify-between" x-data="app()" x-cloak :dir="lang==='ar'?'rtl':'ltr'">
+<body class="min-h-screen text-slate-800 antialiased font-sans flex flex-col" x-data="app()" x-cloak :dir="lang==='ar'?'rtl':'ltr'">
 
 <div>
 <!-- Header Principal -->
@@ -329,7 +329,7 @@
     </div>
 
     <!-- Vérification d'identité -->
-    <div x-show="!shop.verified" class="bg-amber-50 border border-amber-200 rounded-3xl p-5 space-y-4">
+    <div x-show="!shop.verified" class="bti-id-verification bg-amber-50 border border-amber-200 rounded-3xl p-5 space-y-4">
      <h2 class="font-bold text-base text-amber-900" x-text="t('idVerificationTitle')"></h2>
      <p class="text-xs text-amber-800" x-text="t('idVerificationDesc')"></p>
      <div>
@@ -510,6 +510,10 @@
        <button type="button" @click="logout()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-5 py-3 rounded-xl text-sm transition">
         <i data-lucide="log-out" class="w-4 h-4"></i><span x-text="t('logout')"></span>
        </button>
+      </div>
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+       <div><h2 class="font-bold text-base text-slate-900">Apparence</h2><p class="text-xs text-slate-500 mt-1">Choisissez entre le thème clair et le thème sombre.</p></div>
+       <div data-bti-theme-slot class="flex justify-start sm:justify-end"></div>
       </div>
     </div>
 
