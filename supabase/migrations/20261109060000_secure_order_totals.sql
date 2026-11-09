@@ -163,9 +163,11 @@ begin
 end;
 $function$;
 
--- Remove browser access to the old RPC accepting a client-supplied total.
-revoke all on function public.place_order(text, text, text, text, text, text, text)
-  from public, anon, authenticated;
+-- ROLLOUT PHASE 1:
+-- Keep the legacy RPC temporarily available so the currently deployed storefront
+-- does not lose order submission before the new frontend is deployed and verified.
+-- This legacy function still trusts a client-supplied total and MUST be revoked
+-- in a separate post-deployment migration after the new storefront is live.
 
 -- Grant only the new validated cart-based RPC to storefront visitors.
 revoke all on function public.place_order(text, text, text, text, text, text, jsonb)
