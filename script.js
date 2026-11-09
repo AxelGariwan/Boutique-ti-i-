@@ -213,7 +213,7 @@ function app() {
   var shopId = new URLSearchParams(location.search).get("b");
   return {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
-    aiInput: "", aiMessages: [], aiBusy: false, aiError: "",
+    aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
@@ -265,54 +265,78 @@ function app() {
       this.tab = "vendor";
     },
 
-    openAiAssistant: function () {
-      if (!this.authed || !this.shop.sid) {
-        alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA.");
-        return;
+    aiInvoke: async function (body) {
+      var result = await db.functions.invoke("boutique-ai", { body: Object.assign({ shopId: this.shop.sid, locale: this.lang }, body || {}) });
+      if (result.error || !result.data || result.data.error) {
+        var msg = result.data && result.data.error ? result.data.error : "";
+        if (!msg && result.error && result.error.context) {
+          try { var detail = await result.error.context.clone().json(); msg = detail.error || detail.message || ""; } catch (e) {}
+        }
+        throw new Error(msg || (result.error && result.error.message) || "Assistant IA indisponible.");
       }
-      if (!this.aiMessages.length) {
-        this.aiMessages.push({ role: "assistant", content: this.t("aiGreeting") });
-      }
-      this.aiError = "";
-      this.modal = "aiChat";
+      return result.data;
+    },
+    openAiAssistant: async function () {
+      if (!this.authed || !this.shop.sid) { alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA."); return; }
+      this.aiError = ""; this.modal = "aiChat"; await this.loadAiConversations();
+    },
+    loadAiConversations: async function () {
+      this.aiHistoryBusy = true;
+      try {
+        var data = await this.aiInvoke({ action: "list_conversations" });
+        this.aiConversations = data.conversations || [];
+        if (!this.aiConversations.length) await this.newAiConversation();
+        else if (!this.aiConversationId || !this.aiConversations.some((c) => c.id === this.aiConversationId))
+          await this.selectAiConversation(this.aiConversations[0].id);
+        else await this.selectAiConversation(this.aiConversationId);
+      } catch (error) { this.aiError = error.message || "Impossible de charger l'historique."; }
+      finally { this.aiHistoryBusy = false; }
+    },
+    selectAiConversation: async function (id) {
+      var targetId = id || this.aiConversationId; if (!targetId) return;
+      this.aiHistoryBusy = true;
+      try {
+        var data = await this.aiInvoke({ action: "get_conversation", conversationId: targetId });
+        this.aiConversationId = targetId;
+        this.aiMessages = Array.isArray(data.conversation.messages) ? data.conversation.messages : [];
+        if (!this.aiMessages.length) this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }];
+        this.aiError = "";
+      } catch (error) { this.aiError = error.message || "Impossible d'ouvrir cette conversation."; }
+      finally { this.aiHistoryBusy = false; }
+    },
+    newAiConversation: async function () {
+      try {
+        var data = await this.aiInvoke({ action: "create_conversation" });
+        this.aiConversations.unshift(data.conversation); this.aiConversationId = data.conversation.id;
+        this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }]; this.aiError = "";
+      } catch (error) { this.aiError = error.message || "Impossible de créer une conversation."; }
+    },
+    deleteAiConversation: async function () {
+      if (!this.aiConversationId || !confirm("Supprimer définitivement cette conversation ?")) return;
+      try {
+        await this.aiInvoke({ action: "delete_conversation", conversationId: this.aiConversationId });
+        this.aiConversations = this.aiConversations.filter((c) => c.id !== this.aiConversationId);
+        this.aiConversationId = "";
+        if (this.aiConversations.length) await this.selectAiConversation(this.aiConversations[0].id);
+        else await this.newAiConversation();
+      } catch (error) { this.aiError = error.message || "Impossible de supprimer cette conversation."; }
     },
     sendAiMessage: async function () {
-      var message = String(this.aiInput || "").trim();
-      if (!message || this.aiBusy) return;
-      this.aiMessages.push({ role: "user", content: message });
-      this.aiInput = "";
-      this.aiBusy = true;
-      this.aiError = "";
-      var history = this.aiMessages.slice(-7, -1).map(function (item) {
-        return { role: item.role, content: item.content };
-      });
+      var message = String(this.aiInput || "").trim(); if (!message || this.aiBusy) return;
+      if (!this.aiConversationId) await this.newAiConversation();
+      if (!this.aiConversationId) return;
+      this.aiMessages.push({ role: "user", content: message }); this.aiInput = "";
+      this.aiBusy = true; this.aiError = "";
       try {
         var sessionResult = await db.auth.getSession();
         var session = sessionResult && sessionResult.data && sessionResult.data.session;
-        if (!session || !session.access_token) {
-          this.aiError = "Votre session vendeur a expiré. Déconnectez-vous puis reconnectez-vous.";
-          return;
-        }
-        var result = await db.functions.invoke("boutique-ai", {
-          body: { shopId: this.shop.sid, message: message, history: history, locale: this.lang }
-        });
-        if (result.error || !result.data || !result.data.answer) {
-          var msg = result.data && result.data.error ? result.data.error : "";
-          if (!msg && result.error && result.error.context) {
-            try {
-              var detail = await result.error.context.clone().json();
-              msg = detail.error || detail.message || "";
-            } catch (parseError) {}
-          }
-          this.aiError = msg || (result.error && result.error.message) || "L'assistant IA est momentanément indisponible. Réessayez plus tard.";
-        } else {
-          this.aiMessages.push({ role: "assistant", content: result.data.answer });
-        }
-      } catch (error) {
-        this.aiError = (error && error.message) || "Impossible de contacter l'assistant IA. Vérifiez votre connexion puis réessayez.";
-      } finally {
-        this.aiBusy = false;
-      }
+        if (!session || !session.access_token) throw new Error("Votre session vendeur a expiré. Reconnectez-vous.");
+        var result = await this.aiInvoke({ action: "chat", conversationId: this.aiConversationId, message: message });
+        this.aiMessages.push({ role: "assistant", content: result.answer });
+        var current = this.aiConversations.find((c) => c.id === this.aiConversationId);
+        if (current) current.title = message.slice(0, 70);
+      } catch (error) { this.aiMessages.pop(); this.aiError = error.message || "Impossible de contacter l'assistant IA."; }
+      finally { this.aiBusy = false; }
     },
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
     statusLabel: function (s) {
