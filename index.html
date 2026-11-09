@@ -297,6 +297,9 @@
      <button @click="modal='subscriptionModal'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm">
       <i data-lucide="gift" class="w-4 h-4"></i><span x-text="t('viewSub')"></span>
      </button>
+     <button type="button" @click="logout()" class="md:hidden bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-red-100" :aria-label="t('logout')" :title="t('logout')">
+      <i data-lucide="log-out" class="w-4 h-4"></i><span x-text="t('logout')"></span>
+     </button>
     </div>
    </div>
 
