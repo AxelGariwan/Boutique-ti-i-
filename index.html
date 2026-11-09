@@ -262,7 +262,7 @@
  </div>
 
  <!-- Espace Vendeur — Dashboard Moderne en Colonnes entièrement traduit -->
- <div x-show="!loading&&!remoteErr&&tab==='vendor'&&authed" x-cloak class="grid grid-cols-12 gap-6 pb-28 md:pb-0">
+ <div x-show="!loading&&!remoteErr&&tab==='vendor'&&authed" x-cloak class="grid grid-cols-12 gap-4 md:gap-6 pb-28 md:pb-0 min-w-0">
   
   <!-- Sidebar Latérale Interactive -->
   <aside class="hidden md:block md:col-span-3 space-y-3 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm h-fit">
@@ -282,23 +282,20 @@
     <button @click="subTab='account'" :class="subTab==='account'?'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100':'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center gap-3 p-2.5 rounded-xl transition"><i data-lucide="user-round" class="w-4 h-4"></i><span x-text="t('navAccount')"></span></button>
    </nav>
    
-   <div class="pt-4 border-t border-slate-100 mt-4 space-y-1 text-xs">
-    <button class="w-full flex items-center gap-3 p-2 rounded-lg text-red-600 hover:bg-red-50 transition" @click="logout()"><i data-lucide="log-out" class="w-4 h-4"></i><span x-text="t('logout')"></span></button>
-   </div>
   </aside>
 
   <!-- Contenu Principal du Dashboard -->
-  <main class="col-span-12 md:col-span-9 space-y-6">
+  <main class="col-span-12 md:col-span-9 min-w-0 space-y-4 md:space-y-6">
    
    <!-- Top Bar interne -->
-   <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-4">
-    <h1 class="text-lg font-black text-slate-900" x-text="subTab==='home'?t('navHome'):subTab==='inventory'?t('navInventory'):subTab==='orders'?t('navOrders'):subTab==='account'?t('navAccount'):t('navSettings')"></h1>
-    <div class="flex items-center gap-3">
-     <button @click="modal='subscriptionModal'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm">
+   <div class="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-base sm:text-lg font-black text-slate-900 min-w-0" x-text="subTab==='home'?t('navHome'):subTab==='inventory'?t('navInventory'):subTab==='orders'?t('navOrders'):subTab==='account'?t('navAccount'):t('navSettings')"></h1>
+    <div class="flex items-center justify-end gap-2 sm:gap-3 flex-wrap">
+      <button type="button" @click="openAiAssistant()" class="md:hidden bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-100 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-2">
+       <i data-lucide="bot" class="w-4 h-4"></i><span>Xelo IA</span>
+      </button>
+     <button type="button" @click="modal='subscriptionModal'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 sm:px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm">
       <i data-lucide="gift" class="w-4 h-4"></i><span x-text="t('viewSub')"></span>
-     </button>
-     <button type="button" @click="logout()" class="md:hidden bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-red-100" :aria-label="t('logout')" :title="t('logout')">
-      <i data-lucide="log-out" class="w-4 h-4"></i><span x-text="t('logout')"></span>
      </button>
     </div>
    </div>
@@ -505,6 +502,12 @@
        <button type="button" @click="cancelSubscription()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-4 py-2.5 rounded-xl text-xs transition" x-text="t('cancelSubBtn')"></button>
        <button type="button" @click="deleteAccount()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm" x-text="t('deleteAccountBtn')"></button>
       </div>
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+       <div><h2 class="font-bold text-base text-slate-900">Déconnexion</h2><p class="text-xs text-slate-500 mt-1">Fermez votre session sur cet appareil.</p></div>
+       <button type="button" @click="logout()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-5 py-3 rounded-xl text-sm transition">
+        <i data-lucide="log-out" class="w-4 h-4"></i><span x-text="t('logout')"></span>
+       </button>
+      </div>
      </div>
     </div>
 
@@ -512,24 +515,21 @@
   </main>
 
   <!-- Navigation flottante mobile : mêmes rubriques que le Dashboard existant -->
-  <nav class="vendor-mobile-nav md:hidden fixed bottom-3 left-3 right-3 z-40 bg-white/95 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-2xl px-2 pt-2 flex items-center justify-around gap-1" aria-label="Navigation vendeur">
-   <button type="button" @click="subTab='home'" :class="subTab==='home'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="house" class="w-5 h-5"></i><span x-text="t('navHome')"></span>
+  <nav class="vendor-mobile-nav md:hidden fixed bottom-3 left-3 right-3 z-40 bg-white/95 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-2xl px-1.5 pt-2 flex items-center justify-between gap-0.5" aria-label="Navigation vendeur">
+   <button type="button" @click="subTab='home'" :class="subTab==='home'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 text-[9px] sm:text-[10px] font-semibold">
+    <i data-lucide="house" class="w-5 h-5"></i><span class="truncate max-w-full" x-text="t('navHome')"></span>
    </button>
-   <button type="button" @click="subTab='inventory'" :class="subTab==='inventory'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="package" class="w-5 h-5"></i><span x-text="t('navInventory')"></span>
+   <button type="button" @click="subTab='inventory'" :class="subTab==='inventory'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 text-[9px] sm:text-[10px] font-semibold">
+    <i data-lucide="package" class="w-5 h-5"></i><span class="truncate max-w-full" x-text="t('navInventory')"></span>
    </button>
-   <button type="button" @click="openAiAssistant()" class="shrink-0 -mt-7 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-xl shadow-emerald-600/30 border-4 border-white flex flex-col items-center justify-center">
-    <i data-lucide="bot" class="w-5 h-5"></i><span class="text-[9px] font-black">IA</span>
+   <button type="button" @click="subTab='orders'" :class="subTab==='orders'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 text-[9px] sm:text-[10px] font-semibold">
+    <i data-lucide="shopping-cart" class="w-5 h-5"></i><span class="truncate max-w-full" x-text="t('navOrders')"></span>
    </button>
-   <button type="button" @click="subTab='orders'" :class="subTab==='orders'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="shopping-cart" class="w-5 h-5"></i><span x-text="t('navOrders')"></span>
+   <button type="button" @click="subTab='settings'" :class="subTab==='settings'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 text-[9px] sm:text-[10px] font-semibold">
+    <i data-lucide="settings" class="w-5 h-5"></i><span class="truncate max-w-full" x-text="t('navSettings')"></span>
    </button>
-   <button type="button" @click="subTab='settings'" :class="subTab==='settings'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="settings" class="w-5 h-5"></i><span x-text="t('navSettings')"></span>
-   </button>
-   <button type="button" @click="subTab='account'" :class="subTab==='account'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
-    <i data-lucide="user-round" class="w-5 h-5"></i><span x-text="t('navAccount')"></span>
+   <button type="button" @click="subTab='account'" :class="subTab==='account'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 text-[9px] sm:text-[10px] font-semibold">
+    <i data-lucide="user-round" class="w-5 h-5"></i><span class="truncate max-w-full" x-text="t('navAccount')"></span>
    </button>
   </nav>
 
