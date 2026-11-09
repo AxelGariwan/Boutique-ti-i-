@@ -102,3 +102,70 @@ html[data-theme="dark"] .bti-id-verification label.flex{background:#29384d!impor
 html[data-theme="dark"] .bti-id-verification label span{color:#e5edf7!important}
 html[data-theme="dark"] .bti-id-verification label span.bg-amber-100{background:#3a4658!important;color:#f3dfb0!important}
 html[data-theme="dark"] .bti-id-verification input[type="checkbox"]{accent-color:#34d399}
+
+
+/* Ajustements du thème : fond continu, sélecteur compact et vérification lisible */
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] body>div,
+html[data-theme="dark"] main{
+  background-color:#0b1220!important;
+}
+html[data-theme="dark"] body{
+  min-height:100vh;
+}
+html[data-theme="dark"] footer.bg-white{
+  background-color:#111c2e!important;
+  border-color:#29384d!important;
+}
+html[data-theme="dark"] .vendor-mobile-nav{
+  background:rgba(17,28,46,.96)!important;
+  border-color:#35465e!important;
+}
+html[data-theme="dark"] .vendor-mobile-nav button{
+  color:#a3b2c7!important;
+}
+html[data-theme="dark"] .vendor-mobile-nav button.text-emerald-700{
+  color:#6ee7b7!important;
+}
+
+/* Bloc de vérification : fond conservé, texte moins jaune et moins agressif */
+html[data-theme="dark"] .bti-id-verification{
+  background:#202b3d!important;
+  border-color:#46546a!important;
+  color:#dbe4f0!important;
+}
+html[data-theme="dark"] .bti-id-verification h2,
+html[data-theme="dark"] .bti-id-verification p,
+html[data-theme="dark"] .bti-id-verification label,
+html[data-theme="dark"] .bti-id-verification label span{
+  color:#dbe4f0!important;
+}
+html[data-theme="dark"] .bti-id-verification label.flex{
+  background:#29384d!important;
+  border-color:#52627a!important;
+}
+html[data-theme="dark"] .bti-id-verification label span.bg-amber-100{
+  background:#39485e!important;
+  color:#e7d7ad!important;
+}
+html[data-theme="dark"] .bti-id-verification input[type="checkbox"]{
+  accent-color:#34d399;
+}
+
+/* Bouton de thème discret, placé uniquement dans Mon compte */
+.bti-theme-toggle{
+  min-height:30px!important;
+  padding:5px 9px!important;
+  gap:6px!important;
+  border-radius:9px!important;
+  font-size:11px!important;
+  line-height:1.1!important;
+}
+@media(max-width:640px){
+  .bti-theme-toggle{
+    min-height:29px!important;
+    padding:4px 8px!important;
+    font-size:10px!important;
+  }
+}
