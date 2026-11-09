@@ -279,6 +279,7 @@
     <button @click="subTab='inventory'" :class="subTab==='inventory'?'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100':'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center gap-3 p-2.5 rounded-xl transition"><i data-lucide="package" class="w-4 h-4"></i><span x-text="t('navInventory')"></span></button>
     <button @click="subTab='orders'" :class="subTab==='orders'?'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100':'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center gap-3 p-2.5 rounded-xl transition"><i data-lucide="shopping-bag" class="w-4 h-4"></i><span x-text="t('navOrders')"></span></button>
     <button @click="subTab='settings'" :class="subTab==='settings'?'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100':'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center gap-3 p-2.5 rounded-xl transition"><i data-lucide="settings" class="w-4 h-4"></i><span x-text="t('navSettings')"></span></button>
+    <button @click="subTab='account'" :class="subTab==='account'?'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100':'text-slate-600 hover:bg-slate-50'" class="w-full flex items-center gap-3 p-2.5 rounded-xl transition"><i data-lucide="user-round" class="w-4 h-4"></i><span x-text="t('navAccount')"></span></button>
    </nav>
    
    <div class="pt-4 border-t border-slate-100 mt-4 space-y-1 text-xs">
@@ -291,7 +292,7 @@
    
    <!-- Top Bar interne -->
    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-4">
-    <h1 class="text-lg font-black text-slate-900" x-text="subTab==='home'?t('navHome'):subTab==='inventory'?t('navInventory'):subTab==='orders'?t('navOrders'):t('navSettings')"></h1>
+    <h1 class="text-lg font-black text-slate-900" x-text="subTab==='home'?t('navHome'):subTab==='inventory'?t('navInventory'):subTab==='orders'?t('navOrders'):subTab==='account'?t('navAccount'):t('navSettings')"></h1>
     <div class="flex items-center gap-3">
      <button @click="modal='subscriptionModal'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm">
       <i data-lucide="gift" class="w-4 h-4"></i><span x-text="t('viewSub')"></span>
@@ -466,32 +467,41 @@
      </div>
     </div>
 
-     <!-- Sécurité du compte vendeur -->
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-     <div>
-      <h2 class="font-bold text-lg text-slate-900" x-text="t('securityTitle')"></h2>
-      <p class="text-xs text-slate-500 mt-1">Confirmez votre mot de passe actuel avant de choisir un nouveau mot de passe.</p>
+
+    <!-- VUE 5 : MON COMPTE -->
+    <div x-show="subTab==='account'" class="space-y-6">
+     <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div><h2 class="font-bold text-lg text-slate-900">Informations du compte</h2><p class="text-xs text-slate-500 mt-1">Ces informations sont personnelles et indépendantes des paramètres de votre boutique.</p></div>
+      <div>
+       <label class="block text-xs font-semibold text-slate-600 mb-1">Adresse e-mail du compte</label>
+       <input type="email" :value="accountEmail || 'Aucune adresse e-mail associée'" readonly disabled class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 text-slate-500">
+       <p class="text-[11px] text-slate-500 mt-1">L'adresse e-mail est liée à votre authentification et ne peut pas être modifiée ici.</p>
+      </div>
+      <form @submit.prevent="saveAccountPhone()" class="space-y-3">
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1">Numéro de téléphone du compte</label><input type="tel" autocomplete="tel" required x-model="accountPhoneDraft" placeholder="+221771234567" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"><p class="text-[11px] text-slate-500 mt-1">Format international conseillé. Ce numéro ne modifie pas le WhatsApp public de la boutique.</p></div>
+       <button type="submit" :disabled="accountSaving" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition" x-text="accountSaving ? t('pleaseWait') : 'Enregistrer le numéro'"></button>
+       <p x-show="accountMessage" class="text-xs text-emerald-700" x-text="accountMessage"></p>
+      </form>
      </div>
-     <form @submit.prevent="changePassword()" class="space-y-3">
-      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('currentPassword')"></label><input type="password" autocomplete="current-password" required x-model="passwordForm.current" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
-      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('newPassword')"></label><input type="password" autocomplete="new-password" minlength="8" required x-model="passwordForm.next" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
-      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('confirmPassword')"></label><input type="password" autocomplete="new-password" minlength="8" required x-model="passwordForm.confirm" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
-      <button type="submit" :disabled="passwordBusy" class="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition" x-text="passwordBusy ? t('pleaseWait') : t('changePasswordBtn')"></button>
-     </form>
+     <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div><h2 class="font-bold text-lg text-slate-900" x-text="t('securityTitle')"></h2><p class="text-xs text-slate-500 mt-1">Confirmez votre mot de passe actuel avant de choisir un nouveau mot de passe.</p></div>
+      <form @submit.prevent="changePassword()" class="space-y-3">
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('currentPassword')"></label><input type="password" autocomplete="current-password" required x-model="passwordForm.current" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('newPassword')"></label><input type="password" autocomplete="new-password" minlength="8" required x-model="passwordForm.next" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('confirmPassword')"></label><input type="password" autocomplete="new-password" minlength="8" required x-model="passwordForm.confirm" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></div>
+       <button type="submit" :disabled="passwordBusy" class="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition" x-text="passwordBusy ? t('pleaseWait') : t('changePasswordBtn')"></button>
+      </form>
+     </div>
+     <div class="bg-white p-6 rounded-3xl border border-red-200 shadow-sm space-y-4">
+      <h2 class="font-bold text-lg text-red-600 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5"></i><span x-text="t('dangerZoneTitle')"></span></h2>
+      <p class="text-xs text-slate-600" x-text="t('dangerZoneDesc')"></p>
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+       <button type="button" @click="cancelSubscription()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-4 py-2.5 rounded-xl text-xs transition" x-text="t('cancelSubBtn')"></button>
+       <button type="button" @click="deleteAccount()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm" x-text="t('deleteAccountBtn')"></button>
+      </div>
+     </div>
     </div>
 
-   <!-- Zone de Danger Traduite -->
-    <div class="bg-white p-6 rounded-3xl border border-red-200 shadow-sm space-y-4">
-     <h2 class="font-bold text-lg text-red-600 flex items-center gap-2">
-      <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-      <span x-text="t('dangerZoneTitle')"></span>
-     </h2>
-     <p class="text-xs text-slate-600" x-text="t('dangerZoneDesc')"></p>
-     <div class="flex flex-col sm:flex-row gap-3 pt-2">
-      <button type="button" @click="cancelSubscription()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-4 py-2.5 rounded-xl text-xs transition" x-text="t('cancelSubBtn')"></button>
-      <button type="button" @click="deleteAccount()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm" x-text="t('deleteAccountBtn')"></button>
-     </div>
-    </div>
    </div>
 
   </main>
@@ -512,6 +522,9 @@
    </button>
    <button type="button" @click="subTab='settings'" :class="subTab==='settings'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
     <i data-lucide="settings" class="w-5 h-5"></i><span x-text="t('navSettings')"></span>
+   </button>
+   <button type="button" @click="subTab='account'" :class="subTab==='account'?'text-emerald-700':'text-slate-500'" class="flex-1 min-w-0 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold">
+    <i data-lucide="user-round" class="w-5 h-5"></i><span x-text="t('navAccount')"></span>
    </button>
   </nav>
 
