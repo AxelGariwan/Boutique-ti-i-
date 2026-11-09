@@ -41,17 +41,36 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 <div class="admin-shell">
   <!-- Connexion : même authentification Supabase et même liste admins -->
   <div x-show="ready&&!ok" class="min-h-screen grid place-items-center p-4">
-    <form @submit.prevent="login()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+    <form x-show="!recovery&&!forgot" @submit.prevent="login()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-800 grid place-items-center font-black text-lg shadow-lg">Bti</div>
         <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Boutique ti i</p><h1 class="text-2xl font-black">Admin Console</h1></div>
       </div>
-      <div><p class="text-sm admin-muted">Espace sécurisé réservé aux administrateurs autorisés.</p></div>
-      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" placeholder="admin@exemple.com" autocomplete="email" class="admin-input w-full"></label>
-      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Mot de passe</span><input type="password" x-model="f.password" placeholder="Votre mot de passe" autocomplete="current-password" class="admin-input w-full"></label>
+      <p class="text-sm admin-muted">Espace sécurisé réservé aux administrateurs autorisés.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" placeholder="admin@exemple.com" autocomplete="username" required class="admin-input w-full"></label>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Mot de passe</span><input type="password" x-model="f.password" placeholder="Votre mot de passe" autocomplete="current-password" required class="admin-input w-full"></label>
       <p x-show="err" class="text-red-300 text-xs" x-text="err"></p>
-      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 disabled:opacity-50 text-white font-bold py-3.5 shadow-lg shadow-red-950/30" x-text="busy?'Connexion…':'Accéder au tableau de bord'"></button>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Connexion…':'Accéder au tableau de bord'"></button>
+      <button type="button" @click="forgot=true;err=''" class="w-full text-sm text-red-300 hover:text-red-200">Mot de passe oublié ?</button>
       <p class="text-[11px] text-center admin-muted">Accès contrôlé par les droits administrateur Supabase.</p>
+    </form>
+
+    <form x-show="forgot&&!recovery" @submit.prevent="sendRecovery()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Récupération sécurisée</p><h1 class="text-2xl font-black mt-1">Mot de passe oublié ?</h1></div>
+      <p class="text-sm admin-muted">Saisis l’adresse e-mail de ton compte. Si un compte correspondant existe, tu recevras un lien de réinitialisation.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" required autocomplete="email" class="admin-input w-full"></label>
+      <p x-show="notice" class="text-emerald-300 text-sm" x-text="notice"></p><p x-show="err" class="text-red-300 text-xs" x-text="err"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Envoi…':'Envoyer le lien'"></button>
+      <button type="button" @click="forgot=false;err='';notice=''" class="w-full text-sm text-zinc-300">Retour à la connexion</button>
+    </form>
+
+    <form x-show="recovery" @submit.prevent="saveNewPassword()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Nouveau mot de passe</p><h1 class="text-2xl font-black mt-1">Sécurise ton compte</h1></div>
+      <p class="text-sm admin-muted">Choisis un mot de passe d’au moins 10 caractères.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Nouveau mot de passe</span><input type="password" x-model="newPassword" minlength="10" required autocomplete="new-password" class="admin-input w-full"></label>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Confirmer le mot de passe</span><input type="password" x-model="confirmPassword" minlength="10" required autocomplete="new-password" class="admin-input w-full"></label>
+      <p x-show="err" class="text-red-300 text-xs" x-text="err"></p><p x-show="notice" class="text-emerald-300 text-sm" x-text="notice"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Enregistrement…':'Enregistrer le nouveau mot de passe'"></button>
     </form>
   </div>
 
@@ -129,21 +148,51 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 var db = supabase.createClient(SB_URL, SB_KEY);
 function admin() {
   return {
-    ready: false, ok: false, busy: false, err: "", tab: "vendors", filter: "all", q: "",
+    ready: false, ok: false, busy: false, err: "", notice: "", forgot: false, recovery: false,
+    newPassword: "", confirmPassword: "", tab: "vendors", filter: "all", q: "",
     f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
 
     init: async function () {
+      var self = this;
+      db.auth.onAuthStateChange(function (event, session) {
+        if (event === "PASSWORD_RECOVERY") {
+          self.recovery = true; self.forgot = false; self.err = ""; self.ready = true;
+        }
+      });
       var s = await db.auth.getSession();
-      if (s.data.session) await this.check(s.data.session.user.id);
+      if (s.data.session && !this.recovery) await this.check(s.data.session.user.id);
       this.ready = true;
+      if (window.location.hash.indexOf("error") >= 0) this.err = "Le lien de récupération est invalide ou expiré. Demande un nouveau lien.";
     },
     login: async function () {
       this.err = ""; this.busy = true;
       var r = await db.auth.signInWithPassword({ email: this.f.email.trim().toLowerCase(), password: this.f.password });
       this.busy = false;
-      if (r.error) { this.err = "Email ou mot de passe incorrect."; return; }
+      if (r.error) { this.err = "Connexion impossible. Vérifie le mot de passe ou utilise « Mot de passe oublié ». (" + r.error.message + ")"; return; }
       this.f.password = "";
       await this.check(r.data.user.id);
+    },
+    sendRecovery: async function () {
+      this.err = ""; this.notice = ""; this.busy = true;
+      var redirect = window.location.origin + window.location.pathname + "?mode=recovery";
+      var r = await db.auth.resetPasswordForEmail(this.f.email.trim().toLowerCase(), { redirectTo: redirect });
+      this.busy = false;
+      if (r.error) { this.err = "Impossible d’envoyer le lien : " + r.error.message; return; }
+      this.notice = "Si cette adresse correspond à un compte, un lien de réinitialisation vient d’être envoyé. Vérifie aussi les courriers indésirables.";
+    },
+    saveNewPassword: async function () {
+      this.err = ""; this.notice = "";
+      if (this.newPassword.length < 10) { this.err = "Le mot de passe doit contenir au moins 10 caractères."; return; }
+      if (this.newPassword !== this.confirmPassword) { this.err = "Les deux mots de passe ne correspondent pas."; return; }
+      this.busy = true;
+      var r = await db.auth.updateUser({ password: this.newPassword });
+      this.busy = false;
+      if (r.error) { this.err = "Impossible de modifier le mot de passe : " + r.error.message; return; }
+      this.newPassword = ""; this.confirmPassword = ""; this.notice = "Mot de passe modifié. Vérification de tes droits administrateur…";
+      var s = await db.auth.getSession();
+      if (s.data.session) { this.recovery = false; await this.check(s.data.session.user.id); }
+      else { this.recovery = false; this.forgot = false; this.notice = "Mot de passe modifié. Tu peux maintenant te connecter."; }
+      history.replaceState(null, "", window.location.pathname);
     },
     // Seuls les comptes listés dans la table "admins" peuvent entrer
     check: async function (uid) {
