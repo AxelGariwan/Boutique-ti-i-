@@ -75,3 +75,15 @@ html[data-theme="dark"] .btnlink{background:#047857;color:#fff}
 html[data-theme="dark"] a{color:#6ee7b7}
 html[data-theme="dark"] a:hover{color:#a7f3d0}
 html[data-theme="light"] body{--fg:#0f172a;--muted:#475569;--bg:#fff;--soft:#f1f5f9;--brand:#047857;--brand-dark:#065f46;--line:#cbd5e1;--warn-bg:#fef3c7;--warn-fg:#78350f}
+
+/* Classes utilitaires complémentaires utilisées dans certaines vues */
+html[data-theme="dark"] .bg-gray-50,html[data-theme="dark"] .bg-zinc-50{background-color:#0b1220!important}
+html[data-theme="dark"] .bg-gray-100,html[data-theme="dark"] .bg-zinc-100{background-color:#1b293d!important}
+html[data-theme="dark"] .bg-gray-200,html[data-theme="dark"] .bg-zinc-200{background-color:#29384d!important}
+html[data-theme="dark"] .text-gray-900,html[data-theme="dark"] .text-gray-800,html[data-theme="dark"] .text-gray-700,html[data-theme="dark"] .text-zinc-900,html[data-theme="dark"] .text-zinc-800{color:#e5edf7!important}
+html[data-theme="dark"] .text-gray-600,html[data-theme="dark"] .text-gray-500,html[data-theme="dark"] .text-zinc-600,html[data-theme="dark"] .text-zinc-500{color:#a3b2c7!important}
+html[data-theme="dark"] .border-gray-100,html[data-theme="dark"] .border-gray-200,html[data-theme="dark"] .border-gray-300,html[data-theme="dark"] .border-zinc-100,html[data-theme="dark"] .border-zinc-200{border-color:#29384d!important}
+html[data-theme="dark"] .divide-gray-100>:not([hidden])~:not([hidden]),html[data-theme="dark"] .divide-gray-200>:not([hidden])~:not([hidden]){border-color:#29384d!important}
+html[data-theme="dark"] .bg-rose-50{background-color:#451d28!important}
+html[data-theme="dark"] .bg-rose-100{background-color:#542333!important}
+html[data-theme="dark"] .text-black{color:#e5edf7!important}
