@@ -61,9 +61,9 @@ var TR = {
     f8:"Tout ce qui est dans Pro", f9:"Mise en avant des produits", f10:"Boutique WhatsApp Direct", f11:"Support Prioritaire 24/7",
     f12:"IA Pro : questions sur ventes, commandes et stocks", f13:"Analyses et recommandations personnalisées par l’IA", f14:"Conseils pour améliorer la boutique",
     f15:"IA Premium : création et optimisation de fiches produits", f16:"Actions sur la boutique après votre confirmation", f17:"Aide avancée à la gestion de l’inventaire", f18:"Automatisations et tâches répétitives assistées par IA",
-    orderSuccessTitle:"Commande enregistrée et payée !", orderSuccessDesc:"Votre code de suivi unique a été généré. Conservez-le précieusement pour suivre l'état de votre commande.",
+    orderSuccessTitle:"Commande enregistrée !", orderSuccessDesc:"Votre commande est enregistrée. Le paiement reste à confirmer directement avec le vendeur.",
     trackingCodeLabel:"Votre Code de Suivi Unique :", copy:"Copier", copied:"Copié !", sendOrderWa:"Envoyer la confirmation au vendeur sur WhatsApp", close:"Fermer",
-    client:"Client", status:"Statut", statusPending:"Payé / En attente", statusProcessing:"En cours de préparation / expédition", statusCompleted:"Livrée / Terminée",
+    client:"Client", status:"Statut", statusPending:"Paiement à confirmer / En attente", statusProcessing:"En cours de préparation / expédition", statusCompleted:"Livrée / Terminée",
     inStockLabel:"En stock", outOfStockLabel:"En rupture",
     cardModalTitle:"Paiement Sécurisé par Carte Bancaire", cardModalDesc:"Entrez les informations de votre carte pour régler votre commande en toute sécurité.", cardNumber:"Numéro de carte", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Payer en ligne", cancel:"Annuler",
     statVisits:"Visites du site", statRevenue:"Chiffre d'affaires", statOrders:"Commandes reçues",
@@ -94,9 +94,9 @@ var TR = {
     f8:"Everything in Pro", f9:"Product promotion", f10:"Direct WhatsApp Button", f11:"Priority Support 24/7",
     f12:"Pro AI: answers about sales, orders and stock", f13:"AI insights and personalized recommendations", f14:"Tips to improve your shop",
     f15:"Premium AI: create and optimize product listings", f16:"Shop changes after your confirmation", f17:"Advanced inventory assistance", f18:"AI-assisted workflows and repetitive tasks",
-    orderSuccessTitle:"Order Placed & Paid!", orderSuccessDesc:"Your unique tracking code has been generated. Keep it safe to track your order.",
+    orderSuccessTitle:"Order registered!", orderSuccessDesc:"Your order has been registered. Payment must still be confirmed directly with the seller.",
     trackingCodeLabel:"Your Unique Tracking Code:", copy:"Copy", copied:"Copied!", sendOrderWa:"Send order to vendor on WhatsApp", close:"Close",
-    client:"Client", status:"Status", statusPending:"Paid / Pending", statusProcessing:"Processing / Shipping", statusCompleted:"Delivered / Completed",
+    client:"Client", status:"Status", statusPending:"Payment to be confirmed / Pending", statusProcessing:"Processing / Shipping", statusCompleted:"Delivered / Completed",
     inStockLabel:"In Stock", outOfStockLabel:"Out of Stock",
     cardModalTitle:"Secure Credit Card Payment", cardModalDesc:"Enter your card details to securely pay for your order.", cardNumber:"Card Number", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Pay Online", cancel:"Cancel",
     statVisits:"Site Visits", statRevenue:"Total Revenue", statOrders:"Orders Received",
@@ -127,9 +127,9 @@ var TR = {
     f12:"IA Pro: respuestas sobre ventas, pedidos y stock", f13:"Análisis y recomendaciones personalizadas", f14:"Consejos para mejorar la tienda",
     f15:"IA Premium: creación y optimización de productos", f16:"Cambios en la tienda con tu confirmación", f17:"Asistencia avanzada de inventario", f18:"Automatización de tareas repetitivas con IA",
     f8:"Todo lo de Pro", f9:"Promoción de productos", f10:"Botón directo WhatsApp", f11:"Soporte prioritario 24/7",
-    orderSuccessTitle:"¡Pedido realizado y pagado!", orderSuccessDesc:"Se ha generado tu código de seguimiento único.",
+    orderSuccessTitle:"¡Pedido registrado!", orderSuccessDesc:"Tu pedido está registrado. El pago aún debe confirmarse directamente con el vendedor.",
     trackingCodeLabel:"Tu Código de Seguimiento Único:", copy:"Copiar", copied:"¡Copiado!", sendOrderWa:"Enviar pedido al vendedor por WhatsApp", close:"Cerrar",
-    client:"Cliente", status:"Estado", statusPending:"Pagado / Pendiente", statusProcessing:"En preparación", statusCompleted:"Entregado",
+    client:"Cliente", status:"Estado", statusPending:"Pago por confirmar / Pendiente", statusProcessing:"En preparación", statusCompleted:"Entregado",
     inStockLabel:"En Stock", outOfStockLabel:"Agotado",
     cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Pagar online", cancel:"Cancelar",
     statVisits:"Visitas", statRevenue:"Ingresos totales", statOrders:"Pedidos recibidos",
@@ -157,9 +157,9 @@ var TR = {
     f1:"ما يصل إلى 10 منتجات", f2:"إدارة الطلبات", f3:"دفع اختياري",
     f4:"منتجات غير محدودة", f5:"لوحة التحكم والزيارات", f6:"إدارة المخزون", f7:"شارة بائع موثق",
     f8:"كل ما في الاحترافية", f9:"تمييز المنتجات", f10:"زر واتساب مباشر", f11:"دعم فني أولوي 24/7",
-    orderSuccessTitle:"تم تسجيل الطلب ودفعه!", orderSuccessDesc:"تم إنشاؤء رمز فريد لمتابعة طلبك بكل سهولة.",
+    orderSuccessTitle:"تم تسجيل الطلب!", orderSuccessDesc:"تم تسجيل طلبك. يجب تأكيد الدفع مباشرةً مع البائع.",
     trackingCodeLabel:"رمز التتبع الفريد الخاص بك:", copy:"نسخ", copied:"تم النسخ!", sendOrderWa:"إرسال الطلب للبائع عبر واتساب", close:"إغلاق",
-    client:"العميل", status:"الحالة", statusPending:"مدفوع / في انتظار المعالجة", statusProcessing:"قيد التجهيز / الشحن", statusCompleted:"تم التوصيل / مكتمل",
+    client:"العميل", status:"الحالة", statusPending:"بانتظار تأكيد الدفع", statusProcessing:"قيد التجهيز / الشحن", statusCompleted:"تم التوصيل / مكتمل",
     inStockLabel:"متوفر", outOfStockLabel:"غير متوفر",
     cardModalTitle:"الدفع الآمن بالبطاقة البنكية", cardModalDesc:"أدخل معلومات بطاقتك لدفع قيمة الطلب بأمان تام.", cardNumber:"رقم البطاقة", cardExp:"تاريخ الانتهاء", cardCvv:"رمز الأمان", paySecurely:"ادفع الان", cancel:"إلغاء",
     statVisits:"الزيارات", statRevenue:"إجمالي الإيرادات", statOrders:"الطلبات المستلمة",
@@ -437,9 +437,9 @@ function app() {
 
     // Côté client (boutique publique), le serveur ne renvoie que les NOMS des modes de paiement (pmNames)
     get payOpts() {
-      if (this.remote) return Array.isArray(this.shop.pmNames) ? this.shop.pmNames : [];
+      if (this.remote) return Array.isArray(this.shop.pmNames) ? this.shop.pmNames.filter(function (name) { return name !== CARD; }) : [];
       var p = this.shop.pm || {};
-      return Object.keys(p).filter(function (k) { return String(p[k] || "").trim(); });
+      return Object.keys(p).filter(function (k) { return k !== CARD && String(p[k] || "").trim(); });
     },
     get pmOptions() {
       var p = this.shop.pm || {};
@@ -859,30 +859,23 @@ function app() {
       }
 
       if (this.pay === CARD) {
-        this.modal = 'cardPayment';
-      } else {
-        this.finalizeOrder();
+        alert("Le paiement par carte bancaire n’est pas encore disponible. Choisissez un autre moyen de paiement.");
+        return;
       }
+      this.finalizeOrder();
     },
 
     processCardPayment: function () {
-      if (!this.cardData.number || !this.cardData.exp || !this.cardData.cvv) {
-        alert("Veuillez remplir toutes les informations de la carte bancaire.");
-        return;
-      }
       this.modal = '';
       this.cardData = { number: "", exp: "", cvv: "" };
-      this.finalizeOrder();
+      alert("Le paiement par carte bancaire n’est pas encore intégré. Aucun débit n’a été effectué.");
     },
 
     finalizeOrder: async function () {
       var c = this.cust, self = this;
       var trackingCode = "CMD-" + rnd(6).toUpperCase();
       var orderTotal = this.total;
-
-      var lines = this.cart.map(function (i) { return i.quantity + " x " + i.title + " (" + self.fmt(i.price) + ")"; });
-      var message = lines.join("\n") + "\nTotal : " + this.fmt(orderTotal) +
-        "\nAdresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
+      var message = "Adresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
 
       var newOrder = {
         id: Date.now(),
@@ -904,14 +897,20 @@ function app() {
             p_ref: trackingCode,
             p_name: c.name.trim(),
             p_phone: c.phone.trim(),
-            p_total: String(orderTotal),
             p_mode: this.pay || "Non spécifié",
-            p_message: message
+            p_message: message,
+            p_items: this.cart.map(function (item) {
+              return { id: String(item.id), quantity: item.quantity };
+            })
           });
-          if (r.error || r.data !== true) {
-            alert("Votre commande n'a pas pu être enregistrée. Vérifiez vos informations ou réessayez dans quelques minutes.");
+          if (r.error || !r.data || r.data.ok !== true) {
+            alert((r.data && r.data.error) || "Votre commande n'a pas pu être enregistrée. Vérifiez le stock ou réessayez dans quelques minutes.");
             return;
           }
+          orderTotal = Number(r.data.total);
+          newOrder.total = orderTotal;
+          newOrder.items = Array.isArray(r.data.items) ? r.data.items : [];
+          newOrder.message = r.data.message || message;
           this.orders.unshift(newOrder);
         } catch (err) {
           alert("Erreur réseau : votre commande n'a pas été enregistrée.");
@@ -1025,7 +1024,7 @@ function app() {
             trackingCode: o.ref,
             shop_id: o.shop_id,
             customer: { name: o.customer_name, phone: o.customer_phone },
-            items: [],
+            items: Array.isArray(o.items) ? o.items : [],
             total: parseInt(String(o.total || "").replace(/\D/g, ""), 10) || 0,
             paymentMethod: o.pay_mode,
             message: o.message || "",
