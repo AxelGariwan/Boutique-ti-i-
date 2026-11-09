@@ -31,6 +31,7 @@ declare
   v_total numeric := 0;
   v_items jsonb := '[]'::jsonb;
   v_message text;
+  v_order_id uuid;
   v_lines text := '';
 begin
   if coalesce(length(trim(p_name)), 0) = 0 or length(p_name) > 120
@@ -139,10 +140,12 @@ begin
     (shop_id, ref, customer_name, customer_phone, total, pay_mode, message, items)
   values
     (p_shop, trim(p_ref), trim(p_name), trim(p_phone), v_total::bigint::text,
-     coalesce(p_mode, ''), v_message, v_items);
+     coalesce(p_mode, ''), v_message, v_items)
+  returning id into v_order_id;
 
   return jsonb_build_object(
     'ok', true,
+    'id', v_order_id,
     'total', v_total,
     'items', v_items,
     'message', v_message
