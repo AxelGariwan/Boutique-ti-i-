@@ -91,6 +91,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
       <nav class="admin-nav rounded-full p-1 flex flex-wrap items-center justify-center gap-1">
         <button @click="tab='vendors'" :class="tab==='vendors'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Vendeurs</button>
         <button @click="tab='orders'" :class="tab==='orders'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Commandes</button>
+        <button @click="tab='analytics'" :class="tab==='analytics'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Statistiques</button>
       </nav>
       <div class="hidden lg:flex items-center gap-2">
         <span class="text-[11px] text-red-100/70 mr-2">Administration sécurisée</span>
@@ -109,6 +110,39 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
       <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Identités à vérifier</p><span class="text-xl">◷</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-amber-300 tabular-nums" x-text="count('pending')"></p><p class="text-[11px] text-amber-200 mt-2">Documents en attente</p></article>
       <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Vendeurs validés</p><span class="text-xl">✓</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-emerald-300 tabular-nums" x-text="count('approved')"></p><p class="text-[11px] text-emerald-200 mt-2">Identités approuvées</p></article>
       <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Commandes reçues</p><span class="text-xl">▤</span></div><p class="text-3xl sm:text-4xl font-black mt-3 tabular-nums" x-text="orders.length"></p><p class="text-[11px] text-red-300 mt-2">Commandes chargées</p></article>
+    </section>
+
+    <!-- Statistiques globales : montants de commandes, non assimilés à des paiements encaissés -->
+    <section x-show="tab==='analytics'" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div><h3 class="text-xl font-black">Statistiques de la plateforme</h3><p class="text-xs admin-muted mt-1">Montants des commandes enregistrées. Les paiements ne sont pas confirmés automatiquement par la plateforme.</p></div>
+        <select x-model="analyticsPeriod" class="admin-input sm:w-52" aria-label="Période du graphique"><option value="day">Aujourd’hui</option><option value="week">Cette semaine</option><option value="month">Ce mois</option></select>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <template x-for="periodCard in periodCards" :key="periodCard.key">
+          <article class="admin-stat rounded-2xl p-4 sm:p-5">
+            <p class="text-xs admin-muted" x-text="periodCard.label"></p>
+            <p class="text-3xl font-black mt-2 tabular-nums" x-text="periodCard.count"></p>
+            <p class="text-[11px] admin-muted mt-1">commandes enregistrées</p>
+            <div class="mt-3 pt-3 border-t border-white/10 space-y-1">
+              <template x-for="row in periodCard.amounts" :key="row.currency"><div class="flex justify-between gap-2 text-xs"><span class="admin-muted" x-text="row.currency"></span><strong x-text="formatMoney(row.amount,row.currency)"></strong></div></template>
+              <p x-show="!periodCard.amounts.length" class="text-xs admin-muted">Aucun montant sur cette période.</p>
+            </div>
+          </article>
+        </template>
+      </div>
+      <div class="admin-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h3 class="font-bold">Activité quotidienne</h3><p class="text-xs admin-muted">Nombre de commandes sur les 7 derniers jours</p></div><span class="admin-pill bg-white/10 text-slate-200" x-text="selectedPeriodLabel"></span></div>
+        <div class="grid grid-cols-7 gap-2 items-end min-h-36">
+          <template x-for="day in chartDays" :key="day.key"><div class="min-w-0 flex flex-col items-center gap-2"><span class="text-[10px] admin-muted" x-text="day.count"></span><div class="w-full max-w-12 rounded-t-lg bg-gradient-to-t from-red-700 to-rose-400" :style="'height:'+Math.max(5,day.count/chartMax*92)+'px'"></div><span class="text-[10px] admin-muted" x-text="day.label"></span></div></template>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Panier moyen · période choisie</p><template x-for="row in selectedStats.amounts" :key="row.currency"><p class="text-sm font-bold mt-2" x-text="formatMoney(row.count?row.amount/row.count:0,row.currency)+' · '+row.currency"></p></template><p x-show="!selectedStats.amounts.length" class="text-xs admin-muted mt-2">Pas encore de données.</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes en attente</p><p class="text-3xl font-black mt-2" x-text="selectedStats.pending"></p><p class="text-[11px] admin-muted mt-1">Paiement à confirmer</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes terminées</p><p class="text-3xl font-black mt-2" x-text="selectedStats.completed"></p><p class="text-[11px] admin-muted mt-1">Selon le statut de livraison</p></article>
+      </div>
+      <p class="text-[11px] admin-muted">Les montants sont regroupés par devise pour éviter d’additionner des FCFA, des dirhams ou d’autres monnaies. Les statistiques utilisent les commandes chargées depuis Supabase.</p>
     </section>
 
     <!-- Gestion des vendeurs et vérification d'identité -->
@@ -153,6 +187,7 @@ function admin() {
     ready: false, ok: false, busy: false, err: "", notice: "", forgot: false, recovery: false,
     newPassword: "", confirmPassword: "", tab: "vendors", filter: "all", q: "",
     f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
+    analyticsPeriod: "week",
 
     init: async function () {
       var self = this;
@@ -211,6 +246,45 @@ function admin() {
       if (b.data) this.shops = b.data;
       if (c.data) this.orders = c.data;
     },
+    get periodCards() {
+      return [
+        {key:"day",label:"Aujourd’hui",count:this.statsFor("day").count,amounts:this.statsFor("day").amounts},
+        {key:"week",label:"Cette semaine",count:this.statsFor("week").count,amounts:this.statsFor("week").amounts},
+        {key:"month",label:"Ce mois",count:this.statsFor("month").count,amounts:this.statsFor("month").amounts}
+      ];
+    },
+    get selectedStats() { return this.statsFor(this.analyticsPeriod); },
+    get selectedPeriodLabel() { return this.analyticsPeriod==="day"?"Aujourd’hui":(this.analyticsPeriod==="month"?"Ce mois":"Cette semaine"); },
+    get chartDays() {
+      var out=[], now=new Date(), start=new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-6);
+      for(var i=0;i<7;i++){
+        var d=new Date(start);d.setDate(start.getDate()+i);
+        var key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+        var count=this.orders.filter(function(o){var x=new Date(o.created_at);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")===key;}).length;
+        out.push({key:key,label:d.toLocaleDateString("fr-FR",{weekday:"short"}),count:count});
+      }
+      return out;
+    },
+    get chartMax() { return Math.max(1,...this.chartDays.map(function(d){return d.count;})); },
+    statsFor: function(period) {
+      var now=new Date(), start=new Date(now); start.setHours(0,0,0,0);
+      if(period==="week"){var day=(start.getDay()+6)%7;start.setDate(start.getDate()-day);}
+      if(period==="month")start.setDate(1);
+      var rows=this.orders.filter(function(o){var d=new Date(o.created_at);return !isNaN(d.getTime())&&d>=start&&d<=now;});
+      var grouped={};
+      rows.forEach(function(o){
+        var shop=this.shops.find(function(s){return s.id===o.shop_id;});
+        var currency=(shop&&shop.data&&shop.data.currency)||"Devise inconnue";
+        var raw=String(o.total==null?"":o.total).trim();
+        var amount=Number(raw.replace(/[^0-9,.-]/g,"").replace(",","."));
+        if(!Number.isFinite(amount))amount=0;
+        if(!grouped[currency])grouped[currency]={currency:currency,amount:0,count:0};
+        grouped[currency].amount+=amount;grouped[currency].count++;
+      },this);
+      var statuses=rows.map(function(o){return String(o.status||"").toLowerCase();});
+      return {count:rows.length,amounts:Object.keys(grouped).sort().map(function(k){return grouped[k];}),pending:statuses.filter(function(s){return s.indexOf("attente")>=0||s.indexOf("pending")>=0;}).length,completed:statuses.filter(function(s){return s.indexOf("termin")>=0||s.indexOf("livr")>=0||s.indexOf("completed")>=0;}).length};
+    },
+    formatMoney: function(value,currency) { return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(value||0))+" "+currency; },
     count: function (st) { return this.vendors.filter(function (v) { return v.id_status === st && v.id_doc_path; }).length; },
     get list() {
       var q = this.q.trim().toLowerCase(), self = this, f = this.filter;
