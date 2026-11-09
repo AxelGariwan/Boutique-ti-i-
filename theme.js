@@ -22,7 +22,8 @@
     try{saved=localStorage.getItem(KEY)}catch(e){}
     apply(valid(saved)?saved:"light");
     if(document.querySelector("[data-bti-theme-toggle]"))return;
-    var target=document.querySelector("header .max-w-7xl, header .wrap, .admin-top");
+    var slot=document.querySelector("[data-bti-theme-slot]");
+    var target=slot||document.querySelector("header .max-w-7xl, header .wrap, .admin-top");
     if(!target) target=document.querySelector("body");
     var button=document.createElement("button");
     button.type="button";button.className="bti-theme-toggle";button.setAttribute("data-bti-theme-toggle","");
@@ -34,7 +35,7 @@
     if(target===document.body){
       button.style.position="fixed";button.style.top="12px";button.style.right="12px";button.style.zIndex="100";
     }else{
-      button.style.marginLeft="auto";button.style.flexShrink="0";
+      button.style.marginLeft=slot?"0":"auto";button.style.flexShrink="0";
     }
     target.appendChild(button);apply(document.documentElement.getAttribute("data-theme"));
   }
