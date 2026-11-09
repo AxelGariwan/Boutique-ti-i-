@@ -68,7 +68,7 @@ var TR = {
     cardModalTitle:"Paiement Sécurisé par Carte Bancaire", cardModalDesc:"Entrez les informations de votre carte pour régler votre commande en toute sécurité.", cardNumber:"Numéro de carte", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Payer en ligne", cancel:"Annuler",
     statVisits:"Visites du site", statRevenue:"Chiffre d'affaires", statOrders:"Commandes reçues",
     viewSub:"Voir abonnement",
-    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique",
+    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique", navAccount:"Mon compte",
     securityTitle:"Sécurité du compte", currentPassword:"Mot de passe actuel", newPassword:"Nouveau mot de passe", confirmPassword:"Confirmer le nouveau mot de passe", changePasswordBtn:"Modifier le mot de passe", passwordChanged:"Mot de passe modifié avec succès.", passwordMismatch:"Les deux nouveaux mots de passe ne correspondent pas.", passwordTooShort:"Le nouveau mot de passe doit contenir au moins 8 caractères.", passwordChangeError:"Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel et réessayez.",
     dangerZoneTitle:"Zone de Danger — Abonnement & Compte", dangerZoneDesc:"Vous pouvez résilier votre abonnement ou supprimer définitivement votre compte.",
     cancelSubBtn:"Résilier l'abonnement", deleteAccountBtn:"Supprimer définitivement mon compte"
@@ -101,7 +101,7 @@ var TR = {
     cardModalTitle:"Secure Credit Card Payment", cardModalDesc:"Enter your card details to securely pay for your order.", cardNumber:"Card Number", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Pay Online", cancel:"Cancel",
     statVisits:"Site Visits", statRevenue:"Total Revenue", statOrders:"Orders Received",
     viewSub:"View subscription",
-    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings",
+    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings", navAccount:"My Account",
     securityTitle:"Account security", currentPassword:"Current password", newPassword:"New password", confirmPassword:"Confirm new password", changePasswordBtn:"Change password", passwordChanged:"Password changed successfully.", passwordMismatch:"The new passwords do not match.", passwordTooShort:"The new password must contain at least 8 characters.", passwordChangeError:"Could not change the password. Check your current password and try again.",
     dangerZoneTitle:"Danger Zone — Subscription & Account", dangerZoneDesc:"You can cancel your subscription or permanently delete your account.",
     cancelSubBtn:"Cancel subscription", deleteAccountBtn:"Delete my account permanently"
@@ -134,7 +134,7 @@ var TR = {
     cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Pagar online", cancel:"Cancelar",
     statVisits:"Visitas", statRevenue:"Ingresos totales", statOrders:"Pedidos recibidos",
     viewSub:"Ver suscripción",
-    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda",
+    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda", navAccount:"Mi cuenta",
     dangerZoneTitle:"Zona de Peligro — Suscripción y Cuenta", dangerZoneDesc:"Puede cancelar su suscripción o eliminar su cuenta permanentemente.",
     cancelSubBtn:"Cancelar suscripción", deleteAccountBtn:"Eliminar mi cuenta permanentemente"
   },
@@ -164,7 +164,7 @@ var TR = {
     cardModalTitle:"الدفع الآمن بالبطاقة البنكية", cardModalDesc:"أدخل معلومات بطاقتك لدفع قيمة الطلب بأمان تام.", cardNumber:"رقم البطاقة", cardExp:"تاريخ الانتهاء", cardCvv:"رمز الأمان", paySecurely:"ادفع الان", cancel:"إلغاء",
     statVisits:"الزيارات", statRevenue:"إجمالي الإيرادات", statOrders:"الطلبات المستلمة",
     viewSub:"عرض الاشتراك",
-    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر",
+    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر", navAccount:"حسابي",
     dangerZoneTitle:"منطقة الخطر — الاشتراك والحساب", dangerZoneDesc:"يمكنك إلغاء اشتراكك أو حذف حسابك نهائياً.",
     cancelSubBtn:"إلغاء الاشتراك", deleteAccountBtn:"حذف حسابي نهائياً"
   }
@@ -215,6 +215,7 @@ function app() {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
     aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
+    accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
@@ -455,11 +456,14 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.ready = true; return; }
+      if (!session) { this.authed = false; this.shop = blankShop(); this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.accountEmail = ""; this.accountPhone = ""; this.accountPhoneDraft = ""; this.ready = true; return; }
       this.uid = session.user.id;
+      this.accountEmail = session.user.email || ""; this.accountMessage = "";
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
       var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
       var v = vq.data || {};
+      this.accountPhone = v.phone || "";
+      this.accountPhoneDraft = this.accountPhone;
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
       } else {
@@ -680,6 +684,25 @@ function app() {
           location.reload();
         }
       } finally { this.busy = false; }
+    },
+
+    saveAccountPhone: async function () {
+      var phone = this.normPhone(this.accountPhoneDraft);
+      this.accountMessage = "";
+      if (!phone) { alert("Numéro invalide. Utilisez le format international, ex : +221771234567."); return; }
+      if (!this.uid) { alert("Session vendeur introuvable. Reconnectez-vous."); return; }
+      this.accountSaving = true;
+      try {
+        var result = await db.from("vendors").update({ phone: phone }).eq("id", this.uid);
+        if (result.error) throw result.error;
+        this.accountPhone = phone;
+        this.accountPhoneDraft = phone;
+        this.accountMessage = "Numéro du compte mis à jour. Le WhatsApp public de la boutique n'a pas été modifié.";
+      } catch (error) {
+        alert("Impossible d'enregistrer le numéro : " + ((error && error.message) || "réessayez."));
+      } finally {
+        this.accountSaving = false;
+      }
     },
 
     changePassword: async function () {
