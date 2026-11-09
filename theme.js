@@ -21,23 +21,23 @@
     var saved=null;
     try{saved=localStorage.getItem(KEY)}catch(e){}
     apply(valid(saved)?saved:"light");
-    if(document.querySelector("[data-bti-theme-toggle]"))return;
+
+    // Le sélecteur est volontairement limité à son emplacement dédié
+    // dans Mon compte : il ne doit jamais déplacer la navigation ou les actions.
     var slot=document.querySelector("[data-bti-theme-slot]");
-    var target=slot||document.querySelector("header .max-w-7xl, header .wrap, .admin-top");
-    if(!target) target=document.querySelector("body");
+    if(!slot||slot.querySelector("[data-bti-theme-toggle]"))return;
+
     var button=document.createElement("button");
-    button.type="button";button.className="bti-theme-toggle";button.setAttribute("data-bti-theme-toggle","");
+    button.type="button";
+    button.className="bti-theme-toggle";
+    button.setAttribute("data-bti-theme-toggle","");
     button.addEventListener("click",function(){
       var next=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
       apply(next);
       try{localStorage.setItem(KEY,next)}catch(e){}
     });
-    if(target===document.body){
-      button.style.position="fixed";button.style.top="12px";button.style.right="12px";button.style.zIndex="100";
-    }else{
-      button.style.marginLeft=slot?"0":"auto";button.style.flexShrink="0";
-    }
-    target.appendChild(button);apply(document.documentElement.getAttribute("data-theme"));
+    slot.appendChild(button);
+    apply(document.documentElement.getAttribute("data-theme"));
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })();
