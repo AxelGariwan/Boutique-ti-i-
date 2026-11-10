@@ -217,7 +217,7 @@ function app() {
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "",
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
-    modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
+    modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", authNotice: "", authForgot: false, authRecovery: false, recoveryPassword: "", recoveryConfirm: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
     cardData: { number: "", exp: "", cvv: "" },
@@ -240,6 +240,16 @@ function app() {
       var self = this;
       this.$watch("shop", function () { if (!self.remote) self.queue(); }, { deep: true });
       this.$watch("lang", function (v) { document.documentElement.lang = v; });
+      db.auth.onAuthStateChange(function (event) {
+        if (event === "PASSWORD_RECOVERY") {
+          self.authRecovery = true;
+          self.authForgot = false;
+          self.authErr = "";
+          self.authNotice = "";
+          self.tab = "vendor";
+          self.ready = true;
+        }
+      });
 
       if (shopId) {
         this.loadRemote(shopId);
@@ -599,7 +609,62 @@ function app() {
       return m || "Une erreur est survenue. Réessayez.";
     },
 
-    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; this.otpSent = false; this.otp = ""; },
+    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; this.authNotice = ""; this.authForgot = false; this.authRecovery = false; this.otpSent = false; this.otp = ""; },
+    openVendorForgot: function () {
+      this.authForgot = true;
+      this.authErr = "";
+      this.authNotice = "";
+      this.f.password = "";
+    },
+    sendVendorRecovery: async function () {
+      this.authErr = "";
+      this.authNotice = "";
+      var email = String(this.f.email || "").trim().toLowerCase();
+      if (!email) { this.authErr = "Saisis l’adresse e-mail de ton compte vendeur."; return; }
+      this.busy = true;
+      try {
+        var redirect = location.origin + location.pathname + "?mode=recovery";
+        var result = await db.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+        if (result.error) throw result.error;
+        this.authNotice = "Si cette adresse correspond à un compte, un lien de réinitialisation vient d’être envoyé. Vérifie aussi tes courriers indésirables.";
+      } catch (error) {
+        this.authErr = this.authMsg(error) || "Impossible d’envoyer le lien. Réessaie dans quelques instants.";
+      } finally {
+        this.busy = false;
+      }
+    },
+    saveVendorRecoveryPassword: async function () {
+      this.authErr = "";
+      this.authNotice = "";
+      if (String(this.recoveryPassword || "").length < 10) { this.authErr = "Le mot de passe doit contenir au moins 10 caractères."; return; }
+      if (this.recoveryPassword !== this.recoveryConfirm) { this.authErr = "Les deux mots de passe ne correspondent pas."; return; }
+      this.busy = true;
+      try {
+        var result = await db.auth.updateUser({ password: this.recoveryPassword });
+        if (result.error) throw result.error;
+        this.recoveryPassword = "";
+        this.recoveryConfirm = "";
+        this.authRecovery = false;
+        this.authNotice = "Mot de passe modifié avec succès. Connexion à ton espace vendeur…";
+        history.replaceState({}, document.title, location.pathname);
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult && sessionResult.data && sessionResult.data.session;
+        if (session) {
+          await this.onSession(session);
+          this.tab = "vendor";
+          this.authNotice = "Ton mot de passe a été modifié. Bienvenue dans ton espace vendeur.";
+        } else {
+          this.authMode = "login";
+          this.authMethod = "email";
+          this.tab = "vendor";
+          this.authNotice = "Mot de passe modifié. Tu peux maintenant te connecter avec ton nouveau mot de passe.";
+        }
+      } catch (error) {
+        this.authErr = this.authMsg(error) || "Le lien est peut-être expiré. Demande un nouveau lien de réinitialisation.";
+      } finally {
+        this.busy = false;
+      }
+    },
     normPhone: function (v) {
       var x = String(v || "").replace(/[\s().-]/g, "");
       if (x.indexOf("00") === 0) x = "+" + x.slice(2);
