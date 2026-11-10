@@ -1,0 +1,5 @@
+[functions.paydunya-webhook]
+verify_jwt = false
+
+[functions.boutique-ai]
+verify_jwt = true
