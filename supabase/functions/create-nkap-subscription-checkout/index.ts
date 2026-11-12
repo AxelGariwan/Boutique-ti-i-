@@ -96,6 +96,9 @@ Deno.serve(async (req) => {
     const shopData = shop.data && typeof shop.data === "object" ? shop.data : {};
     const country = countryCode(shopData.country);
     const currency = String(shopData.currency || "").trim().toUpperCase();
+    if (!["CM", "CF", "CG", "GA", "TD", "GQ"].includes(country) || currency !== "XAF") {
+      return reply({ error: "Nkap Pay est réservé aux six pays XAF configurés pour les abonnements." }, 409, origin);
+    }
     if (!country || !currency) {
       return reply({ error: "Pays ou devise de la boutique non configuré." }, 409, origin);
     }
