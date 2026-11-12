@@ -68,9 +68,12 @@ Deno.serve(async (req) => {
     const collectionId = String(collection.id || "");
     const status = String(collection.status || "").toLowerCase();
     const terminal = ["completed", "failed", "cancelled", "expired"].includes(status);
-    if (!collectionId || !terminal ||
-        !["collection.completed", "collection.failed", "collection.cancelled", "collection.expired"].includes(eventType)) {
-      return new Response("Unsupported collection event", { status: 400 });
+    if (!collectionId) return new Response("Missing collection id", { status: 400 });
+    // Capay also emits pending/processing events. They are informational and must not
+    // trigger retries or regress a terminal payment state.
+    if (!terminal) return new Response("Non-terminal event ignored", { status: 200 });
+    if (!["collection.completed", "collection.failed", "collection.cancelled", "collection.expired"].includes(eventType)) {
+      return new Response("Unsupported terminal event", { status: 400 });
     }
 
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
@@ -98,7 +101,8 @@ Deno.serve(async (req) => {
         Number(collection.amount) !== Number(payment.amount) ||
         String(confirmed.currency || "").toUpperCase() !== String(payment.currency).toUpperCase() ||
         String(collection.currency || "").toUpperCase() !== String(payment.currency).toUpperCase() ||
-        confirmed.livemode !== false || confirmed.status !== status || eventType !== expectedEventType) {
+        confirmed.livemode !== false || collection.livemode !== false ||
+        confirmed.status !== status || eventType !== expectedEventType) {
       return new Response("Capay collection verification failed", { status: 409 });
     }
 
