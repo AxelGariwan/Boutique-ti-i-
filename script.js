@@ -212,7 +212,7 @@ function app() {
   var tmr;
   var shopId = new URLSearchParams(location.search).get("b");
   return {
-    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
+    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false, subscriptionProvider: "nkap_pay",
     aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "",
@@ -400,10 +400,9 @@ function app() {
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
     },
     formatSubscriptionPrice: function (amount) {
-      var country = String(this.shop.country || "").trim().toLowerCase();
-      var isSenegal = country === "sn" || country === "senegal" || country === "sénégal";
-      if (!isSenegal || this.shop.currency !== "XOF") return "Tarif local à confirmer";
-      return new Intl.NumberFormat("fr-FR").format(amount) + " XOF";
+      var currency = String(this.shop.currency || "").trim().toUpperCase();
+      if (currency !== "XOF" && currency !== "XAF") return "Tarif local à confirmer";
+      return new Intl.NumberFormat("fr-FR").format(amount) + " " + currency;
     },
     requestPlan: async function (planId) {
       if (!this.authed) {
@@ -414,28 +413,79 @@ function app() {
         alert("Formule invalide.");
         return;
       }
+
       var country = String(this.shop.country || "").trim().toLowerCase();
-      var isSenegal = country === "sn" || country === "senegal" || country === "sénégal";
-      if (!isSenegal || this.shop.currency !== "XOF") {
-        alert("Les paiements d’abonnement ne sont pas encore activés pour votre pays. Aucun montant ne sera prélevé.");
+      var currency = String(this.shop.currency || "").trim().toUpperCase();
+      var isSenegal = ["sn", "senegal", "sénégal"].includes(country);
+      var xafCountries = [
+        "cm", "cameroun", "cameroon", "cf", "centrafrique",
+        "république centrafricaine", "republique centrafricaine",
+        "cg", "congo", "république du congo", "republique du congo",
+        "ga", "gabon", "td", "tchad", "gq", "guinée équatoriale",
+        "guinee equatoriale"
+      ];
+      var isSupportedXaf = currency === "XAF" && xafCountries.includes(country);
+      if (!((isSenegal && currency === "XOF") || isSupportedXaf)) {
+        alert("Les abonnements ne sont pas encore disponibles pour ce pays ou cette devise.");
         return;
       }
+
+      var provider = isSenegal ? "paydunya" : (this.subscriptionProvider || "nkap_pay");
+      if (provider === "capay_global" && country !== "cm" && country !== "cameroun" && country !== "cameroon") {
+        alert("Le sandbox Capay Global est actuellement limité au Cameroun dans notre configuration de test. Choisissez Nkap Pay pour ce pays.");
+        return;
+      }
+
+      var customerPhone = "";
+      if (provider === "capay_global") {
+        customerPhone = prompt("Numéro Mobile Money du paiement (format international, ex. +2376XXXXXXXX) :", this.accountPhone || this.shop.wa || "");
+        if (!customerPhone) return;
+      }
+
       if (this.checkoutBusy) return;
       this.checkoutBusy = true;
       try {
         if (!this.shop.sid) this.shop.sid = rnd(8);
         var saved = await this.save();
         if (saved && saved.error) throw saved.error;
-        var result = await db.functions.invoke("create-subscription-checkout", {
-          body: { shopId: this.shop.sid, planSlug: planId }
-        });
-        if (result.error || !result.data || !result.data.checkoutUrl) {
-          var message = result.data && result.data.error ? result.data.error : "Impossible de préparer le paiement. Réessayez plus tard.";
+
+        var functionName = provider === "paydunya"
+          ? "create-subscription-checkout"
+          : provider === "nkap_pay"
+            ? "create-nkap-subscription-checkout"
+            : "create-capay-subscription-checkout";
+        var requestBody = { shopId: this.shop.sid, planSlug: planId };
+        if (provider === "capay_global") {
+          requestBody.customerPhone = customerPhone;
+          requestBody.customerName = this.shop.owner || "";
+        }
+
+        var result = await db.functions.invoke(functionName, { body: requestBody });
+        if (result.error || !result.data || result.data.error) {
+          var message = result.data && result.data.error
+            ? result.data.error
+            : "Impossible de préparer le paiement. Vérifiez votre connexion puis réessayez.";
           alert(message);
           return;
         }
-        window.location.assign(result.data.checkoutUrl);
+
+        if (result.data.checkoutUrl) {
+          window.location.assign(result.data.checkoutUrl);
+          return;
+        }
+
+        if (result.data.paymentId) {
+          var params = new URLSearchParams(location.search);
+          params.set("subscription", "return");
+          params.set("payment_id", result.data.paymentId);
+          history.replaceState({}, document.title, location.pathname + "?" + params.toString() + location.hash);
+          await this.checkSubscriptionReturn();
+          return;
+        }
+
+        alert("Le prestataire n'a pas retourné de lien ni de référence de paiement. Aucun abonnement n'a été activé.");
       } catch (error) {
+        console.error("Subscription checkout failed:", error);
         alert("Une erreur est survenue. Aucun abonnement n’a été activé.");
       } finally {
         this.checkoutBusy = false;
@@ -523,7 +573,7 @@ function app() {
         if (!payment) {
           alert("Retour de paiement reçu, mais la transaction n'est pas visible pour cette boutique. Aucun abonnement n'a été activé par le navigateur.");
         } else if (payment.status === "paid") {
-          alert("Paiement confirmé par PayDunya. Votre abonnement est activé.");
+          alert("Paiement confirmé par le prestataire. Votre abonnement est activé.");
           await this.onSession((await db.auth.getSession()).data.session);
         } else if (payment.status === "failed") {
           alert("PayDunya a confirmé l'annulation ou le refus du paiement. Aucun nouvel abonnement n'a été activé.");
