@@ -197,8 +197,8 @@
         <p x-show="!payOpts.length" class="text-slate-500" x-text="t('payHint')"></p>
         <p x-show="shop.refundPolicy" class="text-slate-500 whitespace-pre-line border-t border-slate-100 pt-2" x-text="shop.refundPolicy"></p>
        </div>
-       <button @click="proceedCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-sm flex items-center justify-center gap-2">
-        <i data-lucide="circle-check" class="w-5 h-5"></i><span x-text="t('placeOrder')"></span>
+       <button @click="proceedCheckout()" :disabled="checkoutBusy" :class="checkoutBusy?'opacity-60 cursor-wait':'hover:bg-emerald-700'" class="w-full bg-emerald-600 text-white font-medium py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed">
+        <i data-lucide="circle-check" class="w-5 h-5"></i><span x-text="checkoutBusy?'Enregistrement…':t('placeOrder')"></span>
        </button>
       </div>
      </div>
@@ -465,7 +465,7 @@
       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('currency')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50" x-model="shop.currency" readonly></div>
      </div>
      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('location')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.location"></div>
-     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('whatsappNumber')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.wa"></div>
+     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('whatsappNumber')"></label><input type="tel" autocomplete="tel" placeholder="+221771234567" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.wa"><p class="text-[11px] text-slate-500 mt-1">Utilisez votre numéro WhatsApp avec indicatif international (ex. +221 pour le Sénégal, +236 pour la Centrafrique). Le numéro reste celui de votre boutique.</p></div>
      <div>
       <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('refundPolicyLabel')"></label>
       <textarea rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.refundPolicy"></textarea>
@@ -688,7 +688,8 @@
    <p class="text-xl font-black text-slate-900 tracking-wider" x-text="lastOrderCode"></p>
    <button type="button" @click="copyTrackingCode()" class="text-xs font-bold text-emerald-700 underline" x-text="copiedCode ? t('copied') : t('copy')"></button>
   </div>
-  <button type="button" @click="openWhatsAppOrder()" class="w-full text-white font-bold py-3 rounded-xl text-xs transition shadow-md" style="background:#1FA855" x-text="t('sendOrderWa')"></button>
+  <p x-show="!shop.wa" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">Le vendeur n’a pas encore configuré son numéro WhatsApp. La commande est enregistrée ; contactez-le par un autre moyen.</p>
+  <button type="button" x-show="shop.wa" @click="openWhatsAppOrder()" class="w-full text-white font-bold py-3 rounded-xl text-xs transition shadow-md" style="background:#1FA855" x-text="t('sendOrderWa')"></button>
   <button type="button" @click="modal=''" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition" x-text="t('close')"></button>
  </div>
 </div>
