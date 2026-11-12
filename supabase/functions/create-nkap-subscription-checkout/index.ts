@@ -104,6 +104,33 @@ Deno.serve(async (req) => {
       return reply({ error: "Pays ou devise de la boutique non configuré." }, 409, origin);
     }
 
+    // Check Nkap's live merchant country/operator availability before offering checkout.
+    const countriesResponse = await fetch(`${API_BASE}/payments/countries`, {
+      method: "GET",
+      headers: {
+        "X-API-Key": apiKey,
+        "X-API-Secret": apiSecret,
+        "Content-Type": "application/json",
+      },
+    });
+    const countriesPayload = await countriesResponse.json().catch(() => ({}));
+    const countryRows = Array.isArray(countriesPayload)
+      ? countriesPayload
+      : Array.isArray(countriesPayload.data)
+        ? countriesPayload.data
+        : Array.isArray(countriesPayload.countries)
+          ? countriesPayload.countries
+          : [];
+    const countryInfo = countryRows.find((item: Record<string, unknown>) =>
+      String(item.code || item.country_code || "").toUpperCase() === country
+    );
+    if (!countriesResponse.ok || !countryInfo ||
+        String(countryInfo.currency || "").toUpperCase() !== "XAF" ||
+        countryInfo.available === false) {
+      return reply({ error: "Nkap Pay ne confirme pas actuellement la disponibilité XAF pour ce pays sur votre compte marchand. Aucun paiement n'a été créé." }, 409, origin);
+    }
+
+    const hostedPaymentPage = countryInfo.hosted_payment_page === true;
     const { data: plan, error: planError } = await admin
       .from("subscription_plans")
       .select("id,slug,country_code,currency,amount")
@@ -146,7 +173,7 @@ Deno.serve(async (req) => {
         amount: Number(plan.amount),
         currency: plan.currency,
         country,
-        payment_method: "MOBILE_MONEY",
+        payment_method: hostedPaymentPage ? "BANK_CARD" : "MOBILE_MONEY",
         merchant_reference: paymentId,
         description: `Abonnement ${plan.slug} Boutique ti i`,
         callback_url: WEBHOOK_URL,
