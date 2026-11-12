@@ -66,6 +66,8 @@ Deno.serve(async (req) => {
     const event = payload.data as Record<string, unknown>;
     const reference = String(event.reference || "");
     const eventStatus = String(event.status || "").toUpperCase();
+    const eventAmount = parseAmount(event.amount);
+    const eventCurrency = String(event.currency || "").toUpperCase();
     if (!reference || !["COMPLETED", "FAILED", "CANCELLED"].includes(eventStatus)) {
       return new Response("Unsupported payment state", { status: 400 });
     }
@@ -102,13 +104,15 @@ Deno.serve(async (req) => {
     if (!confirmResponse.ok || confirmedReference !== reference ||
         (merchantReference && merchantReference !== payment.id) ||
         confirmedAmount !== Number(payment.amount) ||
+        eventAmount !== Number(payment.amount) ||
         confirmedCurrency !== String(payment.currency).toUpperCase() ||
+        eventCurrency !== String(payment.currency).toUpperCase() ||
         confirmedStatus !== eventStatus) {
       console.error("Nkap verification mismatch", {
         referenceMatches: confirmedReference === reference,
         merchantReferenceMatches: !merchantReference || merchantReference === payment.id,
-        amountMatches: confirmedAmount === Number(payment.amount),
-        currencyMatches: confirmedCurrency === String(payment.currency).toUpperCase(),
+        amountMatches: confirmedAmount === Number(payment.amount) && eventAmount === Number(payment.amount),
+        currencyMatches: confirmedCurrency === String(payment.currency).toUpperCase() && eventCurrency === String(payment.currency).toUpperCase(),
         statusMatches: confirmedStatus === eventStatus,
       });
       return new Response("Nkap payment verification failed", { status: 409 });
