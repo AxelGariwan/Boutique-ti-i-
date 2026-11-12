@@ -201,6 +201,35 @@ function norm(s) {
   return s;
 }
 
+function normalizeWhatsAppDigits(value, country) {
+  var raw = String(value || "").trim();
+  if (!raw) return "";
+  var digits = raw.replace(/\D/g, "");
+  var dialCodes = {
+    "Afrique du Sud":"27","Algérie":"213","Angola":"244","Bénin":"229","Botswana":"267",
+    "Burkina Faso":"226","Burundi":"257","Cameroun":"237","Cap-Vert":"238","République centrafricaine":"236",
+    "Comores":"269","République du Congo":"242","République démocratique du Congo":"243","Côte d’Ivoire":"225",
+    "Djibouti":"253","Égypte":"20","Érythrée":"291","Eswatini":"268","Éthiopie":"251","Gabon":"241",
+    "Gambie":"220","Ghana":"233","Guinée":"224","Guinée-Bissau":"245","Guinée équatoriale":"240",
+    "Kenya":"254","Lesotho":"266","Liberia":"231","Libye":"218","Madagascar":"261","Malawi":"265",
+    "Mali":"223","Maroc":"212","Maurice":"230","Mauritanie":"222","Mozambique":"258","Namibie":"264",
+    "Niger":"227","Nigéria":"234","Ouganda":"256","Rwanda":"250","Sao Tomé-et-Principe":"239",
+    "Sénégal":"221","Seychelles":"248","Sierra Leone":"232","Somalie":"252","Soudan":"249",
+    "Soudan du Sud":"211","Tanzanie":"255","Tchad":"235","Togo":"228","Tunisie":"216",
+    "Zambie":"260","Zimbabwe":"263"
+  };
+  if (/^\s*00/.test(raw)) {
+    digits = digits.slice(2);
+  } else if (!/^\s*\+/.test(raw)) {
+    var code = dialCodes[country];
+    if (!code) return "";
+    if (!(digits.indexOf(code) === 0 && digits.length >= 10 && digits.length <= 15)) {
+      digits = code + digits.replace(/^0+/, "");
+    }
+  }
+  return /^\d{8,15}$/.test(digits) ? digits : "";
+}
+
 function blankShop() {
   return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0 };
 }
@@ -219,7 +248,7 @@ function app() {
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", authNotice: "", authForgot: false, authRecovery: false, recoveryPassword: "", recoveryConfirm: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
-    addPm: "", lastOrderCode: "", lastOrderTotal: 0,
+    addPm: "", lastOrderCode: "", lastOrderTotal: 0, lastOrderItems: [], lastOrderCustomer: null, lastOrderMessage: "", lastOrderPayment: "", lastOrderShopName: "",
     cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
@@ -937,65 +966,83 @@ function app() {
     },
 
     finalizeOrder: async function () {
-      var c = this.cust, self = this;
-      var trackingCode = "CMD-" + rnd(6).toUpperCase();
-      var orderTotal = this.total;
-      var message = "Adresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
+      if (this.checkoutBusy) return;
+      this.checkoutBusy = true;
+      try {
+        var c = this.cust, self = this;
+        var trackingCode = "CMD-" + rnd(6).toUpperCase();
+        var orderTotal = this.total;
+        var message = "Adresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
+        var orderItemsSnapshot = JSON.parse(JSON.stringify(this.cart));
 
-      var newOrder = {
-        id: Date.now(),
-        trackingCode: trackingCode,
-        shop_id: this.shop.sid || "local",
-        customer: { name: c.name, phone: c.phone, address: c.address, mapLink: c.mapLink || "" },
-        items: JSON.parse(JSON.stringify(this.cart)),
-        total: orderTotal,
-        paymentMethod: this.pay || "Non spécifié",
-        message: message,
-        status: "pending",
-        created_at: new Date().toISOString()
-      };
+        var newOrder = {
+          id: Date.now(),
+          trackingCode: trackingCode,
+          shop_id: this.shop.sid || "local",
+          customer: { name: c.name, phone: c.phone, address: c.address, mapLink: c.mapLink || "" },
+          items: orderItemsSnapshot,
+          total: orderTotal,
+          paymentMethod: this.pay || "Non spécifié",
+          message: message,
+          status: "pending",
+          created_at: new Date().toISOString()
+        };
 
-      if (this.remote && this.shop.sid) {
-        try {
-          var r = await db.rpc("place_order", {
-            p_shop: this.shop.sid,
-            p_ref: trackingCode,
-            p_name: c.name.trim(),
-            p_phone: c.phone.trim(),
-            p_mode: this.pay || "Non spécifié",
-            p_message: message,
-            p_items: this.cart.map(function (item) {
-              return { id: String(item.id), quantity: item.quantity };
-            })
-          });
-          if (r.error || !r.data || r.data.ok !== true) {
-            alert((r.data && r.data.error) || "Votre commande n'a pas pu être enregistrée. Vérifiez le stock ou réessayez dans quelques minutes.");
+        if (this.remote && this.shop.sid) {
+          try {
+            var r = await db.rpc("place_order", {
+              p_shop: this.shop.sid,
+              p_ref: trackingCode,
+              p_name: c.name.trim(),
+              p_phone: c.phone.trim(),
+              p_mode: this.pay || "Non spécifié",
+              p_message: message,
+              p_items: this.cart.map(function (item) {
+                return { id: String(item.id), quantity: item.quantity };
+              })
+            });
+            if (r.error || !r.data || r.data.ok !== true) {
+              alert((r.data && r.data.error) || "Votre commande n'a pas pu être enregistrée. Vérifiez le stock ou réessayez dans quelques minutes.");
+              return;
+            }
+            if (!r.data.id) {
+              alert("La commande a été enregistrée, mais son identifiant n'a pas été retourné. Actualisez la page avant de modifier son statut.");
+              await this.loadOrders();
+              return;
+            }
+            newOrder.id = r.data.id;
+            orderTotal = Number(r.data.total);
+            newOrder.total = orderTotal;
+            newOrder.items = Array.isArray(r.data.items) ? r.data.items : orderItemsSnapshot;
+            newOrder.message = r.data.message || message;
+            this.orders.unshift(newOrder);
+          } catch (err) {
+            alert("Erreur réseau : votre commande n'a pas été enregistrée.");
             return;
           }
-          if (!r.data.id) {
-            alert("La commande a été enregistrée, mais son identifiant n'a pas été retourné. Actualisez la page avant de modifier son statut.");
-            await this.loadOrders();
-            return;
-          }
-          newOrder.id = r.data.id;
-          orderTotal = Number(r.data.total);
-          newOrder.total = orderTotal;
-          newOrder.items = Array.isArray(r.data.items) ? r.data.items : [];
-          newOrder.message = r.data.message || message;
+        } else {
           this.orders.unshift(newOrder);
-        } catch (err) {
-          alert("Erreur réseau : votre commande n'a pas été enregistrée.");
-          return;
         }
-      } else {
-        this.orders.unshift(newOrder);
-      }
 
-      this.lastOrderCode = trackingCode;
-      this.lastOrderTotal = orderTotal;
-      this.updateStats();
-      this.modal = 'orderSuccess';
-      this.cart = [];
+        // Snapshot indépendant du panier : le panier peut être vidé après l'enregistrement.
+        this.lastOrderCode = trackingCode;
+        this.lastOrderTotal = orderTotal;
+        this.lastOrderItems = orderItemsSnapshot;
+        this.lastOrderCustomer = {
+          name: c.name.trim(),
+          phone: c.phone.trim(),
+          address: c.address || "",
+          mapLink: c.mapLink || ""
+        };
+        this.lastOrderMessage = message;
+        this.lastOrderPayment = this.pay || "Non spécifié";
+        this.lastOrderShopName = this.shop.name || "Boutique";
+        this.updateStats();
+        this.modal = "orderSuccess";
+        this.cart = [];
+      } finally {
+        this.checkoutBusy = false;
+      }
     },
 
     copyTrackingCode: function () {
@@ -1006,10 +1053,49 @@ function app() {
     },
 
     openWhatsAppOrder: function () {
-      var wa = (this.shop.wa || "").replace(/\D/g, "");
-      var msg = "Bonjour, voici ma commande enregistrée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-");
-      window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(msg), "_blank");
-      this.modal = '';
+      var wa = normalizeWhatsAppDigits(this.shop.wa, this.shop.country);
+      if (!wa) {
+        alert("Le numéro WhatsApp du vendeur est absent ou invalide. Le vendeur doit le corriger dans les paramètres de sa boutique au format international, par exemple +221771234567.");
+        return;
+      }
+      if (!this.lastOrderCode || !this.lastOrderCustomer) {
+        alert("La commande enregistrée est introuvable. Actualisez la page avant de réessayer.");
+        return;
+      }
+
+      var customer = this.lastOrderCustomer;
+      var lines = [
+        "Bonjour, je viens d'enregistrer une commande sur Boutique ti i.",
+        "Boutique : " + this.lastOrderShopName,
+        "Référence : " + this.lastOrderCode,
+        "",
+        "CLIENT",
+        "Nom : " + customer.name,
+        "Téléphone : " + customer.phone,
+        "",
+        "ARTICLES"
+      ];
+      (this.lastOrderItems || []).forEach(function (item) {
+        var quantity = Math.max(1, Number(item.quantity) || 1);
+        var unitPrice = Number(item.price) || 0;
+        lines.push("- " + (item.title || "Article") + " x " + quantity + " — " + this.fmt(unitPrice * quantity));
+      }, this);
+      lines.push(
+        "",
+        "Total : " + this.fmt(this.lastOrderTotal),
+        "Paiement choisi : " + this.lastOrderPayment,
+        "Adresse de livraison : " + (customer.address || "Non renseignée")
+      );
+      if (customer.mapLink) lines.push("Localisation GPS : " + customer.mapLink);
+      lines.push("", "Merci de confirmer la disponibilité et les modalités de livraison.");
+
+      var url = "https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n"));
+      var opened = window.open(url, "_blank", "noopener,noreferrer");
+      if (!opened) {
+        alert("Le navigateur a bloqué l'ouverture de WhatsApp. Autorisez les fenêtres contextuelles puis réessayez.");
+        return;
+      }
+      this.modal = "";
     },
 
     updateOrderStatus: async function (o) {
