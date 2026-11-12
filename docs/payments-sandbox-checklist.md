@@ -21,6 +21,15 @@
 
 Les secrets Supabase standards `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` restent gérés par Supabase.
 
+## État actuel de l'intégration Boutique ti i
+
+- Les 18 tarifs XAF sont enregistrés dans Supabase : Starter 3 000, Pro 6 000 et Premium 10 000, pour CM, CF, CG, GA, TD et GQ.
+- Le front vendeur conserve PayDunya pour SN/XOF. Pour XAF, Nkap Pay est sélectionné par défaut ; Capay Global est proposé uniquement pour le Cameroun en sandbox.
+- Le checkout Nkap interroge `GET /payments/countries` avant de créer un paiement. Un pays XAF tarifé dans Boutique ti i n'est pas automatiquement considéré comme desservi par Nkap : l'API du compte marchand doit le confirmer.
+- Pour les pays où Nkap signale `hosted_payment_page=true`, le checkout utilise `BANK_CARD` et redirige vers la page hébergée afin que le client choisisse son opérateur et saisisse son numéro.
+- La migration `20261112000100_allow_subscription_payment_providers.sql` n'est pas encore appliquée.
+- À la dernière vérification, seule la fonction `boutique-ai` était déployée dans ce projet Supabase. Les checkouts et webhooks de paiement doivent être déployés après configuration des secrets et revue finale.
+
 ## Scénarios de test
 
 | Scénario | Procédure | Résultat attendu |
