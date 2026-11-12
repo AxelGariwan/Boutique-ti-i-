@@ -616,6 +616,15 @@
    <button @click="modal=''" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 font-bold">✕</button>
   </div>
 
+  <div x-show="shop.currency==='XAF'" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
+   <label for="subscription-provider" class="block text-xs font-bold text-slate-800">Prestataire de paiement pour les abonnements XAF</label>
+   <select id="subscription-provider" x-model="subscriptionProvider" class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+    <option value="nkap_pay">Nkap Pay — Afrique centrale</option>
+    <option value="capay_global" x-show="['Cameroun','CM','Cameroon'].includes(shop.country)">Capay Global — Sandbox Cameroun</option>
+   </select>
+   <p class="text-[11px] leading-relaxed text-slate-600">Nkap Pay est proposé par défaut pour les six pays XAF. Capay Global est limité au Cameroun pour nos tests sandbox. Le paiement ne sera activé qu’après confirmation du prestataire.</p>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
    <template x-for="p in plans" :key="p.id">
     <div class="border rounded-2xl p-4 transition relative flex flex-col justify-between gap-4"
