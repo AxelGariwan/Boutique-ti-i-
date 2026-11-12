@@ -551,11 +551,13 @@ function app() {
       var paymentId = params.get("payment_id");
       if (!["return", "cancelled"].includes(resultType) || !paymentId || !this.authed) return;
 
-      // Remove callback parameters immediately so refreshes do not replay the status check.
-      params.delete("subscription");
-      params.delete("payment_id");
-      var cleanUrl = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
-      history.replaceState({}, document.title, cleanUrl);
+      // Keep the payment reference while pending so the vendor can refresh and re-check it.
+      var clearReturnParams = function () {
+        params.delete("subscription");
+        params.delete("payment_id");
+        var cleanUrl = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
+        history.replaceState({}, document.title, cleanUrl);
+      };
 
       try {
         var payment = null;
@@ -571,14 +573,17 @@ function app() {
         }
 
         if (!payment) {
+          clearReturnParams();
           alert("Retour de paiement reçu, mais la transaction n'est pas visible pour cette boutique. Aucun abonnement n'a été activé par le navigateur.");
         } else if (payment.status === "paid") {
+          clearReturnParams();
           alert("Paiement confirmé par le prestataire. Votre abonnement est activé.");
           await this.onSession((await db.auth.getSession()).data.session);
         } else if (payment.status === "failed") {
-          alert("PayDunya a confirmé l'annulation ou le refus du paiement. Aucun nouvel abonnement n'a été activé.");
+          clearReturnParams();
+          alert("Le prestataire a confirmé l'annulation ou le refus du paiement. Aucun nouvel abonnement n'a été activé.");
         } else if (resultType === "cancelled") {
-          alert("Vous êtes revenu après avoir interrompu le paiement, mais son annulation n'est pas encore confirmée par PayDunya. Ne relancez pas le paiement tout de suite : vérifiez le statut dans quelques instants.");
+          alert("Vous êtes revenu après avoir interrompu le paiement, mais son annulation n'est pas encore confirmée par le prestataire. Ne relancez pas le paiement tout de suite : actualisez pour revérifier son statut.");
         } else {
           alert("Votre paiement est encore en cours de vérification. Ne payez pas une deuxième fois tout de suite : actualisez votre espace vendeur dans quelques instants.");
         }
