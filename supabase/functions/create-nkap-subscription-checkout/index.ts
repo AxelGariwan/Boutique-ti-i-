@@ -118,9 +118,11 @@ Deno.serve(async (req) => {
       ? countriesPayload
       : Array.isArray(countriesPayload.data)
         ? countriesPayload.data
-        : Array.isArray(countriesPayload.countries)
-          ? countriesPayload.countries
-          : [];
+        : Array.isArray(countriesPayload.data?.countries)
+          ? countriesPayload.data.countries
+          : Array.isArray(countriesPayload.countries)
+            ? countriesPayload.countries
+            : [];
     const countryInfo = countryRows.find((item: Record<string, unknown>) =>
       String(item.code || item.country_code || "").toUpperCase() === country
     );
