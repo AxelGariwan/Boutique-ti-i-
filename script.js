@@ -937,6 +937,7 @@ function app() {
     minus: function (i) { if (i.quantity > 1) i.quantity--; else this.cart = this.cart.filter(function (c) { return c.id !== i.id; }); },
 
     proceedCheckout: function () {
+      if (this.checkoutBusy) return;
       var c = this.cust;
       if (!this.cart.length) {
         alert("Votre panier est vide.");
@@ -1090,11 +1091,12 @@ function app() {
       lines.push("", "Merci de confirmer la disponibilité et les modalités de livraison.");
 
       var url = "https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n"));
-      var opened = window.open(url, "_blank", "noopener,noreferrer");
+      var opened = window.open(url, "_blank");
       if (!opened) {
         alert("Le navigateur a bloqué l'ouverture de WhatsApp. Autorisez les fenêtres contextuelles puis réessayez.");
         return;
       }
+      try { opened.opener = null; } catch (e) {}
       this.modal = "";
     },
 
