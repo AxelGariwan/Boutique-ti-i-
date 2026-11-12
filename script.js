@@ -220,13 +220,24 @@ function normalizeWhatsAppDigits(value, country) {
   };
   if (/^\s*00/.test(raw)) {
     digits = digits.slice(2);
-  } else if (!/^\s*\+/.test(raw)) {
+  } else if (/^\s*\+/.test(raw)) {
+    // Numéro déjà au format international.
+  } else {
     var code = dialCodes[country];
     if (!code) return "";
-    if (!(digits.indexOf(code) === 0 && digits.length >= 10 && digits.length <= 15)) {
-      digits = code + digits.replace(/^0+/, "");
+
+    var nationalDigits = digits.replace(/^0+/, "");
+    var alreadyInternational =
+      digits.indexOf(code) === 0 &&
+      digits.length >= code.length + 7 &&
+      digits.length <= 15;
+
+    if (!alreadyInternational) {
+      if (nationalDigits.length < 7) return "";
+      digits = code + nationalDigits;
     }
   }
+
   return /^\d{8,15}$/.test(digits) ? digits : "";
 }
 
