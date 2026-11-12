@@ -5,11 +5,11 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "script.js"), "utf8");
-const match = source.match(/function normalizeWhatsAppDigits\\([\\s\\S]*?\\n}\\n(?=\\nfunction blankShop)/);
+const match = source.match(/function normalizeWhatsAppDigits\([\s\S]*?\n}\n(?=\nfunction blankShop)/);
 assert.ok(match, "normalizeWhatsAppDigits must exist before blankShop");
 
 const sandbox = {};
-vm.runInNewContext(match[0] + "\\nglobalThis.normalizeWhatsAppDigits = normalizeWhatsAppDigits;", sandbox);
+vm.runInNewContext(match[0] + "\nglobalThis.normalizeWhatsAppDigits = normalizeWhatsAppDigits;", sandbox);
 const normalize = sandbox.normalizeWhatsAppDigits;
 
 test("normalizes an international number with punctuation", () => {
