@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const apiKey = Deno.env.get("NKAP_API_KEY");
     const apiSecret = Deno.env.get("NKAP_API_SECRET");
-    if (!supabaseUrl || !anonKey || !serviceKey || !apiKey || !apiSecret) {
+    if (!supabaseUrl || !anonKey || !serviceKey || !apiKey || !apiSecret || !apiKey.startsWith("ltcpay_test_")) {
       return reply({ error: "Configuration Nkap Pay incomplète côté serveur." }, 500, origin);
     }
 
