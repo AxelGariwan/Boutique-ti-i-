@@ -461,7 +461,7 @@
      <h2 class="font-bold text-lg text-slate-900" x-text="t('myShop')"></h2>
      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('shopName')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.name"></div>
      <div class="grid grid-cols-2 gap-3">
-      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('country')"></label><select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white" x-model="shop.country" @change="setCountry()"><template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template></select></div>
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('country')"></label><input type="text" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 text-slate-600 cursor-not-allowed" x-model="shop.country" readonly aria-readonly="true" title="Le pays est défini lors de la création de la boutique."></div>
       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('currency')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50" x-model="shop.currency" readonly></div>
      </div>
      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('location')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.location"></div>
