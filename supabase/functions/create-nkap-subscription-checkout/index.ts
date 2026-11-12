@@ -39,6 +39,7 @@ function countryCode(value: unknown): string {
     "tchad": "TD", "centrafrique": "CF",
     "république centrafricaine": "CF",
     "republique centrafricaine": "CF",
+    "guinée équatoriale": "GQ", "guinee equatoriale": "GQ", "equatorial guinea": "GQ",
     "côte d'ivoire": "CI", "cote d'ivoire": "CI",
     "mali": "ML", "burkina faso": "BF", "bénin": "BJ", "benin": "BJ",
     "togo": "TG", "niger": "NE",
