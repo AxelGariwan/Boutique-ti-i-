@@ -95,6 +95,9 @@ Deno.serve(async (req) => {
     const shopData = shop.data && typeof shop.data === "object" ? shop.data : {};
     const country = countryCode(shopData.country);
     const currency = String(shopData.currency || "").trim().toUpperCase();
+    if (country !== "CM" || currency !== "XAF") {
+      return reply({ error: "Le sandbox Capay Global est actuellement autorisé uniquement pour le Cameroun en XAF." }, 409, origin);
+    }
     if (!country || !currency) return reply({ error: "Pays ou devise non configuré." }, 409, origin);
 
     const { data: plan, error: planError } = await admin
