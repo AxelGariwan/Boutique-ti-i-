@@ -1,5 +1,14 @@
 [functions.paydunya-webhook]
 verify_jwt = false
 
+[functions.nkap-pay-webhook]
+verify_jwt = false
+
 [functions.boutique-ai]
+verify_jwt = true
+
+[functions.create-subscription-checkout]
+verify_jwt = true
+
+[functions.create-nkap-subscription-checkout]
 verify_jwt = true
