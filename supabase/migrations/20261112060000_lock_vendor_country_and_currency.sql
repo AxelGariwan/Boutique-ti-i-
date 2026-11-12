@@ -112,7 +112,7 @@ BEGIN
   END IF;
 
   RETURN NEW;
-END
+END;
 $function$;
 
 CREATE OR REPLACE FUNCTION private.vendors_guard()
@@ -165,7 +165,7 @@ BEGIN
   END IF;
 
   RETURN NEW;
-END
+END;
 $function$;
 
 COMMENT ON FUNCTION private.shops_guard() IS
