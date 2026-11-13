@@ -9,7 +9,7 @@ const cors = {
 const countryMap: Record<string, { code: string; currency: string }> = {
   "benin": { code: "BJ", currency: "XOF" }, "bj": { code: "BJ", currency: "XOF" },
   "burkina faso": { code: "BF", currency: "XOF" }, "bf": { code: "BF", currency: "XOF" },
-  "cote d'ivoire": { code: "CI", currency: "XOF" }, "côte d'ivoire": { code: "CI", currency: "XOF" }, "ci": { code: "CI", currency: "XOF" },
+  "cote d'ivoire": { code: "CI", currency: "XOF" }, "côte d'ivoire": { code: "CI", currency: "XOF" }, "côte d’ivoire": { code: "CI", currency: "XOF" }, "ci": { code: "CI", currency: "XOF" },
   "guinee-bissau": { code: "GW", currency: "XOF" }, "guinée-bissau": { code: "GW", currency: "XOF" }, "gw": { code: "GW", currency: "XOF" },
   "mali": { code: "ML", currency: "XOF" }, "ml": { code: "ML", currency: "XOF" },
   "niger": { code: "NE", currency: "XOF" }, "ne": { code: "NE", currency: "XOF" },
