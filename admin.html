@@ -93,6 +93,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
         <button @click="tab='vendors'" :class="tab==='vendors'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Vendeurs</button>
         <button @click="tab='orders'" :class="tab==='orders'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Commandes</button>
         <button @click="tab='analytics'" :class="tab==='analytics'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Statistiques</button>
+        <button @click="tab='subscriptions';loadManualPayments();loadManualMethods()" :class="tab==='subscriptions'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Abonnements</button>
       </nav>
       <div class="hidden lg:flex items-center gap-2">
         <span class="text-[11px] text-red-100/70 mr-2">Administration sécurisée</span>
@@ -172,6 +173,52 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
       </div>
     </section>
 
+    <!-- Paiements manuels des abonnements UEMOA et CEMAC -->
+    <section x-show="tab==='subscriptions'" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div><h3 class="text-xl font-black">Paiements des abonnements</h3><p class="text-xs admin-muted mt-1">Vérifie le transfert réellement reçu avant toute activation. Une capture ou une référence seule ne suffit pas.</p></div>
+        <button class="admin-btn" @click="loadManualPayments();loadManualMethods()">↻ Actualiser</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">En attente</p><p class="text-3xl font-black mt-2 text-amber-300" x-text="manualPayments.filter(p=>p.status==='pending').length"></p></article>
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">Validés</p><p class="text-3xl font-black mt-2 text-emerald-300" x-text="manualPayments.filter(p=>p.status==='paid').length"></p></article>
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">Refusés</p><p class="text-3xl font-black mt-2 text-red-300" x-text="manualPayments.filter(p=>p.status==='failed').length"></p></article>
+      </div>
+      <div class="admin-panel rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-white/10"><h4 class="font-bold">Demandes reçues</h4><p class="text-xs admin-muted mt-1">Les abonnements sont activés uniquement par validation administrative sécurisée.</p></div>
+        <div class="overflow-x-auto">
+          <table class="admin-table"><thead><tr><th>Date</th><th>Vendeur / boutique</th><th>Forfait</th><th>Montant</th><th>Mode / référence</th><th>Statut</th><th>Décision</th></tr></thead>
+            <tbody><template x-for="p in manualPayments" :key="p.id"><tr>
+              <td class="text-xs admin-muted" x-text="new Date(p.created_at).toLocaleString('fr-FR')"></td>
+              <td><p class="font-bold" x-text="manualVendorName(p)"></p><p class="text-xs admin-muted" x-text="shopNameById(p.shop_id)+' · '+manualCountry(p.shop_id)"></p></td>
+              <td class="font-semibold" x-text="manualPlanName(p.plan_id)"></td>
+              <td class="font-bold" x-text="formatMoney(p.amount,p.currency)"></td>
+              <td><p class="text-xs font-bold" x-text="manualMethodName(p.payment_method)"></p><p class="text-xs admin-muted break-all" x-text="p.payer_reference||'—'"></p><p class="text-xs admin-muted" x-text="p.payer_phone||''"></p></td>
+              <td><span class="admin-pill" :class="p.status==='paid'?'bg-emerald-500/15 text-emerald-300':(p.status==='failed'?'bg-red-500/15 text-red-300':'bg-amber-500/15 text-amber-200')" x-text="p.status==='paid'?'Validé':(p.status==='failed'?'Refusé':'En attente')"></span><p x-show="p.admin_note" class="text-xs admin-muted mt-1" x-text="p.admin_note"></p></td>
+              <td><div class="flex flex-wrap gap-2"><button x-show="p.status==='pending'" class="admin-btn text-emerald-300" @click="reviewManualPayment(p,'approve')">Valider</button><button x-show="p.status==='pending'" class="admin-btn text-red-300" @click="reviewManualPayment(p,'reject')">Refuser</button></div></td>
+            </tr></template></tbody>
+          </table>
+          <p x-show="!manualPayments.length" class="p-5 text-sm admin-muted">Aucune demande de paiement manuel enregistrée.</p>
+        </div>
+      </div>
+      <div class="admin-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div><h4 class="font-bold">Coordonnées de réception par pays</h4><p class="text-xs admin-muted mt-1">Configure uniquement des comptes que tu contrôles et qui peuvent réellement recevoir les transferts dans le pays sélectionné.</p></div>
+        <form @submit.prevent="saveManualPaymentMethod()" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <label class="space-y-1"><span class="text-xs admin-muted">Pays</span><select x-model="manualMethodForm.country_code" class="admin-input w-full"><option value="SN">Sénégal · XOF</option><option value="BJ">Bénin · XOF</option><option value="BF">Burkina Faso · XOF</option><option value="CI">Côte d'Ivoire · XOF</option><option value="GW">Guinée-Bissau · XOF</option><option value="ML">Mali · XOF</option><option value="NE">Niger · XOF</option><option value="TG">Togo · XOF</option><option value="CM">Cameroun · XAF</option><option value="CF">Centrafrique · XAF</option><option value="CG">Congo · XAF</option><option value="GA">Gabon · XAF</option><option value="TD">Tchad · XAF</option><option value="GQ">Guinée équatoriale · XAF</option></select></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Moyen de paiement</span><select x-model="manualMethodForm.method_code" class="admin-input w-full"><option value="wave">Wave</option><option value="orange_money">Orange Money</option><option value="pi_spi">PI-SPI / établissement participant</option><option value="mtn_momo">MTN Mobile Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="other">Autre moyen local</option></select></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Nom affiché</span><input x-model="manualMethodForm.display_name" required maxlength="80" placeholder="Ex. Orange Money" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Nom du bénéficiaire</span><input x-model="manualMethodForm.account_name" required maxlength="120" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Numéro / identifiant de réception</span><input x-model="manualMethodForm.account_reference" required maxlength="120" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Instructions pour le vendeur</span><input x-model="manualMethodForm.instructions" maxlength="500" class="admin-input w-full"></label>
+          <label class="flex items-center gap-2 text-xs"><input type="checkbox" x-model="manualMethodForm.is_active"> Activer ce moyen pour les vendeurs</label>
+          <div class="sm:col-span-2 flex justify-end"><button :disabled="manualBusy" class="admin-btn admin-btn-red" x-text="manualBusy?'Enregistrement…':'Enregistrer les coordonnées'"></button></div>
+        </form>
+        <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Pays</th><th>Moyen</th><th>Bénéficiaire</th><th>Coordonnée</th><th>État</th></tr></thead><tbody>
+          <template x-for="m in manualMethods" :key="m.id"><tr><td x-text="m.country_code+' · '+m.currency"></td><td x-text="manualMethodName(m.method_code)"></td><td x-text="m.account_name"></td><td x-text="m.account_reference"></td><td><span class="admin-pill" :class="m.is_active?'bg-emerald-500/15 text-emerald-300':'bg-white/10 text-slate-300'" x-text="m.is_active?'Actif':'Désactivé'"></span></td></tr></template>
+        </tbody></table></div>
+      </div>
+    </section>
+
     <!-- Suivi des commandes -->
     <section x-show="tab==='orders'" class="admin-panel rounded-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-white/10"><h3 class="font-bold text-lg">Commandes de la plateforme</h3><p class="text-xs admin-muted mt-1">Vue globale des commandes enregistrées, sans modifier leur statut.</p></div>
@@ -191,6 +238,8 @@ function admin() {
     newPassword: "", confirmPassword: "", tab: "vendors", filter: "all", q: "",
     f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
     analyticsPeriod: "week",
+    manualPayments: [], manualMethods: [], manualBusy: false,
+    manualMethodForm: { country_code: "SN", method_code: "wave", display_name: "Wave", account_name: "", account_reference: "", instructions: "", is_active: false },
 
     init: async function () {
       var self = this;
@@ -254,6 +303,58 @@ function admin() {
         offset += pageSize;
       } while (page.data && page.data.length === pageSize && allOrders.length < 10000);
       this.orders = allOrders;
+      await this.loadManualPayments();
+      await this.loadManualMethods();
+    },
+    loadManualPayments: async function () {
+      var r = await db.from("subscription_payments").select("*").eq("provider", "manual_transfer").order("created_at", { ascending: false }).limit(500);
+      if (r.error) { console.warn("Paiements abonnements manuels :", r.error.message); return; }
+      this.manualPayments = r.data || [];
+    },
+    loadManualMethods: async function () {
+      var r = await db.from("subscription_manual_payment_methods").select("*").order("country_code").order("method_code");
+      if (r.error) { console.warn("Moyens de paiement manuels :", r.error.message); return; }
+      this.manualMethods = r.data || [];
+    },
+    manualVendorName: function (p) {
+      var shop = this.shops.find(function(s){return s.id===p.shop_id;});
+      var vendor = shop ? this.vendors.find(function(v){return v.id===shop.owner;}) : null;
+      return vendor ? vendor.full_name : "Vendeur";
+    },
+    manualCountry: function (shopId) {
+      var shop = this.shops.find(function(s){return s.id===shopId;});
+      return shop && shop.data ? (shop.data.country||"") : "";
+    },
+    manualPlanName: function (planId) {
+      var names = {starter:"Starter",pro:"Pro",premium:"Premium"};
+      return names[this.manualPayments.find(function(p){return p.plan_id===planId;})?.plan_slug] || "Forfait";
+    },
+    manualMethodName: function (code) {
+      var names = {wave:"Wave",orange_money:"Orange Money",pi_spi:"PI-SPI",mtn_momo:"MTN Mobile Money",moov_money:"Moov Money",airtel_money:"Airtel Money",other:"Autre"};
+      return names[code] || code || "—";
+    },
+    saveManualPaymentMethod: async function () {
+      if (this.manualBusy) return;
+      var form = this.manualMethodForm;
+      if (!form.account_name.trim() || !form.account_reference.trim() || !form.display_name.trim()) { alert("Complète le bénéficiaire, le nom du moyen et la coordonnée de réception."); return; }
+      var xof = ["BJ","BF","CI","GW","ML","NE","SN","TG"].includes(form.country_code);
+      this.manualBusy = true;
+      var payload = Object.assign({}, form, { currency: xof ? "XOF" : "XAF", updated_at: new Date().toISOString() });
+      var r = await db.from("subscription_manual_payment_methods").upsert(payload, { onConflict: "country_code,method_code" });
+      this.manualBusy = false;
+      if (r.error) { alert("Impossible d'enregistrer les coordonnées : "+r.error.message); return; }
+      alert("Coordonnées enregistrées.");
+      await this.loadManualMethods();
+    },
+    reviewManualPayment: async function (payment, decision) {
+      var label = decision==="approve" ? "confirmer que l'argent est bien arrivé et activer l'abonnement" : "refuser cette demande";
+      if (!confirm("As-tu vérifié le transfert dans ton compte et veux-tu "+label+" ?")) return;
+      var note = prompt("Note administrative (facultative) :", "") || "";
+      var r = await db.functions.invoke("admin-review-manual-subscription-payment", { body: { paymentId: payment.id, decision: decision, note: note } });
+      if (r.error || !r.data || r.data.error) { alert((r.data&&r.data.error)||"Impossible de traiter la demande."); return; }
+      alert(r.data.message || "Demande traitée.");
+      await this.loadManualPayments();
+      await this.reload();
     },
     get periodCards() {
       return [
