@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr" class="min-h-full bg-slate-50">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="theme.css">
+<script defer src="theme.js"></script>
+<title>Boutique ti i - Plateforme E-Commerce SaaS</title>
+
+<!-- Favicon professionnel -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23059669%22/><text x=%2250%22 y=%2265%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>Bt</text></svg>">
+
+<meta property="og:title" content="Boutique ti i - Créez votre boutique e-commerce en quelques clics">
+<meta property="og:description" content="La plateforme e-commerce SaaS pensée pour les commerçants en Afrique. Vendez facilement via WhatsApp et Mobile Money.">
+<meta property="og:type" content="website">
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body class="min-h-screen text-slate-800 antialiased font-sans flex flex-col" x-data="app()" x-cloak :dir="lang==='ar'?'rtl':'ltr'">
+
+<div>
+<!-- Header Principal Responsive -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+ <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+  
+  <!-- Logo et Titre -->
+  <div class="flex items-center justify-between w-full sm:w-auto cursor-pointer" @click="tab='welcome'">
+   <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-800 flex items-center justify-center text-white font-black text-xl shadow-md ring-2 ring-emerald-200">Bti</div>
+    <div>
+     <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight flex items-center gap-1.5">Boutique ti i
+      <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" x-text="shop.currency"></span>
+     </h1>
+     <p class="text-[11px] text-slate-500" x-text="t('tagline')"></p>
+    </div>
+   </div>
+  </div>
+  
+  <!-- Sélecteur de langue et Navigation -->
+  <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+   <div class="relative flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+    <i data-lucide="globe" class="w-4 h-4 text-slate-500 mx-1"></i>
+    <select x-model="lang" aria-label="Langue" class="bg-transparent text-xs font-semibold text-slate-700 py-1 px-1 focus:outline-none cursor-pointer">
+     <option value="fr">FR</option>
+     <option value="en">EN</option>
+     <option value="es">ES</option>
+     <option value="ar">العربية</option>
+    </select>
+   </div>
+   <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+    <button @click="tab='client'" :class="tab==='client'||tab==='welcome'?'bg-white text-emerald-600 shadow-sm font-bold':'text-slate-600 hover:text-slate-900'" class="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1">
+     <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i><span x-text="t('clientSpace')"></span>
+    </button>
+    <button x-show="vendorOpen" @click="tab='vendor'" :class="tab==='vendor'?'bg-white text-emerald-600 shadow-sm font-bold':'text-slate-600 hover:text-slate-900'" class="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1">
+     <i data-lucide="store" class="w-3.5 h-3.5"></i><span x-text="t('vendorSpace')"></span>
+    </button>
+   </div>
+  </div>
+
+ </div>
+</header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+ <!-- Chargement et Erreurs -->
+ <div x-show="loading" x-cloak class="text-center py-24 text-slate-500 text-sm" x-text="t('loading')"></div>
+ <div x-show="remoteErr" x-cloak class="max-w-md mx-auto text-center bg-white border border-slate-200 rounded-2xl p-6 my-12 space-y-3">
+  <p class="text-red-600 text-sm" x-text="remoteErr"></p>
+  <a :href="base||'#'" class="underline text-emerald-700 text-sm font-bold" x-text="t('createShop')"></a>
+ </div>
+
+ <!-- Page d'accueil / Bienvenue -->
+ <div x-show="!loading&&!remoteErr&&tab==='welcome'" x-cloak class="max-w-3xl mx-auto text-center space-y-8 py-12">
+  <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 shadow-sm space-y-6">
+   <div class="w-20 h-20 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-inner"><i data-lucide="store" class="w-10 h-10"></i></div>
+   <div>
+    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-200" x-text="shop.country"></span>
+    <h2 class="text-3xl font-black text-slate-900 mt-3" x-text="shop.name"></h2>
+    <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto"><span x-show="shop.owner"><span x-text="t('owner')"></span> : <strong x-text="shop.owner"></strong> • </span><span x-text="t('location')"></span> : <strong x-text="shop.location"></strong></p>
+   </div>
+   <div class="flex items-center justify-center pt-4">
+    <button @click="tab='client'" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-2">
+     <i data-lucide="shopping-bag" class="w-5 h-5"></i><span x-text="t('enterShop')"></span>
+    </button>
+   </div>
+  </div>
+ </div>
+
+ <!-- Espace Client / Vitrine E-commerce -->
+ <div x-show="!loading&&!remoteErr&&tab==='client'" x-cloak class="space-y-8">
+  <div class="bg-gradient-to-r from-teal-50 to-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+   <div class="flex items-center gap-3">
+    <div class="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div>
+    <div>
+     <h2 class="font-bold text-slate-900 text-base" x-text="shop.name"></h2>
+     <p class="text-xs text-slate-600"><span x-text="t('country')"></span> : <strong x-text="shop.country"></strong> • <span x-text="t('currency')"></span> : <strong x-text="shop.currency"></strong></p>
+    </div>
+   </div>
+   <div class="flex gap-2">
+    <button x-show="remote" @click="share()" class="text-xs text-emerald-700 font-bold hover:underline bg-white px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm" x-text="t('shareShop')"></button>
+    <button @click="tab='welcome'" class="text-xs text-emerald-700 font-bold hover:underline bg-white px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm" x-text="t('homePage')"></button>
+   </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+   <!-- Catalogue des Produits -->
+   <div class="lg:col-span-2">
+    <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-emerald-600"></i><span x-text="t('availableProducts')"></span></h2>
+    <p x-show="!shop.products.length" class="text-slate-500 text-sm py-8 text-center bg-white rounded-2xl border" x-text="t('noProducts')"></p>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+     <template x-for="p in shop.products" :key="p.id">
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+       <div>
+        <div class="relative">
+         <template x-if="p.video && (p.video.includes('http') || p.video.includes('.mp4'))">
+          <video :src="p.video" controls class="w-full h-48 object-cover bg-black"></video>
+         </template>
+         <template x-if="p.img && p.img.startsWith('http')">
+          <img :src="p.img" :alt="p.title" class="w-full h-48 object-cover" @error="p.img = ''">
+         </template>
+         <template x-if="!p.img || !p.img.startsWith('http')">
+          <div class="w-full h-48 grid place-items-center text-6xl font-black text-white bg-emerald-700" x-text="p.title ? p.title.charAt(0).toUpperCase() : 'B'"></div>
+         </template>
+         
+         <div x-show="!p.inStock" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center">
+          <span class="bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-lg" x-text="t('outOfStock')"></span>
+         </div>
+        </div>
+        <div class="p-4">
+         <h3 class="font-semibold text-slate-900 text-base" x-text="p.title"></h3>
+         <p x-show="p.desc" class="text-xs text-slate-500 mt-1" x-text="p.desc"></p>
+        </div>
+       </div>
+       <div class="p-4 pt-0 flex items-center justify-between">
+        <span class="text-lg font-bold text-emerald-600" x-text="fmt(p.price)"></span>
+        <button @click="add(p)" :disabled="!p.inStock" :class="p.inStock?'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer':'bg-slate-200 text-slate-400 cursor-not-allowed'" class="px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 shadow-sm">
+         <i data-lucide="plus" class="w-4 h-4"></i><span x-text="p.inStock?t('add'):t('outOfStock')"></span>
+        </button>
+       </div>
+      </div>
+     </template>
+    </div>
+   </div>
+
+   <!-- Panier d'achat -->
+   <div class="lg:col-span-1">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:sticky lg:top-24 shadow-sm">
+     <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center justify-between">
+      <span x-text="t('cartTitle')"></span>
+      <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold" x-text="count"></span>
+     </h2>
+     <div x-show="!cart.length" class="text-center py-8 text-slate-400">
+      <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-2 opacity-40"></i>
+      <p class="text-sm" x-text="t('emptyCart')"></p>
+     </div>
+     <div x-show="cart.length" class="space-y-4">
+      <div class="divide-y divide-slate-100 max-h-48 overflow-y-auto pr-1">
+       <template x-for="item in cart" :key="item.id">
+        <div class="py-3 flex justify-between items-center text-sm">
+         <div class="pr-2"><p class="font-medium text-slate-800" x-text="item.title"></p><p class="text-xs text-slate-500" x-text="fmt(item.price)"></p></div>
+         <div class="flex items-center gap-2">
+          <button @click="minus(item)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center">-</button>
+          <span class="text-xs font-bold w-4 text-center" x-text="item.quantity"></span>
+          <button @click="item.quantity++" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center">+</button>
+         </div>
+        </div>
+       </template>
+      </div>
+      <div class="pt-4 border-t border-slate-200 space-y-4">
+       <div class="flex justify-between font-bold text-slate-900 text-base"><span x-text="t('total')"></span><span x-text="fmt(total)" class="text-emerald-600"></span></div>
+       <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+        <p class="font-bold text-slate-700 uppercase" x-text="t('clientDetails')"></p>
+        <div><label class="block text-slate-600 mb-0.5" x-text="t('fullName')"></label><input type="text" x-model="cust.name" placeholder="Ex: Moussa Diop" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5"></div>
+        <div><label class="block text-slate-600 mb-0.5" x-text="t('phone')"></label><input type="tel" x-model="cust.phone" placeholder="+..." class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5"></div>
+        <div><label class="block text-slate-600 mb-0.5" x-text="t('address')"></label><input type="text" x-model="cust.address" placeholder="Ville, Quartier" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5"></div>
+       </div>
+       <div class="space-y-2 text-xs">
+        <p class="font-bold text-slate-700 uppercase" x-text="t('pay')"></p>
+        <template x-for="m in payOpts" :key="m">
+         <label class="flex items-center gap-2 border border-slate-200 rounded-xl p-3 font-semibold text-sm cursor-pointer"><input type="radio" name="pm" :value="m" x-model="pay"><span x-text="m"></span></label>
+        </template>
+        <p x-show="!payOpts.length" class="text-slate-500" x-text="t('payHint')"></p>
+       </div>
+       <button @click="placeOrder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-sm flex items-center justify-center gap-2">
+        <i data-lucide="circle-check" class="w-5 h-5"></i><span x-text="t('placeOrder')"></span>
+       </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <!-- Espace Vendeur / Dashboard -->
+ <div x-show="!loading&&!remoteErr&&tab==='vendor'" x-cloak class="space-y-5">
+  <p x-show="!ready" class="text-center text-sm text-slate-500 py-10" x-text="t('loading')"></p>
+
+  <!-- Formulaire Connexion / Inscription -->
+  <div x-show="ready&&!authed" class="card max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+   <h2 class="font-bold text-lg text-slate-900" x-text="authMode==='signup'?t('createShopTitle'):t('loginTitle')"></h2>
+   <form @submit.prevent="submitAuth()" class="space-y-3">
+    <template x-if="authMode==='signup'">
+     <div class="space-y-3">
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('fullName')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="f.fullName"></div>
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('shopName')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="f.shopName"></div>
+      <div class="grid grid-cols-2 gap-3">
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('country')"></label><select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white" x-model="f.country"><template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template></select></div>
+       <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('location')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="f.location"></div>
+      </div>
+      <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('whatsappNumber')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="tel" x-model="f.phone"></div>
+      <div>
+       <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('idDocLabel')"></label>
+       <label class="flex items-center justify-between w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:bg-slate-50 transition">
+        <span class="text-xs font-semibold text-emerald-700 truncate pr-2" x-text="f.idFile ? f.idFile : t('chooseFile')"></span>
+        <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-lg font-bold shrink-0" x-text="t('browse')"></span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" @change="onId($event)">
+       </label>
+       <p x-show="f.idErr" class="text-red-600 text-xs mt-1" x-text="f.idErr"></p>
+       <p x-show="f.idFile&&!f.idErr" class="text-emerald-700 text-xs mt-1"><span x-text="t('idSaved')"></span> : <span x-text="f.idFile"></span></p>
+      </div>
+     </div>
+    </template>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('email')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="email" x-ref="em" x-model="f.email"></div>
+    <div>
+     <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('password')"></label>
+     <div class="relative">
+      <input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm pr-16" :type="showPw?'text':'password'" x-ref="pw" x-model="f.password">
+      <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500" @click="showPw=!showPw" x-text="showPw?t('hide'):t('show')"></button>
+     </div>
+    </div>
+    <p x-show="authErr" class="text-red-600 text-xs mt-2" x-text="authErr"></p>
+    <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-4" :disabled="busy" x-text="busy?t('pleaseWait'):(authMode==='signup'?t('createShopBtn'):t('loginBtn'))"></button>
+   </form>
+   <div class="text-center mt-4 text-xs">
+    <button type="button" class="underline font-bold text-emerald-700" @click="switchAuth()" x-text="authMode==='login'?t('noAccount'):t('hasAccount')"></button>
+   </div>
+  </div>
+
+  <!-- Tableau de Bord Vendeur Connecté -->
+  <div x-show="authed" class="space-y-5">
+   <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-2">
+    <div class="min-w-0"><b class="block truncate text-slate-900" x-text="shop.name"></b><span class="text-xs text-slate-500" x-text="shop.owner+' · '+shop.country"></span></div>
+    <button class="underline text-red-600 text-xs font-semibold hover:text-red-800" @click="logout()" x-text="t('logout')"></button>
+   </div>
+
+   <!-- Vérification d'identité -->
+   <div x-show="!shop.verified" class="bti-id-verification bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+    <h2 class="font-bold text-base text-amber-900" x-text="t('idVerificationTitle')"></h2>
+    <p class="text-xs text-amber-800" x-text="t('idVerificationDesc')"></p>
+    <div>
+     <label class="flex items-center justify-between w-full border border-amber-300 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:bg-amber-100/50 transition">
+      <span class="text-xs font-semibold text-amber-900 truncate pr-2" x-text="f.idFile ? f.idFile : t('chooseFile')"></span>
+      <span class="bg-amber-100 text-amber-900 text-xs px-2.5 py-1 rounded-lg font-bold shrink-0" x-text="t('browse')"></span>
+      <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" @change="onId($event)">
+     </label>
+    </div>
+    <label class="flex items-center gap-2 text-xs text-amber-900 cursor-pointer">
+     <input type="checkbox" x-model="f.idConsent" class="rounded border-amber-300 text-emerald-600">
+     <span x-text="t('idConsentText')"></span>
+    </label>
+    <button @click="submitIdVerification()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm" x-text="t('submitIdBtn')"></button>
+   </div>
+
+   <!-- Lien unique à partager -->
+   <div class="bg-white p-6 rounded-2xl border border-emerald-300 bg-emerald-50/30 shadow-sm space-y-3">
+    <h2 class="font-bold text-lg text-slate-900" x-text="t('shareLinkTitle')"></h2>
+    <p class="text-xs text-slate-600" x-text="t('shareLinkDesc')"></p>
+    <div x-show="link" class="space-y-2">
+     <input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white" readonly :value="link" @focus="$event.target.select()">
+     <div class="grid grid-cols-2 gap-2">
+      <button type="button" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-xl transition" @click="copyLink()" x-text="copied?t('linkCopied'):t('copyLink')"></button>
+      <button type="button" class="text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm" style="background:#1FA855" @click="share()" x-text="t('shareWa')"></button>
+     </div>
+    </div>
+    <p x-show="!link" class="text-xs text-amber-700" x-text="t('generatingLink')"></p>
+   </div>
+
+   <!-- Gestion des Abonnements -->
+   <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+     <h2 class="font-bold text-lg text-slate-900 flex items-center gap-2" x-text="t('subTitle')"></h2>
+     <span class="text-xs text-slate-500" x-text="t('subSub')"></span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+     <template x-for="p in plans" :key="p.id">
+      <div class="border rounded-2xl p-4 transition relative flex flex-col justify-between gap-4"
+           :class="shop.plan===p.id ? 'border-emerald-600 bg-emerald-50/40 ring-2 ring-emerald-500/20' : (p.id==='pro' ? 'border-emerald-300 bg-white shadow-sm' : 'border-slate-200 bg-white')">
+       
+       <div x-show="p.id==='pro'" class="absolute -top-3 right-4 bg-emerald-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm" x-text="t('recommended')"></div>
+
+       <div class="space-y-1">
+        <h3 class="font-black text-base text-slate-900" x-text="t(p.nameKey)"></h3>
+        <p class="text-[11px] text-slate-500" x-text="t(p.subtitleKey)"></p>
+        
+        <div class="text-lg font-black text-slate-900 pt-1">
+         <span x-text="convertPrice(p.price)"></span> <span class="text-[10px] font-normal text-slate-500" x-text="t('perMonth')"></span>
+        </div>
+        
+        <ul class="pt-2 space-y-1.5 text-xs text-slate-600 border-t border-slate-100 mt-2">
+         <template x-for="featKey in p.featureKeys" :key="featKey">
+          <li class="flex items-center gap-1.5">
+           <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+           <span x-text="t(featKey)"></span>
+          </li>
+         </template>
+        </ul>
+       </div>
+
+       <div>
+        <button type="button" @click="shop.plan=p.id" 
+                :disabled="shop.plan===p.id"
+                class="w-full py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
+                :class="shop.plan===p.id ? 'bg-emerald-600 text-white cursor-default' : 'bg-slate-900 hover:bg-slate-800 text-white'"
+                x-text="shop.plan===p.id ? t('currentPlan') : t('choosePlan')">
+        </button>
+       </div>
+
+      </div>
+     </template>
+    </div>
+   </div>
+
+   <!-- Configuration de la Boutique -->
+   <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+    <h2 class="font-bold text-lg text-slate-900" x-text="t('myShop')"></h2>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('shopName')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.name"></div>
+    <div class="grid grid-cols-2 gap-3">
+     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('country')"></label><select class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white" x-model="shop.country" @change="setCountry()"><template x-for="c in countries" :key="c"><option :value="c" x-text="c"></option></template></select></div>
+     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('currency')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50" x-model="shop.currency" readonly></div>
+    </div>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('location')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.location"></div>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('whatsappNumber')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.wa"></div>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('refundPolicyLabel')"></label><textarea class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="shop.refundPolicy" rows="2"></textarea></div>
+   </div>
+
+   <!-- Ajouter un Article -->
+   <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+    <h2 class="font-bold text-lg text-slate-900" x-text="t('addProduct')"></h2>
+    <div class="grid grid-cols-2 gap-3">
+     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('prodName')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="newP.title"></div>
+     <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('price')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" type="number" x-model="newP.price"></div>
+    </div>
+    <div><label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('desc')"></label><input class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm" x-model="newP.desc"></div>
+    <div>
+     <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('photo')"></label>
+     <label class="flex items-center justify-between w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:bg-slate-50 transition">
+      <span class="text-xs font-semibold text-emerald-700 truncate pr-2" x-text="newP.imgName ? newP.imgName : t('chooseFile')"></span>
+      <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-lg font-bold shrink-0" x-text="t('browse')"></span>
+      <input type="file" accept="image/*" class="hidden" @change="onImgCustom($event)">
+     </label>
+    </div>
+    <button class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm transition mt-2" @click="saveProduct()" x-text="t('publishProd')"></button>
+   </div>
+
+   <!-- Liste des Articles -->
+   <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+    <h2 class="font-bold text-lg text-slate-900 mb-2" x-text="t('myProducts')"></h2>
+    <p x-show="!shop.products.length" class="text-xs text-slate-500" x-text="t('noProducts')"></p>
+    <template x-for="p in shop.products" :key="p.id">
+     <div class="flex items-center gap-2 py-2 border-b border-slate-100 text-sm">
+      <span class="flex-1 font-medium text-slate-800" x-text="p.title+' — '+fmt(p.price)"></span>
+      <button class="text-xs text-red-600 underline font-semibold" @click="shop.products=shop.products.filter(x=>x.id!==p.id)" x-text="t('delete')"></button>
+     </div>
+    </template>
+   </div>
+
+   <!-- Section Commandes (Pedidos) -->
+   <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+    <h2 class="font-bold text-lg text-slate-900" x-text="t('ordersTitle')"></h2>
+    <p class="text-xs text-slate-500" x-text="t('ordersSubtitle')"></p>
+    <p class="text-sm text-slate-600 py-4 text-center" x-text="t('noOrders')"></p>
+   </div>
+
+  </div>
+ </div>
+
+</main>
+</div>
+
+<!-- Footer Légal corrigé avec liens vers vos fichiers locaux -->
+<footer class="bg-white border-t border-slate-200 py-6 mt-12 text-xs text-slate-500">
+ <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+  <p>© 2026 Boutique ti i</p>
+  <div class="flex flex-wrap gap-4">
+   <a href="terms.html" class="hover:underline font-medium text-slate-600" x-text="t('terms')"></a>
+   <a href="privacy.html" class="hover:underline font-medium text-slate-600" x-text="t('privacy')"></a>
+   <a href="cookies.html" class="hover:underline font-medium text-slate-600" x-text="t('cookies')"></a>
+   <a href="refunds.html" class="hover:underline font-medium text-slate-600" x-text="t('refunds')"></a>
+   <a href="legal.html" class="hover:underline font-medium text-slate-600" x-text="t('legal')"></a>
+  </div>
+ </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
