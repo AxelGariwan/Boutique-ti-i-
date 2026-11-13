@@ -230,7 +230,7 @@ function app() {
   return {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
     manualPayment: { planId: "", plan: null, methods: [], selectedMethod: "", payerReference: "", payerPhone: "", submitted: false, payment: null, error: "" },
-    aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
+    aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false, aiOwnerId: "",
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "", avatarBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
@@ -278,7 +278,7 @@ function app() {
           self.aiInput = "";
           self.aiMessages = [];
           self.aiConversations = [];
-          self.aiConversationId = "";
+          self.aiConversationId = ""; self.aiOwnerId = "";
           self.aiError = "";
           self.aiBusy = false;
           self.aiHistoryBusy = false;
@@ -295,7 +295,7 @@ function app() {
           self.aiInput = "";
           self.aiMessages = [];
           self.aiConversations = [];
-          self.aiConversationId = "";
+          self.aiConversationId = ""; self.aiOwnerId = "";
           self.aiError = "";
           self.aiBusy = false;
           self.aiHistoryBusy = false;
@@ -330,8 +330,17 @@ function app() {
       this.tab = "vendor";
     },
 
-    aiInvoke: async function (body) {
-      var result = await db.functions.invoke("boutique-ai", { body: Object.assign({ shopId: this.shop.sid, locale: this.lang }, body || {}) });
+    aiInvoke: async function (body, expectedContext) {
+      // Lie chaque requête à l'utilisateur et à la boutique actifs au début de l'appel.
+      var ownerId = expectedContext && expectedContext.ownerId || this.uid;
+      var shopId = expectedContext && expectedContext.shopId || this.shop.sid;
+      var before = await db.auth.getSession();
+      var beforeSession = before && before.data && before.data.session;
+      if (!beforeSession || beforeSession.user.id !== ownerId ||
+          this.uid !== ownerId || this.shop.sid !== shopId) {
+        throw new Error("La session vendeur a changé. Rechargez votre espace avant d'ouvrir Xelo IA.");
+      }
+      var result = await db.functions.invoke("boutique-ai", { body: Object.assign({ shopId: shopId, locale: this.lang }, body || {}) });
       if (result.error || !result.data || result.data.error) {
         var msg = result.data && result.data.error ? result.data.error : "";
         if (!msg && result.error && result.error.context) {
@@ -339,23 +348,38 @@ function app() {
         }
         throw new Error(msg || (result.error && result.error.message) || "Assistant IA indisponible.");
       }
+      var after = await db.auth.getSession();
+      var afterSession = after && after.data && after.data.session;
+      if (!afterSession || afterSession.user.id !== ownerId ||
+          this.uid !== ownerId || this.shop.sid !== shopId) {
+        throw new Error("La session a changé pendant le chargement. Aucun message n'a été affiché.");
+      }
       return result.data;
     },
     openAiAssistant: async function () {
       if (!this.authed || !this.shop.sid) { alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA."); return; }
+      var active = await db.auth.getSession();
+      var activeSession = active && active.data && active.data.session;
+      if (!activeSession || activeSession.user.id !== this.uid) {
+        alert("La session vendeur n'est plus valide. Reconnectez-vous."); return;
+      }
+      this.aiOwnerId = activeSession.user.id;
       // Toujours recharger l'historique depuis le serveur pour le compte et la boutique actifs.
       this.aiInput = "";
       this.aiMessages = [];
       this.aiConversations = [];
-      this.aiConversationId = "";
+      this.aiConversationId = ""; this.aiOwnerId = "";
       this.aiError = "";
       this.modal = "aiChat";
       await this.loadAiConversations();
     },
     loadAiConversations: async function () {
+      var context = { ownerId: this.uid, shopId: this.shop.sid };
+      this.aiOwnerId = context.ownerId;
       this.aiHistoryBusy = true;
       try {
-        var data = await this.aiInvoke({ action: "list_conversations" });
+        var data = await this.aiInvoke({ action: "list_conversations" }, context);
+        if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
         this.aiConversations = data.conversations || [];
         if (!this.aiConversations.length) await this.newAiConversation();
         else if (!this.aiConversationId || !this.aiConversations.some((c) => c.id === this.aiConversationId))
@@ -366,9 +390,11 @@ function app() {
     },
     selectAiConversation: async function (id) {
       var targetId = id || this.aiConversationId; if (!targetId) return;
+      var context = { ownerId: this.uid, shopId: this.shop.sid };
       this.aiHistoryBusy = true;
       try {
-        var data = await this.aiInvoke({ action: "get_conversation", conversationId: targetId });
+        var data = await this.aiInvoke({ action: "get_conversation", conversationId: targetId }, context);
+        if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
         this.aiConversationId = targetId;
         this.aiMessages = Array.isArray(data.conversation.messages) ? data.conversation.messages : [];
         if (!this.aiMessages.length) this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }];
@@ -377,8 +403,10 @@ function app() {
       finally { this.aiHistoryBusy = false; }
     },
     newAiConversation: async function () {
+      var context = { ownerId: this.uid, shopId: this.shop.sid };
       try {
-        var data = await this.aiInvoke({ action: "create_conversation" });
+        var data = await this.aiInvoke({ action: "create_conversation" }, context);
+        if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
         this.aiConversations.unshift(data.conversation); this.aiConversationId = data.conversation.id;
         this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }]; this.aiError = "";
       } catch (error) { this.aiError = error.message || "Impossible de créer une conversation."; }
@@ -386,24 +414,27 @@ function app() {
     deleteAiConversation: async function () {
       if (!this.aiConversationId || !confirm("Supprimer définitivement cette conversation ?")) return;
       try {
-        await this.aiInvoke({ action: "delete_conversation", conversationId: this.aiConversationId });
+        var context = { ownerId: this.uid, shopId: this.shop.sid };
+        await this.aiInvoke({ action: "delete_conversation", conversationId: this.aiConversationId }, context);
+        if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
         this.aiConversations = this.aiConversations.filter((c) => c.id !== this.aiConversationId);
-        this.aiConversationId = "";
+        this.aiConversationId = ""; this.aiOwnerId = "";
         if (this.aiConversations.length) await this.selectAiConversation(this.aiConversations[0].id);
         else await this.newAiConversation();
       } catch (error) { this.aiError = error.message || "Impossible de supprimer cette conversation."; }
     },
     sendAiMessage: async function () {
       var message = String(this.aiInput || "").trim(); if (!message || this.aiBusy) return;
+      var context = { ownerId: this.uid, shopId: this.shop.sid };
+      if (!context.ownerId || !context.shopId) return;
       if (!this.aiConversationId) await this.newAiConversation();
+      if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
       if (!this.aiConversationId) return;
       this.aiMessages.push({ role: "user", content: message }); this.aiInput = "";
       this.aiBusy = true; this.aiError = "";
       try {
-        var sessionResult = await db.auth.getSession();
-        var session = sessionResult && sessionResult.data && sessionResult.data.session;
-        if (!session || !session.access_token) throw new Error("Votre session vendeur a expiré. Reconnectez-vous.");
-        var result = await this.aiInvoke({ action: "chat", conversationId: this.aiConversationId, message: message });
+        var result = await this.aiInvoke({ action: "chat", conversationId: this.aiConversationId, message: message }, context);
+        if (this.uid !== context.ownerId || this.shop.sid !== context.shopId || this.aiOwnerId !== context.ownerId) return;
         this.aiMessages.push({ role: "assistant", content: result.answer });
         var current = this.aiConversations.find((c) => c.id === this.aiConversationId);
         if (current) current.title = message.slice(0, 70);
@@ -579,7 +610,7 @@ function app() {
       if (shopId) return;
       if (!session) {
         this.authed = false; this.uid = ""; this.shop = blankShop(); this.aiInput = "";
-        this.aiMessages = []; this.aiConversations = []; this.aiConversationId = "";
+        this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.aiOwnerId = "";
         this.aiError = ""; this.aiBusy = false; this.aiHistoryBusy = false;
         this.accountEmail = ""; this.accountPhone = ""; this.accountPhoneDraft = "";
         this.ready = true; return;
@@ -587,7 +618,7 @@ function app() {
       // Défense supplémentaire : un nouvel utilisateur ne récupère jamais l'état IA précédent.
       if (this.uid && this.uid !== session.user.id) {
         this.aiInput = ""; this.aiMessages = []; this.aiConversations = [];
-        this.aiConversationId = ""; this.aiError = "";
+        this.aiConversationId = ""; this.aiOwnerId = ""; this.aiError = "";
         this.aiBusy = false; this.aiHistoryBusy = false;
         this.shop = blankShop(); this.orders = [];
         if (this.modal === "aiChat") this.modal = "";
