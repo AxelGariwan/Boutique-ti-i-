@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const allowedOrigins = new Set([
   "https://boutique-ti-i-eight.vercel.app",
+  "https://boutique-ti-i-3p9rvybj4-axel15.vercel.app",
   "http://localhost:3000",
   "http://127.0.0.1:5500",
   "http://localhost:5501",
@@ -17,7 +18,9 @@ type ProviderConfig = {
 };
 
 function cors(origin: string | null) {
-  const allowed = origin && allowedOrigins.has(origin)
+  const isTrustedVercelPreview = !!origin &&
+    /^https:\/\/boutique-ti-i-[a-z0-9-]+-axel15\.vercel\.app$/.test(origin);
+  const allowed = origin && (allowedOrigins.has(origin) || isTrustedVercelPreview)
     ? origin
     : "https://boutique-ti-i-eight.vercel.app";
   return {
@@ -340,27 +343,43 @@ Deno.serve(async (req) => {
     // Aggregate orders only. Customer names, phone numbers, addresses and payment details are never sent to an AI provider.
     // Dans le schema actuel, orders.total est du texte (et non bigint).
     // On normalise les montants entiers XOF/XAF sans supposer que la colonne est numérique.
+    const parseOrderAmount = (value: unknown): number | null => {
+      if (typeof value === "number") {
+        return Number.isSafeInteger(value) && value >= 0 ? value : null;
+      }
+
+      // Les montants XOF/XAF sont des entiers. On accepte les espaces
+      // et libellés de devise, mais on rejette les séparateurs ambigus
+      // (virgule/point) au lieu de transformer silencieusement 12.50 en 1250.
+      const normalized = String(value ?? "")
+        .trim()
+        .replace(/[\\s\\u00a0]/g, "")
+        .replace(/(?:FCFA|XOF|XAF|CFA)/gi, "");
+
+      if (!/^\\d+$/.test(normalized)) return null;
+      const amount = Number(normalized);
+      return Number.isSafeInteger(amount) ? amount : null;
+    };
+
     let orderSummary: {
       available: boolean;
       count30d: number;
       revenue30d: number | null;
       pendingCount: number | null;
-      processingCount: number | null;
-      completedCount: number | null;
+      invalidAmountCount: number;
       sampleLimited: boolean;
     } = {
       available: false,
       count30d: 0,
       revenue30d: null,
       pendingCount: null,
-      processingCount: null,
-      completedCount: null,
+      invalidAmountCount: 0,
       sampleLimited: false,
     };
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: orders, error: ordersError } = await admin
       .from("orders")
-      .select("status,created_at")
+      .select("total,status,created_at")
       .eq("shop_id", shopId)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -370,18 +389,14 @@ Deno.serve(async (req) => {
       // Ne jamais présenter un échec de lecture comme zéro vente.
       console.error("AI orders summary unavailable:", ordersError.message);
     } else if (Array.isArray(orders)) {
-      const normalizedStatuses = orders.map((o: any) => String(o.status || "").trim().toLowerCase());
+      const amounts = orders.map((o: any) => parseOrderAmount(o.total));
+      const validAmounts = amounts.filter((amount): amount is number => amount !== null);
       orderSummary = {
         available: true,
         count30d: orders.length,
-        // Aucun statut distinct "paiement confirmé" n'existe dans le workflow actuel.
-        // Ne jamais présenter les commandes préparées/livrées comme du chiffre d'affaires encaissé.
-        revenue30d: null,
-        pendingCount: normalizedStatuses.filter((status: string) =>
-          status === "pending" || status.includes("attente de paiement")
-        ).length,
-        processingCount: normalizedStatuses.filter((status: string) => status === "processing").length,
-        completedCount: normalizedStatuses.filter((status: string) => status === "completed").length,
+        revenue30d: validAmounts.reduce((sum, amount) => sum + amount, 0),
+        pendingCount: orders.filter((o: any) => /attente|pending|processing/i.test(String(o.status || ""))).length,
+        invalidAmountCount: amounts.length - validAmounts.length,
         sampleLimited: orders.length === 500,
       };
     }
@@ -407,8 +422,7 @@ Deno.serve(async (req) => {
       "Quand c'est utile, rédige directement un texte prêt à publier : message WhatsApp, publication Facebook/Instagram, description produit, offre ou relance client.",
       "Utilise les noms, prix et stocks réels fournis. N'invente jamais de ventes, produits, marges, coûts d'achat, stocks, taux ou résultats.",
       "Pour conseiller un prix ou une remise, demande le coût d'achat et la marge minimale s'ils manquent. Ne propose jamais une remise risquant de vendre à perte.",
-      "Si les données de commandes sont indisponibles, dis-le; si sampleLimited=true, précise que les chiffres sont un échantillon.",
-      "Le workflow actuel distingue les commandes en attente, en préparation et terminées, mais ne possède pas de statut de paiement confirmé distinct. Ne calcule donc jamais le chiffre d’affaires encaissé à partir de ces statuts : indique que cette donnée n’est pas disponible et demande une vérification des paiements auprès du vendeur.",
+      "Si les données de commandes sont indisponibles, dis-le; si sampleLimited=true, précise que les chiffres sont un échantillon; si invalidAmountCount>0, précise que le chiffre d'affaires peut être incomplet.",
       "Pour un simple bonjour, réponds naturellement, sans tableau vide ni conseils génériques interminables, puis pose UNE question pour connaître son objectif commercial.",
       "Si des données manquent, explique exactement lesquelles et propose une première action réalisable malgré cela. Évite les tableaux sauf demande explicite.",
       "Ne demande jamais de mot de passe, code OTP, clé API, document d'identité ou donnée bancaire.",
@@ -420,8 +434,8 @@ Deno.serve(async (req) => {
     ].join(" ");
     const historyText = history.map((item: any) =>
       (item.role === "assistant" ? "Assistant" : "Vendeur") + ": " + item.content
-    ).join("\n");
-    const userPrompt = `Langue: ${locale}\nHistorique de cette conversation:\n${historyText}\nQuestion actuelle: ${message}\nDonnées de boutique (JSON): ${JSON.stringify(context)}\nDonne une réponse immédiatement exploitable, sans inventer de données.`;
+    ).join("\\n");
+    const userPrompt = `Langue: ${locale}\\nHistorique de cette conversation:\\n${historyText}\\nQuestion actuelle: ${message}\\nDonnées de boutique (JSON): ${JSON.stringify(context)}\\nDonne une réponse immédiatement exploitable, sans inventer de données.`;
 
     const inputTokensEstimate = estimateTokens(systemPrompt + userPrompt) + 300;
     const outputTokensEstimate = 700;
