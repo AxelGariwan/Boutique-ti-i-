@@ -126,7 +126,7 @@ begin
 
   if v_payment.payer_reference is null
      or length(trim(v_payment.payer_reference)) < 3
-     or v_payment.payment_method not in ('wave','orange_money','pi_spi','mtn_momo','moov_money','airtel_money','other') then
+     or coalesce(v_payment.payment_method,'') not in ('wave','orange_money','pi_spi','mtn_momo','moov_money','airtel_money','other') then
     raise exception 'Référence ou moyen de paiement manquant';
   end if;
 
