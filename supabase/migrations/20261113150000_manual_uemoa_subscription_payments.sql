@@ -13,6 +13,10 @@ create unique index if not exists subscription_payments_manual_reference_uidx
   on public.subscription_payments (payment_method, lower(payer_reference))
   where provider = 'manual_transfer' and payer_reference is not null;
 
+create unique index if not exists subscription_payments_manual_pending_shop_uidx
+  on public.subscription_payments (shop_id)
+  where provider = 'manual_transfer' and status = 'pending';
+
 create table if not exists public.subscription_manual_payment_methods (
   id uuid primary key default gen_random_uuid(),
   country_code text not null check (country_code in ('BJ','BF','CI','GW','ML','NE','SN','TG','CM','CF','CG','GA','TD','GQ')),
@@ -29,6 +33,7 @@ create table if not exists public.subscription_manual_payment_methods (
 );
 
 alter table public.subscription_manual_payment_methods enable row level security;
+grant select, insert, update, delete on public.subscription_manual_payment_methods to authenticated;
 
 drop policy if exists subscription_manual_methods_active_read on public.subscription_manual_payment_methods;
 create policy subscription_manual_methods_active_read
@@ -79,7 +84,7 @@ begin
     raise exception 'Accès administrateur requis';
   end if;
 
-  if p_decision not in ('approve','reject') then
+  if coalesce(p_decision,'') not in ('approve','reject') then
     raise exception 'Décision invalide';
   end if;
 
