@@ -427,7 +427,7 @@ function app() {
 
       var country = String(this.shop.country || "").trim().toLowerCase();
       var currency = String(this.shop.currency || "").trim().toUpperCase();
-      var uemoa = ["benin","bj","burkina faso","bf","cote d'ivoire","côte d'ivoire","ci","guinee-bissau","guinée-bissau","gw","mali","ml","niger","ne","senegal","sénégal","sn","togo","tg"];
+      var uemoa = ["benin","bj","burkina faso","bf","cote d'ivoire","côte d'ivoire","côte d’ivoire","ci","guinee-bissau","guinée-bissau","gw","mali","ml","niger","ne","senegal","sénégal","sn","togo","tg"];
       var cemac = ["cm","cameroun","cameroon","cf","centrafrique","république centrafricaine","republique centrafricaine","cg","congo","république du congo","republique du congo","ga","gabon","td","tchad","chad","gq","guinée équatoriale","guinee equatoriale"];
       if (!((currency === "XOF" && uemoa.includes(country)) || (currency === "XAF" && cemac.includes(country)))) {
         alert("Le paiement manuel des abonnements n'est pas encore disponible pour ce pays ou cette devise.");
