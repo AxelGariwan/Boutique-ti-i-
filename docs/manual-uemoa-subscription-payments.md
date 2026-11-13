@@ -1,15 +1,14 @@
-# Architecture — abonnements manuels UEMOA (phase de lancement)
+# Architecture — abonnements manuels UEMOA et CEMAC (phase de lancement)
 
 ## Décision produit
 
 Pendant les six premiers mois d'exploitation, les abonnements des vendeurs des huit pays de l'UEMOA sont réglés par transfert manuel. Le vendeur effectue le transfert, saisit la référence (et éventuellement son numéro payeur), puis l'administrateur vérifie le crédit réellement reçu dans son compte et approuve la demande. Aucune capture d'écran ni déclaration du vendeur ne déclenche seule une activation.
 
 Moyens proposés selon disponibilité locale :
-- Wave
-- Orange Money
-- PI-SPI via une banque ou un établissement participant/homologué dans le pays concerné
+- UEMOA : Wave, Orange Money, PI-SPI via une banque ou un établissement participant/homologué.
+- CEMAC : Orange Money, MTN Mobile Money, Moov Money, Airtel Money ou autre réseau local configuré et vérifié. PI-SPI n'est pas un moyen CEMAC.
 
-Le vendeur ne voit que les moyens configurés comme actifs pour son pays. Les coordonnées de réception ne sont jamais codées en dur dans le JavaScript.
+Le vendeur ne voit que les moyens configurés comme actifs pour son pays et sa devise. Les coordonnées de réception ne sont jamais codées en dur dans le JavaScript.
 
 ## Pays et devises
 
@@ -23,7 +22,25 @@ Les huit pays UEMOA sont :
 - Sénégal (SN) — XOF
 - Togo (TG) — XOF
 
-Audit de la base actuelle : `subscription_plans` contient déjà Starter/Pro/Premium à 3 000 / 6 000 / 10 000 FCFA pour SN, mais pas pour les sept autres pays UEMOA. Une migration devra ajouter ces 21 combinaisons, sans toucher aux tarifs existants. La base contient également des forfaits XAF pour d'autres pays : ils ne doivent pas être modifiés par cette évolution.
+Les six pays CEMAC couverts par le catalogue actuel sont : Cameroun (CM), République centrafricaine (CF), Congo (CG), Gabon (GA), Tchad (TD) et Guinée équatoriale (GQ), en XAF.
+
+Audit de la base : `subscription_plans` contient déjà Starter/Pro/Premium à 3 000 / 6 000 / 10 000 FCFA pour le Sénégal et les six pays CEMAC. Les 21 combinaisons XOF des sept autres pays UEMOA ont été ajoutées par la migration. Les forfaits XAF existants sont conservés.
+
+Les coordonnées de réception CEMAC doivent être des comptes réellement capables de recevoir localement. PI-SPI est réservé à l'UEMOA et ne doit pas être proposé en CEMAC.
+
+## Afrique centrale : opérateurs à étudier sans présumer des exigences KYC
+
+- CamPay : candidat pour le Cameroun, accepte MTN et Orange Cameroun, propose API et liens de paiement. Le site annonce création de compte rapide, mais ne publie pas clairement une liste complète des documents KYC/RCCM dans les pages consultées. Contacter le support pour confirmer l'éligibilité d'un indépendant sans RCCM avant intégration.
+- Monetbil : candidat à étudier pour le Cameroun, le Congo et le Gabon notamment ; sa liste officielle de réseaux inclut MTN/Orange au Cameroun, MTN/Airtel au Congo Brazzaville et Airtel/Moov au Gabon. Les pages publiques ne suffisent pas à confirmer les documents marchands exigés.
+- Smobilpay/Maviance : couverture régionale CEMAC et API, mais processus partenaire avec validation, contrat et KYC/due diligence avant production. À considérer pour une phase plus avancée.
+
+Aucun de ces opérateurs ne doit être présenté comme exempt de RCCM tant que le support ne l'a pas confirmé par écrit. En attendant, les paiements CEMAC sont configurables manuellement seulement si Boutique ti i possède un compte local de réception vérifié et contrôlé. Ne jamais utiliser un compte d'un tiers sans mandat et accord clair.
+
+Sources consultées le 13 novembre 2026 :
+- https://www.campay.net/fr/
+- https://fr.monetbil.cm/operators
+- https://fr.monetbil.cm/merchants
+- https://s3papidoc.smobilpay.maviance.info/
 
 ## 221 Pay — périmètre distinct
 
