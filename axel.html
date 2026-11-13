@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-50">
+<html lang="fr" class="min-h-full bg-slate-50">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="theme.css">
+<script defer src="theme.js"></script>
 <title>Boutique ti i - Plateforme E-Commerce SaaS</title>
 
 <!-- Favicon professionnel -->
@@ -17,7 +19,7 @@
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
-<body class="h-full text-slate-800 antialiased font-sans flex flex-col justify-between" x-data="app()" x-cloak :dir="lang==='ar'?'rtl':'ltr'">
+<body class="min-h-screen text-slate-800 antialiased font-sans flex flex-col" x-data="app()" x-cloak :dir="lang==='ar'?'rtl':'ltr'">
 
 <div>
 <!-- Header Principal Responsive -->
@@ -246,7 +248,7 @@
    </div>
 
    <!-- Vérification d'identité -->
-   <div x-show="!shop.verified" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+   <div x-show="!shop.verified" class="bti-id-verification bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-3">
     <h2 class="font-bold text-base text-amber-900" x-text="t('idVerificationTitle')"></h2>
     <p class="text-xs text-amber-800" x-text="t('idVerificationDesc')"></p>
     <div>

@@ -21,6 +21,7 @@ var CUR = {
 };
 
 var CARD = "Carte bancaire (Visa / Mastercard)";
+var COD = "Paiement à la livraison";
 var BANK_TRANSFER = "Virement bancaire direct";
 
 var PM_LIST = [
@@ -41,8 +42,8 @@ var PM_LIST = [
 
 var TR = {
   fr:{
-    tagline:"Plateforme E-Commerce", clientSpace:"Voir la Boutique", vendorSpace:"Espace Vendeur", availableProducts:"Catalogue des Articles", add:"Ajouter", outOfStock:"Rupture", cartTitle:"Mon Panier", emptyCart:"Votre panier est vide", total:"Total", placeOrder:"Valider et Payer", clientDetails:"Coordonnées", pay:"Mode de paiement", mapLinkOpt:"Lien de localisation GPS (ex: Google Maps, facultatif)",
-    loading:"Chargement...", createShop:"Créer ma boutique", owner:"Propriétaire", location:"Localisation", enterShop:"Entrer dans la Boutique", country:"Pays", currency:"Devise", shareShop:"Partager cette boutique", homePage:"Voir la page d’accueil", noProducts:"Aucun article pour le moment.",
+    tagline:"Plateforme E-Commerce", aiTitle:"Xelo IA", aiIntro:"Xelo IA vous aide à développer vos ventes, analyser vos commandes et gérer votre boutique.", aiPlaceholder:"Écrivez votre question…", aiSend:"Envoyer", aiThinking:"Analyse en cours…", aiGreeting:"Bonjour ! Je suis Xelo IA, votre coach commercial. Je peux vous aider à développer votre boutique.", clientSpace:"Voir la Boutique", vendorSpace:"Espace Vendeur", availableProducts:"Catalogue des Articles", add:"Ajouter", outOfStock:"Rupture", cartTitle:"Mon Panier", emptyCart:"Votre panier est vide", total:"Total", placeOrder:"Valider et Payer", clientDetails:"Coordonnées", pay:"Mode de paiement", mapLinkOpt:"Lien de localisation GPS (ex: Google Maps, facultatif)",
+    loading:"Chargement...", createShop:"Créer ma boutique", owner:"Propriétaire", soldBy:"Vendu par", vendorPhotoTitle:"Photo de profil du vendeur", vendorPhotoHint:"Une photo claire aide vos clients à vous reconnaître. JPG, PNG ou WEBP, 5 Mo maximum.", chooseVendorPhoto:"Ajouter / changer ma photo", location:"Localisation", enterShop:"Entrer dans la Boutique", country:"Pays", currency:"Devise", shareShop:"Partager cette boutique", homePage:"Voir la page d’accueil", noProducts:"Aucun article pour le moment.",
     fullName:"Nom & Prénom", shopName:"Nom de la boutique", phone:"Téléphone / WhatsApp", address:"Adresse", payHint:"Le vendeur vous indiquera comment procéder.",
     createShopTitle:"Créer sa Boutique — 1 mois d’essai", loginTitle:"Connexion Vendeur", whatsappNumber:"Numéro WhatsApp", idDocLabel:"Pièce d’identité (obligatoire pour validation)", idSaved:"Pièce enregistrée", email:"Email", password:"Mot de passe", hide:"Masquer", show:"Voir", pleaseWait:"Veuillez patienter...", createShopBtn:"Créer ma boutique", loginBtn:"Se connecter", noAccount:"Pas de compte ? Créer ma boutique", hasAccount:"Déjà un compte ? Se connecter",
     logout:"Connexion / Déconnexion", shareLinkTitle:"Mon lien à partager aux clients", shareLinkDesc:"Diffusez ce lien sur vos réseaux sociaux ou envoyez-le directement à vos acheteurs.", linkCopied:"Lien copié", copyLink:"Copier le lien", shareWa:"Partager sur WhatsApp", generatingLink:"Génération du lien en cours...",
@@ -53,7 +54,7 @@ var TR = {
     idVerificationTitle:"Vérification d’identité", idVerificationDesc:"Votre pièce d'identité est obligatoire pour que votre boutique soit visible par les clients.", idConsentText:"Je consens expressément à ce que ma pièce d’identité soit traitée pour vérifier mon identité (confidentialité). (obligatoire)", submitIdBtn:"Envoyer mon document d'identité",
     ordersTitle:"Commandes & Suivi", ordersSubtitle:"Suivez en temps réel les commandes et leur statut pour chaque client.", noOrders:"Aucune commande pour le moment.",
     refundPolicyLabel:"Politique de retour et remboursement (affichée aux clients)",
-    paymentMethodsTitle:"Modes de paiement acceptés (Optionnel)", selectPaymentMethod:"+ Ajouter un moyen de paiement...", addPaymentBtn:"Ajouter", removeBtn:"Retirer", paymentHelpText:"Ajoutez vos coordonnées bancaires ou Mobile Money pour que les clients puissent effectuer le virement directement.",
+    codToggleLabel:"Accepter le paiement à la livraison", codToggleHelp:"Le client pourra choisir cette option. Vous confirmerez vous-même la réception de l'argent.", orderPaymentMethod:"Mode de paiement", paymentCollection:"Réception du paiement :", paymentNotReceived:"Non reçu", paymentReceived:"Argent reçu", paymentMethodsTitle:"Modes de paiement acceptés (Optionnel)", selectPaymentMethod:"+ Ajouter un moyen de paiement...", addPaymentBtn:"Ajouter", removeBtn:"Retirer", paymentHelpText:"Ajoutez vos coordonnées bancaires ou Mobile Money pour que les clients puissent effectuer le virement directement.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"Pour débuter en douceur", subPro:"Pour les vendeurs réguliers", subPremium:"Pour maximiser ses ventes",
     f1:"Jusqu'à 10 articles", f2:"Gestion des commandes", f3:"Paiement optionnel",
@@ -61,20 +62,21 @@ var TR = {
     f8:"Tout ce qui est dans Pro", f9:"Mise en avant des produits", f10:"Boutique WhatsApp Direct", f11:"Support Prioritaire 24/7",
     f12:"IA Pro : questions sur ventes, commandes et stocks", f13:"Analyses et recommandations personnalisées par l’IA", f14:"Conseils pour améliorer la boutique",
     f15:"IA Premium : création et optimisation de fiches produits", f16:"Actions sur la boutique après votre confirmation", f17:"Aide avancée à la gestion de l’inventaire", f18:"Automatisations et tâches répétitives assistées par IA",
-    orderSuccessTitle:"Commande enregistrée et payée !", orderSuccessDesc:"Votre code de suivi unique a été généré. Conservez-le précieusement pour suivre l'état de votre commande.",
+    orderSuccessTitle:"Commande enregistrée !", orderSuccessDesc:"Votre commande est enregistrée. Le paiement reste à confirmer directement avec le vendeur.",
     trackingCodeLabel:"Votre Code de Suivi Unique :", copy:"Copier", copied:"Copié !", sendOrderWa:"Envoyer la confirmation au vendeur sur WhatsApp", close:"Fermer",
-    client:"Client", status:"Statut", statusPending:"Payé / En attente", statusProcessing:"En cours de préparation / expédition", statusCompleted:"Livrée / Terminée",
+    client:"Client", status:"Statut", statusPending:"Paiement à confirmer / En attente", statusProcessing:"En cours de préparation / expédition", statusCompleted:"Livrée / Terminée",
     inStockLabel:"En stock", outOfStockLabel:"En rupture",
     cardModalTitle:"Paiement Sécurisé par Carte Bancaire", cardModalDesc:"Entrez les informations de votre carte pour régler votre commande en toute sécurité.", cardNumber:"Numéro de carte", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Payer en ligne", cancel:"Annuler",
     statVisits:"Visites du site", statRevenue:"Chiffre d'affaires", statOrders:"Commandes reçues",
     viewSub:"Voir abonnement",
-    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique",
+    navHome:"Vue d'ensemble", navInventory:"Inventaire & Articles", navOrders:"Commandes", navSettings:"Paramètres Boutique", navAccount:"Mon compte", accountInfoTitle:"Informations du compte", accountInfoDesc:"Ces informations sont personnelles et indépendantes des paramètres de votre boutique.", accountEmail:"Adresse e-mail du compte", noAccountEmail:"Aucune adresse e-mail associée", accountEmailReadonly:"L'adresse e-mail est liée à votre authentification et ne peut pas être modifiée ici.", accountPhone:"Numéro de téléphone du compte", accountPhoneHint:"Format international conseillé. Ce numéro sert de contact de compte ; il ne modifie ni le WhatsApp public de la boutique ni le numéro de connexion WhatsApp.", saveAccountPhone:"Enregistrer le numéro", accountPhoneSaved:"Numéro du compte mis à jour. Le WhatsApp public de la boutique n'a pas été modifié.",
+    securityTitle:"Sécurité du compte", currentPassword:"Mot de passe actuel", newPassword:"Nouveau mot de passe", confirmPassword:"Confirmer le nouveau mot de passe", changePasswordBtn:"Modifier le mot de passe", passwordChanged:"Mot de passe modifié avec succès.", passwordMismatch:"Les deux nouveaux mots de passe ne correspondent pas.", passwordTooShort:"Le nouveau mot de passe doit contenir au moins 8 caractères.", passwordChangeError:"Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel et réessayez.",
     dangerZoneTitle:"Zone de Danger — Abonnement & Compte", dangerZoneDesc:"Vous pouvez résilier votre abonnement ou supprimer définitivement votre compte.",
     cancelSubBtn:"Résilier l'abonnement", deleteAccountBtn:"Supprimer définitivement mon compte"
   },
   en:{
-    tagline:"E-Commerce Platform", clientSpace:"View Shop", vendorSpace:"Vendor Area", availableProducts:"Products", add:"Add", outOfStock:"Out of Stock", cartTitle:"Cart", emptyCart:"Empty cart", total:"Total", placeOrder:"Checkout & Pay", clientDetails:"Details", pay:"Payment method", mapLinkOpt:"GPS Location link (optional)",
-    loading:"Loading...", createShop:"Create my shop", owner:"Owner", location:"Location", enterShop:"Enter Shop", country:"Country", currency:"Currency", shareShop:"Share shop", homePage:"Home page", noProducts:"No products yet.",
+    tagline:"E-Commerce Platform", aiTitle:"Xelo IA", aiIntro:"Xelo IA helps you grow sales, analyze orders and manage your shop.", aiPlaceholder:"Write your question…", aiSend:"Send", aiThinking:"Thinking…", aiGreeting:"Hello! I am Xelo IA, your business coach. I can help you grow your shop.", clientSpace:"View Shop", vendorSpace:"Vendor Area", availableProducts:"Products", add:"Add", outOfStock:"Out of Stock", cartTitle:"Cart", emptyCart:"Empty cart", total:"Total", placeOrder:"Checkout & Pay", clientDetails:"Details", pay:"Payment method", mapLinkOpt:"GPS Location link (optional)",
+    loading:"Loading...", createShop:"Create my shop", owner:"Owner", soldBy:"Sold by", vendorPhotoTitle:"Vendor profile photo", vendorPhotoHint:"A clear photo helps customers recognize you. JPG, PNG or WEBP, max 5 MB.", chooseVendorPhoto:"Add / change my photo", location:"Location", enterShop:"Enter Shop", country:"Country", currency:"Currency", shareShop:"Share shop", homePage:"Home page", noProducts:"No products yet.",
     fullName:"Full Name", shopName:"Shop Name", phone:"Phone / WhatsApp", address:"Address", payHint:"The vendor will instruct you.",
     createShopTitle:"Create Shop — 1 month trial", loginTitle:"Vendor Login", whatsappNumber:"WhatsApp Number", idDocLabel:"ID Document (required)", idSaved:"ID Saved", email:"Email", password:"Password", hide:"Hide", show:"Show", pleaseWait:"Please wait...", createShopBtn:"Create Shop", loginBtn:"Login", noAccount:"No account? Create shop", hasAccount:"Already have an account? Login",
     logout:"Logout", shareLinkTitle:"Share Link", shareLinkDesc:"Share this link with your customers.", linkCopied:"Link copied", copyLink:"Copy link", shareWa:"Share on WhatsApp", generatingLink:"Generating link...",
@@ -85,7 +87,7 @@ var TR = {
     idVerificationTitle:"Identity Verification", idVerificationDesc:"Your ID document is required for your shop to be visible.", idConsentText:"I expressly consent to my ID document being processed for identity verification (confidentiality). (required)", submitIdBtn:"Submit my ID document",
     ordersTitle:"Orders & Tracking", ordersSubtitle:"Track orders and status in real-time.", noOrders:"No orders yet.",
     refundPolicyLabel:"Return and refund policy (displayed to customers)",
-    paymentMethodsTitle:"Accepted payment methods (Optional)", selectPaymentMethod:"+ Add a payment method...", addPaymentBtn:"Add", removeBtn:"Remove", paymentHelpText:"Add your bank or mobile money info for direct client transfers.",
+    codToggleLabel:"Accept cash on delivery", codToggleHelp:"Customers can choose this option. You will confirm when you receive the money.", orderPaymentMethod:"Payment method", paymentCollection:"Payment collection:", paymentNotReceived:"Not received", paymentReceived:"Money received", paymentMethodsTitle:"Accepted payment methods (Optional)", selectPaymentMethod:"+ Add a payment method...", addPaymentBtn:"Add", removeBtn:"Remove", paymentHelpText:"Add your bank or mobile money info for direct client transfers.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"To start smoothly", subPro:"For regular vendors", subPremium:"To maximize sales",
     f1:"Up to 10 products", f2:"Order management", f3:"Optional payment",
@@ -93,20 +95,21 @@ var TR = {
     f8:"Everything in Pro", f9:"Product promotion", f10:"Direct WhatsApp Button", f11:"Priority Support 24/7",
     f12:"Pro AI: answers about sales, orders and stock", f13:"AI insights and personalized recommendations", f14:"Tips to improve your shop",
     f15:"Premium AI: create and optimize product listings", f16:"Shop changes after your confirmation", f17:"Advanced inventory assistance", f18:"AI-assisted workflows and repetitive tasks",
-    orderSuccessTitle:"Order Placed & Paid!", orderSuccessDesc:"Your unique tracking code has been generated. Keep it safe to track your order.",
+    orderSuccessTitle:"Order registered!", orderSuccessDesc:"Your order has been registered. Payment must still be confirmed directly with the seller.",
     trackingCodeLabel:"Your Unique Tracking Code:", copy:"Copy", copied:"Copied!", sendOrderWa:"Send order to vendor on WhatsApp", close:"Close",
-    client:"Client", status:"Status", statusPending:"Paid / Pending", statusProcessing:"Processing / Shipping", statusCompleted:"Delivered / Completed",
+    client:"Client", status:"Status", statusPending:"Payment to be confirmed / Pending", statusProcessing:"Processing / Shipping", statusCompleted:"Delivered / Completed",
     inStockLabel:"In Stock", outOfStockLabel:"Out of Stock",
     cardModalTitle:"Secure Credit Card Payment", cardModalDesc:"Enter your card details to securely pay for your order.", cardNumber:"Card Number", cardExp:"Expiration", cardCvv:"CVV", paySecurely:"Pay Online", cancel:"Cancel",
     statVisits:"Site Visits", statRevenue:"Total Revenue", statOrders:"Orders Received",
     viewSub:"View subscription",
-    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings",
+    navHome:"Overview", navInventory:"Inventory & Products", navOrders:"Orders", navSettings:"Shop Settings", navAccount:"My Account", accountInfoTitle:"Account information", accountInfoDesc:"These personal details are separate from your shop settings.", accountEmail:"Account email address", noAccountEmail:"No email address linked", accountEmailReadonly:"Your email is linked to authentication and cannot be changed here.", accountPhone:"Account phone number", accountPhoneHint:"Use international format. This is your account contact number; it does not change the shop's public WhatsApp number or your WhatsApp login number.", saveAccountPhone:"Save phone number", accountPhoneSaved:"Account phone number updated. The shop's public WhatsApp number was not changed.",
+    securityTitle:"Account security", currentPassword:"Current password", newPassword:"New password", confirmPassword:"Confirm new password", changePasswordBtn:"Change password", passwordChanged:"Password changed successfully.", passwordMismatch:"The new passwords do not match.", passwordTooShort:"The new password must contain at least 8 characters.", passwordChangeError:"Could not change the password. Check your current password and try again.",
     dangerZoneTitle:"Danger Zone — Subscription & Account", dangerZoneDesc:"You can cancel your subscription or permanently delete your account.",
     cancelSubBtn:"Cancel subscription", deleteAccountBtn:"Delete my account permanently"
   },
   es:{
-    tagline:"Plataforma E-Commerce", clientSpace:"Ver Tienda", vendorSpace:"Área Vendedor", availableProducts:"Productos", add:"Añadir", outOfStock:"Agotado", cartTitle:"Cesta", emptyCart:"Cesta vacía", total:"Total", placeOrder:"Pagar y Pedir", clientDetails:"Detalles", pay:"Método de pago", mapLinkOpt:"Enlace de ubicación GPS (opcional)",
-    loading:"Cargando...", createShop:"Crear tienda", owner:"Propietario", location:"Ubicación", enterShop:"Entrar a la tienda", country:"País", currency:"Moneda", shareShop:"Compartir", homePage:"Inicio", noProducts:"No hay productos.",
+    tagline:"Plataforma E-Commerce", aiTitle:"Xelo IA", aiIntro:"Xelo IA te ayuda a aumentar las ventas, analizar pedidos y gestionar tu tienda.", aiPlaceholder:"Escribe tu pregunta…", aiSend:"Enviar", aiThinking:"Analizando…", aiGreeting:"¡Hola! Soy Xelo IA, tu asesor comercial. Puedo ayudarte a hacer crecer tu tienda.", clientSpace:"Ver Tienda", vendorSpace:"Área Vendedor", availableProducts:"Productos", add:"Añadir", outOfStock:"Agotado", cartTitle:"Cesta", emptyCart:"Cesta vacía", total:"Total", placeOrder:"Pagar y Pedir", clientDetails:"Detalles", pay:"Método de pago", mapLinkOpt:"Enlace de ubicación GPS (opcional)",
+    loading:"Cargando...", createShop:"Crear tienda", owner:"Propietario", soldBy:"Vendido por", vendorPhotoTitle:"Foto de perfil del vendedor", vendorPhotoHint:"Una foto clara ayuda a tus clientes a reconocerte. JPG, PNG o WEBP, máximo 5 MB.", chooseVendorPhoto:"Añadir / cambiar mi foto", location:"Ubicación", enterShop:"Entrar a la tienda", country:"País", currency:"Moneda", shareShop:"Compartir", homePage:"Inicio", noProducts:"No hay productos.",
     fullName:"Nombre y Apellido", shopName:"Nombre de tienda", phone:"Teléfono / WhatsApp", address:"Dirección", payHint:"El vendedor te indicará el pago.",
     createShopTitle:"Crear Tienda — 1 mes de prueba", loginTitle:"Acceso Vendedor", whatsappNumber:"Número WhatsApp", idDocLabel:"Documento de identidad", idSaved:"Documento guardado", email:"Correo", password:"Contraseña", hide:"Ocultar", show:"Ver", pleaseWait:"Espere...", createShopBtn:"Crear Tienda", loginBtn:"Iniciar sesión", noAccount:"¿Sin cuenta? Crear tienda", hasAccount:"¿Ya tienes cuenta? Entrar",
     logout:"Cerrar sesión", shareLinkTitle:"Enlace para compartir", shareLinkDesc:"Comparte este enlace con tus clientes.", linkCopied:"Copiado", copyLink:"Copiar enlace", shareWa:"Compartir en WhatsApp", generatingLink:"Generando enlace...",
@@ -117,7 +120,7 @@ var TR = {
     idVerificationTitle:"Verificación de identidad", idVerificationDesc:"Su documento de identidad es obligatorio para que su tienda sea visible.", idConsentText:"Consiento expresamente que mi documento de identidad sea procesado para verificar mi identidad (confidencialidad). (obligatorio)", submitIdBtn:"Enviar mi documento de identidad",
     ordersTitle:"Pedidos y Seguimiento", ordersSubtitle:"Sigue los pedidos en tiempo real.", noOrders:"No hay pedidos por el momento.",
     refundPolicyLabel:"Política de devolución y reembolso (mostrada a los clientes)",
-    paymentMethodsTitle:"Métodos de pago aceptados (Opcional)", selectPaymentMethod:"+ Agregar un método de pago...", addPaymentBtn:"Agregar", removeBtn:"Eliminar", paymentHelpText:"Agrega tus datos bancarios para transferencias directas.",
+    codToggleLabel:"Aceptar pago contra entrega", codToggleHelp:"El cliente podrá elegir esta opción. Tú confirmarás cuando recibas el dinero.", orderPaymentMethod:"Método de pago", paymentCollection:"Cobro del pago:", paymentNotReceived:"No recibido", paymentReceived:"Dinero recibido", paymentMethodsTitle:"Métodos de pago aceptados (Opcional)", selectPaymentMethod:"+ Agregar un método de pago...", addPaymentBtn:"Agregar", removeBtn:"Eliminar", paymentHelpText:"Agrega tus datos bancarios para transferencias directas.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"Para empezar suavemente", subPro:"Para vendedores regulares", subPremium:"Para maximizar ventas",
     f1:"Hasta 10 productos", f2:"Gestión de pedidos", f3:"Pago opcional",
@@ -125,20 +128,20 @@ var TR = {
     f12:"IA Pro: respuestas sobre ventas, pedidos y stock", f13:"Análisis y recomendaciones personalizadas", f14:"Consejos para mejorar la tienda",
     f15:"IA Premium: creación y optimización de productos", f16:"Cambios en la tienda con tu confirmación", f17:"Asistencia avanzada de inventario", f18:"Automatización de tareas repetitivas con IA",
     f8:"Todo lo de Pro", f9:"Promoción de productos", f10:"Botón directo WhatsApp", f11:"Soporte prioritario 24/7",
-    orderSuccessTitle:"¡Pedido realizado y pagado!", orderSuccessDesc:"Se ha generado tu código de seguimiento único.",
+    orderSuccessTitle:"¡Pedido registrado!", orderSuccessDesc:"Tu pedido está registrado. El pago aún debe confirmarse directamente con el vendedor.",
     trackingCodeLabel:"Tu Código de Seguimiento Único:", copy:"Copiar", copied:"¡Copiado!", sendOrderWa:"Enviar pedido al vendedor por WhatsApp", close:"Cerrar",
-    client:"Cliente", status:"Estado", statusPending:"Pagado / Pendiente", statusProcessing:"En preparación", statusCompleted:"Entregado",
+    client:"Cliente", status:"Estado", statusPending:"Pago por confirmar / Pendiente", statusProcessing:"En preparación", statusCompleted:"Entregado",
     inStockLabel:"En Stock", outOfStockLabel:"Agotado",
     cardModalTitle:"Pago Seguro con Tarjeta", cardModalDesc:"Introduce los datos de tu tarjeta para pagar tu pedido de forma segura.", cardNumber:"Número de tarjeta", cardExp:"Expiración", cardCvv:"CVV", paySecurely:"Pagar online", cancel:"Cancelar",
     statVisits:"Visitas", statRevenue:"Ingresos totales", statOrders:"Pedidos recibidos",
     viewSub:"Ver suscripción",
-    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda",
+    navHome:"Resumen", navInventory:"Inventario y Productos", navOrders:"Pedidos", navSettings:"Ajustes de Tienda", navAccount:"Mi cuenta", accountInfoTitle:"Información de la cuenta", accountInfoDesc:"Estos datos personales son independientes de la configuración de tu tienda.", accountEmail:"Correo electrónico de la cuenta", noAccountEmail:"No hay correo asociado", accountEmailReadonly:"El correo está vinculado a tu autenticación y no se puede cambiar aquí.", accountPhone:"Teléfono de la cuenta", accountPhoneHint:"Usa el formato internacional. Es el teléfono de contacto de tu cuenta; no cambia el WhatsApp público de la tienda ni el número para iniciar sesión.", saveAccountPhone:"Guardar número", accountPhoneSaved:"Número de cuenta actualizado. El WhatsApp público de la tienda no ha cambiado.",
     dangerZoneTitle:"Zona de Peligro — Suscripción y Cuenta", dangerZoneDesc:"Puede cancelar su suscripción o eliminar su cuenta permanentemente.",
     cancelSubBtn:"Cancelar suscripción", deleteAccountBtn:"Eliminar mi cuenta permanentemente"
   },
   ar:{
-    tagline:"منصة التجارة الإلكترونية", clientSpace:"عرض المتجر", vendorSpace:"مساحة البائع", availableProducts:"المنتجات", add:"إضافة", outOfStock:"نفذت الكمية", cartTitle:"السلة", emptyCart:"السلة فارغة", total:"المجموع", placeOrder:"الدفع وإتمام الطلب", clientDetails:"التفاصيل", pay:"طريقة الدفع", mapLinkOpt:"رابط الموقع الجغرافي (اختياري)",
-    loading:"جاري التحميل...", createShop:"إنشاء متجري", owner:"المالك", location:"الموقع", enterShop:"دخول المتجر", country:"الدولة", currency:"العملة", shareShop:"مشاركة المتجر", homePage:"الصفحة الرئيسية", noProducts:"لا توجد منتجات.",
+    tagline:"منصة التجارة الإلكترونية", aiTitle:"Xelo IA", aiIntro:"يساعدك Xelo IA على زيادة المبيعات وتحليل الطلبات وإدارة متجرك.", aiPlaceholder:"اكتب سؤالك…", aiSend:"إرسال", aiThinking:"جارٍ التحليل…", aiGreeting:"مرحباً! أنا Xelo IA، مستشارك التجاري لمساعدتك على تنمية متجرك.", clientSpace:"عرض المتجر", vendorSpace:"مساحة البائع", availableProducts:"المنتجات", add:"إضافة", outOfStock:"نفذت الكمية", cartTitle:"السلة", emptyCart:"السلة فارغة", total:"المجموع", placeOrder:"الدفع وإتمام الطلب", clientDetails:"التفاصيل", pay:"طريقة الدفع", mapLinkOpt:"رابط الموقع الجغرافي (اختياري)",
+    loading:"جاري التحميل...", createShop:"إنشاء متجري", owner:"المالك", soldBy:"البائع", vendorPhotoTitle:"الصورة الشخصية للبائع", vendorPhotoHint:"تساعد الصورة الواضحة العملاء على التعرف عليك. JPG أو PNG أو WEBP، بحد أقصى 5 ميغابايت.", chooseVendorPhoto:"إضافة / تغيير صورتي", location:"الموقع", enterShop:"دخول المتجر", country:"الدولة", currency:"العملة", shareShop:"مشاركة المتجر", homePage:"الصفحة الرئيسية", noProducts:"لا توجد منتجات.",
     fullName:"الاسم الكامل", shopName:"اسم المتجر", phone:"الهاتف / واتساب", address:"العنوان", payHint:"سيقوم البائع بتوجيهك.",
     createShopTitle:"إنشاء متجر — تجربة شهر", loginTitle:"تسجيل دخول البائع", whatsappNumber:"رقم الواتساب", idDocLabel:"هوية شخصية مطلوبة", idSaved:"تم حفظ الهوية", email:"البريد الإلكتروني", password:"كلمة المرور", hide:"إخفاء", show:"إظهار", pleaseWait:"يرجى الانتظار...", createShopBtn:"إنشاء متجري", loginBtn:"تسجيل الدخول", noAccount:"ليس لديك حساب؟ إنشاء متجر", hasAccount:"لديك حساب بالفعل؟ تسجيل الدخول",
     logout:"تسجيل الخروج", shareLinkTitle:"رابط المشاركة", shareLinkDesc:"شارك هذا الرابط مع عملائك.", linkCopied:"تم النسخ", copyLink:"نسخ الرابط", shareWa:"مشاركة عبر واتساب", generatingLink:"جاري إنشاء الرابط...",
@@ -149,20 +152,20 @@ var TR = {
     idVerificationTitle:"التحقق من الهوية", idVerificationDesc:"وثيقة هويتك مطلوبة حتى يظهر متجرك للعملاء.", idConsentText:"أوافق صراحة على معالجة وثيقة هويتي للتحقق من هويتي (سرية البيانات). (إجباري)", submitIdBtn:"إرسال وثيقة هويتي",
     ordersTitle:"الطلبات والمتابعة", ordersSubtitle:"تابع الطلبات وتحديثاتها في الوقت الفعلي.", noOrders:"لا توجد طلبات في الوقت الحالي.",
     refundPolicyLabel:"سياسة الإرجاع والاسترداد (تظهر للعملاء)",
-    paymentMethodsTitle:"طرق الدفع المقبولة (اختياري)", selectPaymentMethod:"+ إضافة طريقة دفع...", addPaymentBtn:"إضافة", removeBtn:"إزالة", paymentHelpText:"أضف معلوماتك المصرفية للتحويل المباشر.",
+    codToggleLabel:"قبول الدفع عند الاستلام", codToggleHelp:"يمكن للعميل اختيار هذا الخيار، وتؤكد أنت استلام المبلغ بعد التسليم.", orderPaymentMethod:"طريقة الدفع", paymentCollection:"استلام المبلغ:", paymentNotReceived:"لم يتم الاستلام", paymentReceived:"تم استلام المبلغ", paymentMethodsTitle:"طرق الدفع المقبولة (اختياري)", selectPaymentMethod:"+ إضافة طريقة دفع...", addPaymentBtn:"إضافة", removeBtn:"إزالة", paymentHelpText:"أضف معلوماتك المصرفية للتحويل المباشر.",
     planStarter:"الأساسية (Starter)", planPro:"الاحترافية (Pro)", planPremium:"الممتازة (Premium)",
     subStarter:"للبداية بسلاسة", subPro:"للبائعين المنتظمين", subPremium:"لتعظيم مبيعاتك",
     f1:"ما يصل إلى 10 منتجات", f2:"إدارة الطلبات", f3:"دفع اختياري",
     f4:"منتجات غير محدودة", f5:"لوحة التحكم والزيارات", f6:"إدارة المخزون", f7:"شارة بائع موثق",
     f8:"كل ما في الاحترافية", f9:"تمييز المنتجات", f10:"زر واتساب مباشر", f11:"دعم فني أولوي 24/7",
-    orderSuccessTitle:"تم تسجيل الطلب ودفعه!", orderSuccessDesc:"تم إنشاؤء رمز فريد لمتابعة طلبك بكل سهولة.",
+    orderSuccessTitle:"تم تسجيل الطلب!", orderSuccessDesc:"تم تسجيل طلبك. يجب تأكيد الدفع مباشرةً مع البائع.",
     trackingCodeLabel:"رمز التتبع الفريد الخاص بك:", copy:"نسخ", copied:"تم النسخ!", sendOrderWa:"إرسال الطلب للبائع عبر واتساب", close:"إغلاق",
-    client:"العميل", status:"الحالة", statusPending:"مدفوع / في انتظار المعالجة", statusProcessing:"قيد التجهيز / الشحن", statusCompleted:"تم التوصيل / مكتمل",
+    client:"العميل", status:"الحالة", statusPending:"بانتظار تأكيد الدفع", statusProcessing:"قيد التجهيز / الشحن", statusCompleted:"تم التوصيل / مكتمل",
     inStockLabel:"متوفر", outOfStockLabel:"غير متوفر",
     cardModalTitle:"الدفع الآمن بالبطاقة البنكية", cardModalDesc:"أدخل معلومات بطاقتك لدفع قيمة الطلب بأمان تام.", cardNumber:"رقم البطاقة", cardExp:"تاريخ الانتهاء", cardCvv:"رمز الأمان", paySecurely:"ادفع الان", cancel:"إلغاء",
     statVisits:"الزيارات", statRevenue:"إجمالي الإيرادات", statOrders:"الطلبات المستلمة",
     viewSub:"عرض الاشتراك",
-    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر",
+    navHome:"نظرة عامة", navInventory:"المخزون والمنتجات", navOrders:"الطلبات", navSettings:"إعدادات المتجر", navAccount:"حسابي", accountInfoTitle:"معلومات الحساب", accountInfoDesc:"هذه المعلومات الشخصية مستقلة عن إعدادات متجرك.", accountEmail:"البريد الإلكتروني للحساب", noAccountEmail:"لا يوجد بريد إلكتروني مرتبط", accountEmailReadonly:"البريد الإلكتروني مرتبط بتسجيل الدخول ولا يمكن تغييره هنا.", accountPhone:"رقم هاتف الحساب", accountPhoneHint:"استخدم التنسيق الدولي. هذا رقم الاتصال الخاص بحسابك ولا يغيّر رقم واتساب العام للمتجر أو رقم تسجيل الدخول.", saveAccountPhone:"حفظ الرقم", accountPhoneSaved:"تم تحديث رقم الحساب. لم يتغير رقم واتساب العام للمتجر.",
     dangerZoneTitle:"منطقة الخطر — الاشتراك والحساب", dangerZoneDesc:"يمكنك إلغاء اشتراكك أو حذف حسابك نهائياً.",
     cancelSubBtn:"إلغاء الاشتراك", deleteAccountBtn:"حذف حسابي نهائياً"
   }
@@ -183,6 +186,20 @@ function compress(file) {
   });
 }
 
+function compressAvatar(file) {
+  return new Promise(function (resolve) {
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var side = Math.min(img.width, img.height), sx = Math.round((img.width - side) / 2), sy = Math.round((img.height - side) / 2);
+      var canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512;
+      canvas.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+      URL.revokeObjectURL(url); canvas.toBlob(resolve, "image/jpeg", 0.82);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
 function rnd(n) {
   var a = "abcdefghjkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = "";
   crypto.getRandomValues(b);
@@ -195,12 +212,13 @@ function norm(s) {
   if (!s.products) s.products = [];
   if (!s.plan) s.plan = "pro";
   if (!s.refundPolicy) s.refundPolicy = "";
+  if (typeof s.allowCod !== "boolean") s.allowCod = false;
   if (!s.visits) s.visits = 0;
   return s;
 }
 
 function blankShop() {
-  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0 };
+  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, allowCod: false, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0, avatarUrl: "", avatarPath: "" };
 }
 
 // Formats acceptés pour la pièce d'identité
@@ -210,16 +228,20 @@ function app() {
   var tmr;
   var shopId = new URLSearchParams(location.search).get("b");
   return {
-    remote: false, loading: !!shopId, remoteErr: "",
+    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
+    manualPayment: { planId: "", plan: null, methods: [], selectedMethod: "", payerReference: "", payerPhone: "", submitted: false, payment: null, error: "" },
+    aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
+    passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
+    accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "", avatarBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
-    modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", copied: false, copiedCode: false,
+    modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", authNotice: "", authForgot: false, authRecovery: false, recoveryPassword: "", recoveryConfirm: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
     addPm: "", lastOrderCode: "", lastOrderTotal: 0,
     cardData: { number: "", exp: "", cvv: "" },
 
     plans: [
       { id: "starter", nameKey: "planStarter", subtitleKey: "subStarter", price: 3000, maxProd: 10, videoAllowed: false, featureKeys: ["f1", "f2", "f3"] },
-      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 5984, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7", "f12", "f13", "f14"] },
+      { id: "pro", nameKey: "planPro", subtitleKey: "subPro", price: 6000, maxProd: 50, videoAllowed: true, featureKeys: ["f4", "f5", "f6", "f7", "f12", "f13", "f14"] },
       { id: "premium", nameKey: "planPremium", subtitleKey: "subPremium", price: 10000, maxProd: 9999, videoAllowed: true, featureKeys: ["f8", "f9", "f10", "f11", "f15", "f16", "f17", "f18"] }
     ],
 
@@ -235,6 +257,16 @@ function app() {
       var self = this;
       this.$watch("shop", function () { if (!self.remote) self.queue(); }, { deep: true });
       this.$watch("lang", function (v) { document.documentElement.lang = v; });
+      db.auth.onAuthStateChange(function (event) {
+        if (event === "PASSWORD_RECOVERY") {
+          self.authRecovery = true;
+          self.authForgot = false;
+          self.authErr = "";
+          self.authNotice = "";
+          self.tab = "vendor";
+          self.ready = true;
+        }
+      });
 
       if (shopId) {
         this.loadRemote(shopId);
@@ -261,6 +293,79 @@ function app() {
       this.tab = "vendor";
     },
 
+    aiInvoke: async function (body) {
+      var result = await db.functions.invoke("boutique-ai", { body: Object.assign({ shopId: this.shop.sid, locale: this.lang }, body || {}) });
+      if (result.error || !result.data || result.data.error) {
+        var msg = result.data && result.data.error ? result.data.error : "";
+        if (!msg && result.error && result.error.context) {
+          try { var detail = await result.error.context.clone().json(); msg = detail.error || detail.message || ""; } catch (e) {}
+        }
+        throw new Error(msg || (result.error && result.error.message) || "Assistant IA indisponible.");
+      }
+      return result.data;
+    },
+    openAiAssistant: async function () {
+      if (!this.authed || !this.shop.sid) { alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA."); return; }
+      this.aiError = ""; this.modal = "aiChat"; await this.loadAiConversations();
+    },
+    loadAiConversations: async function () {
+      this.aiHistoryBusy = true;
+      try {
+        var data = await this.aiInvoke({ action: "list_conversations" });
+        this.aiConversations = data.conversations || [];
+        if (!this.aiConversations.length) await this.newAiConversation();
+        else if (!this.aiConversationId || !this.aiConversations.some((c) => c.id === this.aiConversationId))
+          await this.selectAiConversation(this.aiConversations[0].id);
+        else await this.selectAiConversation(this.aiConversationId);
+      } catch (error) { this.aiError = error.message || "Impossible de charger l'historique."; }
+      finally { this.aiHistoryBusy = false; }
+    },
+    selectAiConversation: async function (id) {
+      var targetId = id || this.aiConversationId; if (!targetId) return;
+      this.aiHistoryBusy = true;
+      try {
+        var data = await this.aiInvoke({ action: "get_conversation", conversationId: targetId });
+        this.aiConversationId = targetId;
+        this.aiMessages = Array.isArray(data.conversation.messages) ? data.conversation.messages : [];
+        if (!this.aiMessages.length) this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }];
+        this.aiError = "";
+      } catch (error) { this.aiError = error.message || "Impossible d'ouvrir cette conversation."; }
+      finally { this.aiHistoryBusy = false; }
+    },
+    newAiConversation: async function () {
+      try {
+        var data = await this.aiInvoke({ action: "create_conversation" });
+        this.aiConversations.unshift(data.conversation); this.aiConversationId = data.conversation.id;
+        this.aiMessages = [{ role: "assistant", content: this.t("aiGreeting") }]; this.aiError = "";
+      } catch (error) { this.aiError = error.message || "Impossible de créer une conversation."; }
+    },
+    deleteAiConversation: async function () {
+      if (!this.aiConversationId || !confirm("Supprimer définitivement cette conversation ?")) return;
+      try {
+        await this.aiInvoke({ action: "delete_conversation", conversationId: this.aiConversationId });
+        this.aiConversations = this.aiConversations.filter((c) => c.id !== this.aiConversationId);
+        this.aiConversationId = "";
+        if (this.aiConversations.length) await this.selectAiConversation(this.aiConversations[0].id);
+        else await this.newAiConversation();
+      } catch (error) { this.aiError = error.message || "Impossible de supprimer cette conversation."; }
+    },
+    sendAiMessage: async function () {
+      var message = String(this.aiInput || "").trim(); if (!message || this.aiBusy) return;
+      if (!this.aiConversationId) await this.newAiConversation();
+      if (!this.aiConversationId) return;
+      this.aiMessages.push({ role: "user", content: message }); this.aiInput = "";
+      this.aiBusy = true; this.aiError = "";
+      try {
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult && sessionResult.data && sessionResult.data.session;
+        if (!session || !session.access_token) throw new Error("Votre session vendeur a expiré. Reconnectez-vous.");
+        var result = await this.aiInvoke({ action: "chat", conversationId: this.aiConversationId, message: message });
+        this.aiMessages.push({ role: "assistant", content: result.answer });
+        var current = this.aiConversations.find((c) => c.id === this.aiConversationId);
+        if (current) current.title = message.slice(0, 70);
+      } catch (error) { this.aiMessages.pop(); this.aiError = error.message || "Impossible de contacter l'assistant IA."; }
+      finally { this.aiBusy = false; }
+    },
     t: function (k) { return (TR[this.lang] && TR[this.lang][k]) || (TR.fr && TR.fr[k]) || k; },
     statusLabel: function (s) {
       var k = String(s || "pending");
@@ -311,15 +416,107 @@ function app() {
       var pid = this.shop.plan || "pro";
       return this.plans.find(function(p){ return p.id === pid; }) || this.plans[1];
     },
+    formatSubscriptionPrice: function (amount) {
+      var currency = String(this.shop.currency || "").trim().toUpperCase();
+      if (currency !== "XOF" && currency !== "XAF") return "Tarif local à confirmer";
+      return new Intl.NumberFormat("fr-FR").format(amount) + " " + currency;
+    },
+    requestPlan: async function (planId) {
+      if (!this.authed) { alert("Connectez-vous à votre espace vendeur avant de souscrire."); return; }
+      if (!["starter", "pro", "premium"].includes(planId)) { alert("Formule invalide."); return; }
+
+      var country = String(this.shop.country || "").trim().toLowerCase();
+      var currency = String(this.shop.currency || "").trim().toUpperCase();
+      var uemoa = ["benin","bj","burkina faso","bf","cote d'ivoire","côte d'ivoire","côte d’ivoire","ci","guinee-bissau","guinée-bissau","gw","mali","ml","niger","ne","senegal","sénégal","sn","togo","tg"];
+      var cemac = ["cm","cameroun","cameroon","cf","centrafrique","république centrafricaine","republique centrafricaine","cg","congo","république du congo","republique du congo","ga","gabon","td","tchad","chad","gq","guinée équatoriale","guinee equatoriale"];
+      if (!((currency === "XOF" && uemoa.includes(country)) || (currency === "XAF" && cemac.includes(country)))) {
+        alert("Le paiement manuel des abonnements n'est pas encore disponible pour ce pays ou cette devise.");
+        return;
+      }
+
+      if (this.checkoutBusy) return;
+      this.checkoutBusy = true;
+      try {
+        if (!this.shop.sid) this.shop.sid = rnd(8);
+        var saved = await this.save();
+        if (saved && saved.error) throw saved.error;
+
+        var result = await db.functions.invoke("create-manual-subscription-payment", {
+          body: { action: "methods", shopId: this.shop.sid, planSlug: planId }
+        });
+        if (result.error || !result.data || result.data.error) {
+          throw new Error((result.data && result.data.error) || "Impossible de charger les moyens de paiement.");
+        }
+        if (!result.data.methods || !result.data.methods.length) {
+          alert("Aucun moyen de paiement n'est encore configuré pour votre pays. Contactez Boutique ti i pour connaître les modalités de règlement.");
+          return;
+        }
+        this.manualPayment = {
+          planId: planId,
+          plan: result.data.plan,
+          countryCode: result.data.countryCode,
+          currency: result.data.currency,
+          methods: result.data.methods,
+          selectedMethod: result.data.methods[0].method_code,
+          payerReference: "",
+          payerPhone: "",
+          submitted: false,
+          payment: null,
+          error: ""
+        };
+        this.modal = "manualPayment";
+      } catch (error) {
+        console.error("Manual subscription payment:", error);
+        alert(error.message || "Impossible de préparer la demande d'abonnement.");
+      } finally {
+        this.checkoutBusy = false;
+      }
+    },
+    submitManualSubscriptionPayment: async function () {
+      if (this.checkoutBusy || this.manualPayment.submitted) return;
+      var reference = String(this.manualPayment.payerReference || "").trim();
+      if (reference.length < 3) { this.manualPayment.error = "Saisissez la référence de votre transfert."; return; }
+      this.checkoutBusy = true;
+      this.manualPayment.error = "";
+      try {
+        var result = await db.functions.invoke("create-manual-subscription-payment", {
+          body: {
+            action: "submit",
+            shopId: this.shop.sid,
+            planSlug: this.manualPayment.planId,
+            paymentMethod: this.manualPayment.selectedMethod,
+            payerReference: reference,
+            payerPhone: String(this.manualPayment.payerPhone || "").trim()
+          }
+        });
+        if (result.error || !result.data || result.data.error) {
+          throw new Error((result.data && result.data.error) || "Impossible d'enregistrer votre demande.");
+        }
+        this.manualPayment.payment = result.data.payment;
+        this.manualPayment.submitted = true;
+      } catch (error) {
+        this.manualPayment.error = error.message || "Erreur lors de l'enregistrement.";
+      } finally {
+        this.checkoutBusy = false;
+      }
+    },
+    copyManualPaymentValue: function (value) {
+      var text = String(value || "");
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ alert("Coordonnée copiée."); }, function(){ prompt("Copiez cette coordonnée :", text); });
+      else prompt("Copiez cette coordonnée :", text);
+    },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
     },
 
     // Côté client (boutique publique), le serveur ne renvoie que les NOMS des modes de paiement (pmNames)
     get payOpts() {
-      if (this.remote) return Array.isArray(this.shop.pmNames) ? this.shop.pmNames : [];
-      var p = this.shop.pm || {};
-      return Object.keys(p).filter(function (k) { return String(p[k] || "").trim(); });
+      var methods = this.remote
+        ? (Array.isArray(this.shop.pmNames) ? this.shop.pmNames.filter(function (name) { return name !== CARD; }) : [])
+        : Object.keys(this.shop.pm || {}).filter(function (k) { return k !== CARD && String(this.shop.pm[k] || "").trim(); }, this);
+      if (this.shop.allowCod && methods.indexOf(COD) < 0) methods.push(COD);
+      return methods;
     },
     get pmOptions() {
       var p = this.shop.pm || {};
@@ -336,11 +533,14 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.ready = true; return; }
+      if (!session) { this.authed = false; this.shop = blankShop(); this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.accountEmail = ""; this.accountPhone = ""; this.accountPhoneDraft = ""; this.ready = true; return; }
       this.uid = session.user.id;
+      this.accountEmail = session.user.email || ""; this.accountMessage = "";
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
       var vq = await db.from("vendors").select("full_name,phone,country,location,shop_name,id_status").eq("id", this.uid).maybeSingle();
       var v = vq.data || {};
+      this.accountPhone = v.phone || "";
+      this.accountPhoneDraft = this.accountPhone;
       if (s.data) {
         this.shop = norm(Object.assign(blankShop(), s.data.data, { sid: s.data.id }));
       } else {
@@ -359,6 +559,55 @@ function app() {
       this.authed = true; this.ready = true;
       await this.loadOrders();
       this.updateStats();
+      await this.checkSubscriptionReturn();
+    },
+
+    checkSubscriptionReturn: async function () {
+      var params = new URLSearchParams(location.search);
+      var resultType = params.get("subscription");
+      var paymentId = params.get("payment_id");
+      if (!["return", "cancelled"].includes(resultType) || !paymentId || !this.authed) return;
+
+      // Keep the payment reference while pending so the vendor can refresh and re-check it.
+      var clearReturnParams = function () {
+        params.delete("subscription");
+        params.delete("payment_id");
+        var cleanUrl = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
+        history.replaceState({}, document.title, cleanUrl);
+      };
+
+      try {
+        var payment = null;
+        for (var attempt = 0; attempt < 8; attempt++) {
+          var response = await db.from("subscription_payments")
+            .select("status,amount,currency")
+            .eq("id", paymentId)
+            .maybeSingle();
+          if (response.error) throw response.error;
+          payment = response.data;
+          if (!payment || payment.status !== "pending") break;
+          await new Promise(function(resolve) { setTimeout(resolve, 1500); });
+        }
+
+        if (!payment) {
+          clearReturnParams();
+          alert("Retour de paiement reçu, mais la transaction n'est pas visible pour cette boutique. Aucun abonnement n'a été activé par le navigateur.");
+        } else if (payment.status === "paid") {
+          clearReturnParams();
+          alert("Paiement confirmé par le prestataire. Votre abonnement est activé.");
+          await this.onSession((await db.auth.getSession()).data.session);
+        } else if (payment.status === "failed") {
+          clearReturnParams();
+          alert("Le prestataire a confirmé l'annulation ou le refus du paiement. Aucun nouvel abonnement n'a été activé.");
+        } else if (resultType === "cancelled") {
+          alert("Vous êtes revenu après avoir interrompu le paiement, mais son annulation n'est pas encore confirmée par le prestataire. Ne relancez pas le paiement tout de suite : actualisez pour revérifier son statut.");
+        } else {
+          alert("Votre paiement est encore en cours de vérification. Ne payez pas une deuxième fois tout de suite : actualisez votre espace vendeur dans quelques instants.");
+        }
+      } catch (error) {
+        console.error("Subscription return status check failed:", error);
+        alert("Impossible de vérifier le statut du paiement pour le moment. Votre abonnement ne sera activé qu'après confirmation serveur.");
+      }
     },
 
     updateStats: function() {
@@ -432,7 +681,62 @@ function app() {
       return m || "Une erreur est survenue. Réessayez.";
     },
 
-    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; this.otpSent = false; this.otp = ""; },
+    switchAuth: function () { this.authMode = this.authMode === "login" ? "signup" : "login"; this.authErr = ""; this.authNotice = ""; this.authForgot = false; this.authRecovery = false; this.otpSent = false; this.otp = ""; },
+    openVendorForgot: function () {
+      this.authForgot = true;
+      this.authErr = "";
+      this.authNotice = "";
+      this.f.password = "";
+    },
+    sendVendorRecovery: async function () {
+      this.authErr = "";
+      this.authNotice = "";
+      var email = String(this.f.email || "").trim().toLowerCase();
+      if (!email) { this.authErr = "Saisis l’adresse e-mail de ton compte vendeur."; return; }
+      this.busy = true;
+      try {
+        var redirect = location.origin + location.pathname + "?mode=recovery";
+        var result = await db.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+        if (result.error) throw result.error;
+        this.authNotice = "Si cette adresse correspond à un compte, un lien de réinitialisation vient d’être envoyé. Vérifie aussi tes courriers indésirables.";
+      } catch (error) {
+        this.authErr = this.authMsg(error) || "Impossible d’envoyer le lien. Réessaie dans quelques instants.";
+      } finally {
+        this.busy = false;
+      }
+    },
+    saveVendorRecoveryPassword: async function () {
+      this.authErr = "";
+      this.authNotice = "";
+      if (String(this.recoveryPassword || "").length < 10) { this.authErr = "Le mot de passe doit contenir au moins 10 caractères."; return; }
+      if (this.recoveryPassword !== this.recoveryConfirm) { this.authErr = "Les deux mots de passe ne correspondent pas."; return; }
+      this.busy = true;
+      try {
+        var result = await db.auth.updateUser({ password: this.recoveryPassword });
+        if (result.error) throw result.error;
+        this.recoveryPassword = "";
+        this.recoveryConfirm = "";
+        this.authRecovery = false;
+        this.authNotice = "Mot de passe modifié avec succès. Connexion à ton espace vendeur…";
+        history.replaceState({}, document.title, location.pathname);
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult && sessionResult.data && sessionResult.data.session;
+        if (session) {
+          await this.onSession(session);
+          this.tab = "vendor";
+          this.authNotice = "Ton mot de passe a été modifié. Bienvenue dans ton espace vendeur.";
+        } else {
+          this.authMode = "login";
+          this.authMethod = "email";
+          this.tab = "vendor";
+          this.authNotice = "Mot de passe modifié. Tu peux maintenant te connecter avec ton nouveau mot de passe.";
+        }
+      } catch (error) {
+        this.authErr = this.authMsg(error) || "Le lien est peut-être expiré. Demande un nouveau lien de réinitialisation.";
+      } finally {
+        this.busy = false;
+      }
+    },
     normPhone: function (v) {
       var x = String(v || "").replace(/[\s().-]/g, "");
       if (x.indexOf("00") === 0) x = "+" + x.slice(2);
@@ -519,6 +823,111 @@ function app() {
       } finally { this.busy = false; }
     },
 
+    uploadVendorAvatar: async function (file) {
+      if (!file) return;
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type || "")) {
+        alert("Choisissez une image JPG, PNG ou WEBP.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La photo ne doit pas dépasser 5 Mo.");
+        return;
+      }
+      if (!this.uid || !this.authed || !this.shop.sid) {
+        alert("Reconnectez-vous et attendez le chargement de votre boutique avant d'ajouter une photo.");
+        return;
+      }
+      this.avatarBusy = true;
+      var previousUrl = this.shop.avatarUrl || "";
+      var previousPath = this.shop.avatarPath || "";
+      var uploadedPath = "";
+      try {
+        var blob = await compressAvatar(file);
+        if (!blob) throw new Error("Impossible de lire cette image.");
+        uploadedPath = this.uid + "/" + Date.now() + "-" + rnd(8) + ".jpg";
+        var upload = await db.storage.from("vendor-avatars").upload(uploadedPath, blob, {
+          contentType: "image/jpeg", cacheControl: "31536000", upsert: false
+        });
+        if (upload.error) throw upload.error;
+        var publicResult = db.storage.from("vendor-avatars").getPublicUrl(uploadedPath);
+        if (!publicResult || !publicResult.data || !publicResult.data.publicUrl) throw new Error("URL publique de la photo indisponible.");
+        this.shop.avatarUrl = publicResult.data.publicUrl;
+        this.shop.avatarPath = uploadedPath;
+        var saved = await this.save();
+        if (saved && saved.error) throw saved.error;
+        if (previousPath && previousPath !== uploadedPath) {
+          var removed = await db.storage.from("vendor-avatars").remove([previousPath]);
+          if (removed.error) console.warn("Ancienne photo conservée :", removed.error.message);
+        }
+        alert("Votre photo de profil a été mise à jour.");
+      } catch (error) {
+        this.shop.avatarUrl = previousUrl;
+        this.shop.avatarPath = previousPath;
+        if (uploadedPath) {
+          try { await db.storage.from("vendor-avatars").remove([uploadedPath]); } catch (e) {}
+        }
+        alert("Impossible d'enregistrer la photo : " + ((error && error.message) || "réessayez."));
+      } finally {
+        this.avatarBusy = false;
+      }
+    },
+
+    saveAccountPhone: async function () {
+      var phone = this.normPhone(this.accountPhoneDraft);
+      this.accountMessage = "";
+      if (!phone) { alert("Numéro invalide. Utilisez le format international, ex : +221771234567."); return; }
+      if (!this.uid) { alert("Session vendeur introuvable. Reconnectez-vous."); return; }
+      this.accountSaving = true;
+      try {
+        var result = await db.from("vendors").update({ phone: phone }).eq("id", this.uid).select("id").maybeSingle();
+        if (result.error) throw result.error;
+        if (!result.data) throw new Error("Profil vendeur introuvable ou modification non autorisée.");
+        this.accountPhone = phone;
+        this.accountPhoneDraft = phone;
+        this.accountMessage = this.t("accountPhoneSaved");
+      } catch (error) {
+        alert("Impossible d'enregistrer le numéro : " + ((error && error.message) || "réessayez."));
+      } finally {
+        this.accountSaving = false;
+      }
+    },
+
+    changePassword: async function () {
+      var form = this.passwordForm;
+      if (!form.current || !form.next || !form.confirm) {
+        alert("Veuillez remplir les trois champs du mot de passe.");
+        return;
+      }
+      if (form.next.length < 8) {
+        alert(this.t("passwordTooShort"));
+        return;
+      }
+      if (form.next !== form.confirm) {
+        alert(this.t("passwordMismatch"));
+        return;
+      }
+      this.passwordBusy = true;
+      try {
+        var userResult = await db.auth.getUser();
+        var user = userResult && userResult.data && userResult.data.user;
+        if (userResult.error || !user) throw new Error("Session vendeur introuvable. Reconnectez-vous.");
+        var credentials = user.email
+          ? { email: user.email, password: form.current }
+          : (user.phone ? { phone: user.phone, password: form.current } : null);
+        if (!credentials) throw new Error("Ce compte ne dispose pas d'un identifiant permettant de vérifier le mot de passe actuel.");
+        var reauth = await db.auth.signInWithPassword(credentials);
+        if (reauth.error) throw new Error("Le mot de passe actuel est incorrect.");
+        var update = await db.auth.updateUser({ password: form.next });
+        if (update.error) throw update.error;
+        this.passwordForm = { current: "", next: "", confirm: "" };
+        alert(this.t("passwordChanged"));
+      } catch (error) {
+        alert((error && error.message) || this.t("passwordChangeError"));
+      } finally {
+        this.passwordBusy = false;
+      }
+    },
+
     logout: async function () {
       try {
         await db.auth.signOut();
@@ -529,10 +938,7 @@ function app() {
     },
 
     cancelSubscription: function() {
-      if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous basculerez sur le plan Starter à l'échéance.")) {
-        this.shop.plan = "starter";
-        alert("Votre abonnement a bien été résilié.");
-      }
+      alert("La résiliation en ligne n’est pas encore disponible. Les abonnements PayDunya sont configurés sans renouvellement automatique.");
     },
 
     // Suppression RÉELLE : appelle la fonction serveur delete_my_account() qui supprime l'utilisateur
@@ -588,6 +994,7 @@ function app() {
       if (!this.shop.sid) this.shop.sid = rnd(8);
       var r = await db.from("shops").upsert({ id: this.shop.sid, owner: this.uid, data: this.shop }, { onConflict: "id" });
       if (r && r.error) console.error("Sauvegarde de la boutique échouée :", r.error.message);
+      return r;
     },
 
     loadRemote: async function (id) {
@@ -637,31 +1044,29 @@ function app() {
         return;
       }
 
-      if (this.pay === CARD) {
-        this.modal = 'cardPayment';
-      } else {
-        this.finalizeOrder();
+      if (this.pay === COD && !this.shop.allowCod) {
+        alert("Le paiement à la livraison n'est pas proposé par ce vendeur.");
+        return;
       }
+
+      if (this.pay === CARD) {
+        alert("Le paiement par carte bancaire n’est pas encore disponible. Choisissez un autre moyen de paiement.");
+        return;
+      }
+      this.finalizeOrder();
     },
 
     processCardPayment: function () {
-      if (!this.cardData.number || !this.cardData.exp || !this.cardData.cvv) {
-        alert("Veuillez remplir toutes les informations de la carte bancaire.");
-        return;
-      }
       this.modal = '';
       this.cardData = { number: "", exp: "", cvv: "" };
-      this.finalizeOrder();
+      alert("Le paiement par carte bancaire n’est pas encore intégré. Aucun débit n’a été effectué.");
     },
 
     finalizeOrder: async function () {
       var c = this.cust, self = this;
       var trackingCode = "CMD-" + rnd(6).toUpperCase();
       var orderTotal = this.total;
-
-      var lines = this.cart.map(function (i) { return i.quantity + " x " + i.title + " (" + self.fmt(i.price) + ")"; });
-      var message = lines.join("\n") + "\nTotal : " + this.fmt(orderTotal) +
-        "\nAdresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
+      var message = "Adresse : " + (c.address || "-") + (c.mapLink ? "\nGPS : " + c.mapLink : "");
 
       var newOrder = {
         id: Date.now(),
@@ -671,6 +1076,7 @@ function app() {
         items: JSON.parse(JSON.stringify(this.cart)),
         total: orderTotal,
         paymentMethod: this.pay || "Non spécifié",
+        paymentStatus: "pending",
         message: message,
         status: "pending",
         created_at: new Date().toISOString()
@@ -683,14 +1089,26 @@ function app() {
             p_ref: trackingCode,
             p_name: c.name.trim(),
             p_phone: c.phone.trim(),
-            p_total: String(orderTotal),
             p_mode: this.pay || "Non spécifié",
-            p_message: message
+            p_message: message,
+            p_items: this.cart.map(function (item) {
+              return { id: String(item.id), quantity: item.quantity };
+            })
           });
-          if (r.error || r.data !== true) {
-            alert("Votre commande n'a pas pu être enregistrée. Vérifiez vos informations ou réessayez dans quelques minutes.");
+          if (r.error || !r.data || r.data.ok !== true) {
+            alert((r.data && r.data.error) || "Votre commande n'a pas pu être enregistrée. Vérifiez le stock ou réessayez dans quelques minutes.");
             return;
           }
+          if (!r.data.id) {
+            alert("La commande a été enregistrée, mais son identifiant n'a pas été retourné. Actualisez la page avant de modifier son statut.");
+            await this.loadOrders();
+            return;
+          }
+          newOrder.id = r.data.id;
+          orderTotal = Number(r.data.total);
+          newOrder.total = orderTotal;
+          newOrder.items = Array.isArray(r.data.items) ? r.data.items : [];
+          newOrder.message = r.data.message || message;
           this.orders.unshift(newOrder);
         } catch (err) {
           alert("Erreur réseau : votre commande n'a pas été enregistrée.");
@@ -716,7 +1134,7 @@ function app() {
 
     openWhatsAppOrder: function () {
       var wa = (this.shop.wa || "").replace(/\D/g, "");
-      var msg = "Bonjour, voici ma commande confirmée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-");
+      var msg = "Bonjour, voici ma commande enregistrée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-") + (this.pay === COD ? "\nPaiement à effectuer à la livraison." : "");
       window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(msg), "_blank");
       this.modal = '';
     },
@@ -727,6 +1145,20 @@ function app() {
           var r = await db.from("orders").update({ status: o.status }).eq("id", o.id);
           if (r && r.error) alert("Le statut n'a pas pu être enregistré : " + r.error.message);
         } catch (e) {}
+      }
+    },
+
+    updateOrderPaymentStatus: async function (o) {
+      if (!this.shop.sid || !o.id || o.paymentMethod !== COD) return;
+      try {
+        var r = await db.from("orders").update({ payment_status: o.paymentStatus }).eq("id", o.id);
+        if (r && r.error) {
+          o.paymentStatus = "pending";
+          alert("Le paiement n'a pas pu être mis à jour : " + r.error.message);
+        }
+      } catch (e) {
+        o.paymentStatus = "pending";
+        alert("Erreur réseau : le statut du paiement n'a pas été enregistré.");
       }
     },
 
@@ -804,9 +1236,10 @@ function app() {
             trackingCode: o.ref,
             shop_id: o.shop_id,
             customer: { name: o.customer_name, phone: o.customer_phone },
-            items: [],
+            items: Array.isArray(o.items) ? o.items : [],
             total: parseInt(String(o.total || "").replace(/\D/g, ""), 10) || 0,
             paymentMethod: o.pay_mode,
+            paymentStatus: o.payment_status === "paid" ? "paid" : "pending",
             message: o.message || "",
             status: st,
             created_at: o.created_at
