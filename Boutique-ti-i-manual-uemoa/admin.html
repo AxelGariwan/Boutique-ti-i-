@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-[#0b0709]">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="theme.css">
+<script defer src="theme.js"></script>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Administration - Boutique ti i</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+[x-cloak]{display:none!important}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0b0709;color:#f8fafc}
+.admin-shell{min-height:100vh;background:radial-gradient(ellipse at 8% 0%,rgba(239,68,68,.22),transparent 36%),radial-gradient(ellipse at 95% 8%,rgba(190,24,93,.2),transparent 32%),#0b0709}
+.admin-top{background:linear-gradient(105deg,rgba(127,29,29,.96),rgba(153,27,27,.94) 52%,rgba(136,19,55,.94));border:1px solid rgba(254,202,202,.2);box-shadow:0 12px 40px rgba(127,29,29,.22),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(18px)}
+.admin-nav{background:rgba(40,8,14,.3);border:1px solid rgba(255,255,255,.12)}
+.admin-nav button{color:rgba(255,255,255,.75);transition:.2s}
+.admin-nav button.active,.admin-nav button:hover{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.15)}
+.admin-panel{background:linear-gradient(145deg,rgba(31,20,25,.94),rgba(18,13,17,.96));border:1px solid rgba(255,255,255,.09);box-shadow:0 18px 55px rgba(0,0,0,.22)}
+.admin-stat{background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.1)}
+.admin-input{background:rgba(10,8,10,.7);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;outline:none}
+.admin-input:focus{border-color:rgba(248,113,113,.75);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+.admin-table{width:100%;border-collapse:collapse;min-width:820px}
+.admin-table th{background:rgba(255,255,255,.035);color:#a1a1aa;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+.admin-table td,.admin-table th{padding:14px 15px;vertical-align:top}
+.admin-table td{border-top:1px solid rgba(255,255,255,.07);font-size:13px}
+.admin-table tbody tr:hover{background:rgba(255,255,255,.025)}
+.admin-btn{border:1px solid rgba(255,255,255,.13);border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700;transition:.2s}
+.admin-btn:hover{background:rgba(255,255,255,.09)}
+.admin-btn-red{background:#dc2626;color:#fff;border-color:#ef4444}
+.admin-btn-red:hover{background:#b91c1c}
+.admin-muted{color:#a1a1aa}
+.admin-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.03em}
+@media(max-width:640px){.admin-table{min-width:760px}.admin-top{border-radius:18px}.admin-stat{padding:14px}}
+</style>
+</head>
+<body class="min-h-full" x-data="admin()" x-cloak>
+<div class="admin-shell">
+  <!-- Connexion : même authentification Supabase et même liste admins -->
+  <div x-show="ready&&!ok" class="min-h-screen grid place-items-center p-4">
+    <form x-show="!recovery&&!forgot" @submit.prevent="login()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-800 grid place-items-center font-black text-lg shadow-lg">Bti</div>
+        <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Boutique ti i</p><h1 class="text-2xl font-black">Admin Console</h1></div>
+      </div>
+      <p class="text-sm admin-muted">Espace sécurisé réservé aux administrateurs autorisés.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" placeholder="admin@exemple.com" autocomplete="username" required class="admin-input w-full"></label>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Mot de passe</span><input type="password" x-model="f.password" placeholder="Votre mot de passe" autocomplete="current-password" required class="admin-input w-full"></label>
+      <p x-show="err" class="text-red-300 text-xs" x-text="err"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Connexion…':'Accéder au tableau de bord'"></button>
+      <button type="button" @click="forgot=true;err=''" class="w-full text-sm text-red-300 hover:text-red-200">Mot de passe oublié ?</button>
+      <p class="text-[11px] text-center admin-muted">Accès contrôlé par les droits administrateur Supabase.</p>
+    </form>
+
+    <form x-show="forgot&&!recovery" @submit.prevent="sendRecovery()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Récupération sécurisée</p><h1 class="text-2xl font-black mt-1">Mot de passe oublié ?</h1></div>
+      <p class="text-sm admin-muted">Saisis l’adresse e-mail de ton compte. Si un compte correspondant existe, tu recevras un lien de réinitialisation.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Adresse e-mail</span><input type="email" x-model="f.email" required autocomplete="email" class="admin-input w-full"></label>
+      <p x-show="notice" class="text-emerald-300 text-sm" x-text="notice"></p><p x-show="err" class="text-red-300 text-xs" x-text="err"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Envoi…':'Envoyer le lien'"></button>
+      <button type="button" @click="forgot=false;err='';notice=''" class="w-full text-sm text-zinc-300">Retour à la connexion</button>
+    </form>
+
+    <form x-show="recovery" @submit.prevent="saveNewPassword()" class="admin-panel w-full max-w-md rounded-3xl p-7 sm:p-9 space-y-5">
+      <div><p class="text-xs uppercase tracking-[.2em] text-red-300 font-bold">Nouveau mot de passe</p><h1 class="text-2xl font-black mt-1">Sécurise ton compte</h1></div>
+      <p class="text-sm admin-muted">Choisis un mot de passe d’au moins 10 caractères.</p>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Nouveau mot de passe</span><input type="password" x-model="newPassword" minlength="10" required autocomplete="new-password" class="admin-input w-full"></label>
+      <label class="block space-y-1"><span class="text-xs font-semibold admin-muted">Confirmer le mot de passe</span><input type="password" x-model="confirmPassword" minlength="10" required autocomplete="new-password" class="admin-input w-full"></label>
+      <p x-show="err" class="text-red-300 text-xs" x-text="err"></p><p x-show="notice" class="text-emerald-300 text-sm" x-text="notice"></p>
+      <button :disabled="busy" class="w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-700 disabled:opacity-50 text-white font-bold py-3.5" x-text="busy?'Enregistrement…':'Enregistrer le nouveau mot de passe'"></button>
+    </form>
+  </div>
+
+  <div x-show="ok" class="max-w-[1500px] mx-auto px-3 sm:px-6 py-4 sm:py-7 space-y-6">
+    <header class="admin-top rounded-2xl px-4 sm:px-6 py-3 flex flex-col lg:flex-row items-center justify-between gap-3">
+      <div class="flex items-center justify-between w-full lg:w-auto gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-400 to-rose-900 border border-white/20 grid place-items-center font-black shadow-lg">Bti</div>
+          <div><h1 class="font-extrabold tracking-tight text-white">Boutique ti i <span class="text-red-200 font-medium">/ Admin</span></h1><p class="text-[10px] text-red-100/70 tracking-[.16em] uppercase">Control center · V5</p></div>
+        </div>
+        <div class="flex lg:hidden items-center gap-2">
+          <div data-bti-theme-slot></div>
+          <button class="admin-btn text-white" @click="reload()" title="Actualiser">↻</button>
+          <button class="admin-btn admin-btn-red" @click="logout()">Déconnexion</button>
+        </div>
+      </div>
+      <nav class="admin-nav rounded-full p-1 flex flex-wrap items-center justify-center gap-1">
+        <button @click="tab='vendors'" :class="tab==='vendors'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Vendeurs</button>
+        <button @click="tab='orders'" :class="tab==='orders'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Commandes</button>
+        <button @click="tab='analytics'" :class="tab==='analytics'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Statistiques</button>
+        <button @click="tab='subscriptions';loadManualPayments();loadManualMethods()" :class="tab==='subscriptions'?'active':''" class="rounded-full px-4 py-2 text-xs font-bold">Abonnements</button>
+      </nav>
+      <div class="hidden lg:flex items-center gap-2">
+        <span class="text-[11px] text-red-100/70 mr-2">Administration sécurisée</span>
+        <div data-bti-theme-slot></div>
+        <button class="admin-btn text-white" @click="reload()">↻ Actualiser</button>
+        <button class="admin-btn admin-btn-red" @click="logout()">Déconnexion</button>
+      </div>
+    </header>
+
+    <section class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div><p class="text-[11px] uppercase tracking-[.2em] text-red-300 font-bold">Vue d’ensemble</p><h2 class="text-2xl sm:text-3xl font-black tracking-tight">Tableau de bord</h2><p class="admin-muted text-sm mt-1">Suivez les vendeurs, les vérifications et les commandes de la plateforme.</p></div>
+      <p class="text-xs admin-muted">Données synchronisées depuis Supabase</p>
+    </section>
+
+    <section class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Vendeurs inscrits</p><span class="text-xl">♙</span></div><p class="text-3xl sm:text-4xl font-black mt-3 tabular-nums" x-text="vendors.length"></p><p class="text-[11px] text-red-300 mt-2">Comptes vendeurs</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Identités à vérifier</p><span class="text-xl">◷</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-amber-300 tabular-nums" x-text="count('pending')"></p><p class="text-[11px] text-amber-200 mt-2">Documents en attente</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Vendeurs validés</p><span class="text-xl">✓</span></div><p class="text-3xl sm:text-4xl font-black mt-3 text-emerald-300 tabular-nums" x-text="count('approved')"></p><p class="text-[11px] text-emerald-200 mt-2">Identités approuvées</p></article>
+      <article class="admin-stat rounded-2xl p-4 sm:p-5"><div class="flex items-center justify-between"><p class="text-xs admin-muted">Commandes reçues</p><span class="text-xl">▤</span></div><p class="text-3xl sm:text-4xl font-black mt-3 tabular-nums" x-text="orders.length"></p><p class="text-[11px] text-red-300 mt-2">Commandes chargées</p></article>
+    </section>
+
+    <!-- Statistiques globales : montants de commandes, non assimilés à des paiements encaissés -->
+    <section x-show="tab==='analytics'" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div><h3 class="text-xl font-black">Statistiques de la plateforme</h3><p class="text-xs admin-muted mt-1">Montants des commandes enregistrées. Les paiements ne sont pas confirmés automatiquement par la plateforme.</p></div>
+        <select x-model="analyticsPeriod" class="admin-input sm:w-52" aria-label="Période du graphique"><option value="day">Aujourd’hui</option><option value="week">Cette semaine</option><option value="month">Ce mois</option></select>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <template x-for="periodCard in periodCards" :key="periodCard.key">
+          <article class="admin-stat rounded-2xl p-4 sm:p-5">
+            <p class="text-xs admin-muted" x-text="periodCard.label"></p>
+            <p class="text-3xl font-black mt-2 tabular-nums" x-text="periodCard.count"></p>
+            <p class="text-[11px] admin-muted mt-1">commandes enregistrées</p>
+            <div class="mt-3 pt-3 border-t border-white/10 space-y-1">
+              <template x-for="row in periodCard.amounts" :key="row.currency"><div class="flex justify-between gap-2 text-xs"><span class="admin-muted" x-text="row.currency"></span><strong x-text="formatMoney(row.amount,row.currency)"></strong></div></template>
+              <p x-show="!periodCard.amounts.length" class="text-xs admin-muted">Aucun montant sur cette période.</p>
+            </div>
+          </article>
+        </template>
+      </div>
+      <div class="admin-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h3 class="font-bold">Activité quotidienne</h3><p class="text-xs admin-muted">Nombre de commandes sur les 7 derniers jours</p></div><span class="admin-pill bg-white/10 text-slate-200" x-text="selectedPeriodLabel"></span></div>
+        <div class="grid grid-cols-7 gap-2 items-end min-h-36">
+          <template x-for="day in chartDays" :key="day.key"><div class="min-w-0 flex flex-col items-center gap-2"><span class="text-[10px] admin-muted" x-text="day.count"></span><div class="w-full max-w-12 rounded-t-lg bg-gradient-to-t from-red-700 to-rose-400" :style="'height:'+Math.max(5,day.count/chartMax*92)+'px'"></div><span class="text-[10px] admin-muted" x-text="day.label"></span></div></template>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Panier moyen · période choisie</p><template x-for="row in selectedStats.amounts" :key="row.currency"><p class="text-sm font-bold mt-2" x-text="formatMoney(row.count?row.amount/row.count:0,row.currency)+' · '+row.currency"></p></template><p x-show="!selectedStats.amounts.length" class="text-xs admin-muted mt-2">Pas encore de données.</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes en attente</p><p class="text-3xl font-black mt-2" x-text="selectedStats.pending"></p><p class="text-[11px] admin-muted mt-1">Paiement à confirmer</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">En préparation</p><p class="text-3xl font-black mt-2" x-text="selectedStats.processing"></p><p class="text-[11px] admin-muted mt-1">Commandes en cours</p></article>
+        <article class="admin-panel rounded-2xl p-4"><p class="text-xs admin-muted">Commandes terminées</p><p class="text-3xl font-black mt-2" x-text="selectedStats.completed"></p><p class="text-[11px] admin-muted mt-1">Selon le statut de livraison</p></article>
+      </div>
+      <p class="text-[11px] admin-muted">Les montants sont regroupés par devise pour éviter d’additionner des FCFA, des dirhams ou d’autres monnaies. Les statistiques utilisent les commandes chargées depuis Supabase (maximum 10 000 commandes récentes).</p>
+    </section>
+
+    <!-- Gestion des vendeurs et vérification d'identité -->
+    <section x-show="tab==='vendors'" class="admin-panel rounded-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-white/10 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div><h3 class="font-bold text-lg">Vendeurs & boutiques</h3><p class="text-xs admin-muted mt-1">Examinez les profils, contrôlez les pièces d’identité et gérez l’accès aux boutiques.</p></div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select x-model="filter" class="admin-input sm:min-w-[150px]"><option value="all">Tous les vendeurs</option><option value="pending">À vérifier</option><option value="approved">Validés</option><option value="rejected">Refusés</option></select>
+          <input x-model="q" placeholder="Rechercher un vendeur, une boutique…" class="admin-input sm:w-72">
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="admin-table"><thead><tr><th>Boutique</th><th>Vendeur</th><th>Pays</th><th>Vérification</th><th>Inscription</th><th>Actions</th></tr></thead>
+          <tbody><template x-for="v in list" :key="v.id"><tr>
+            <td><p class="font-bold text-white" x-text="shopName(v)"></p><p class="text-xs admin-muted mt-1" x-text="productsOf(v)+' article(s)'"></p><a x-show="shopOf(v)" :href="shopLink(v)" target="_blank" rel="noopener" class="text-xs text-red-300 underline mt-1 inline-block">Ouvrir la boutique ↗</a><span x-show="shopOf(v)&&shopOf(v).suspended" class="admin-pill bg-red-500/15 text-red-300 mt-2">SUSPENDUE</span></td>
+            <td><p class="font-semibold" x-text="v.full_name"></p><p class="text-xs admin-muted mt-1" x-text="v.email"></p><p class="text-xs admin-muted" x-text="v.phone"></p></td>
+            <td x-text="v.country||'—'"></td>
+            <td><span class="admin-pill" :class="v.id_status==='approved'?'bg-emerald-500/15 text-emerald-300':(v.id_status==='rejected'?'bg-red-500/15 text-red-300':'bg-amber-500/15 text-amber-200')" x-text="v.id_status==='approved'?'Validée':(v.id_status==='rejected'?'Refusée':(v.id_doc_path?'À vérifier':'Pièce manquante'))"></span><p x-show="v.id_status==='rejected'&&v.id_reject_reason" class="text-xs admin-muted mt-2 max-w-48" x-text="v.id_reject_reason"></p></td>
+            <td class="text-xs admin-muted" x-text="new Date(v.created_at).toLocaleDateString('fr-FR')"></td>
+            <td><div class="flex flex-wrap gap-2 min-w-36"><button x-show="v.id_doc_path" class="admin-btn" @click="viewDoc(v)">Voir la pièce</button><button x-show="v.id_doc_path&&v.id_status!=='approved'" class="admin-btn text-emerald-300" @click="approve(v)">Valider</button><button x-show="v.id_doc_path&&v.id_status!=='rejected'" class="admin-btn text-red-300" @click="reject(v)">Refuser</button><button x-show="shopOf(v)" class="admin-btn" @click="toggleSuspend(v)" x-text="shopOf(v)&&shopOf(v).suspended?'Réactiver':'Suspendre'"></button></div></td>
+          </tr></template></tbody>
+        </table>
+        <p x-show="!list.length" class="p-6 text-sm admin-muted">Aucun vendeur correspondant à cette recherche.</p>
+      </div>
+    </section>
+
+    <!-- Paiements manuels des abonnements UEMOA et CEMAC -->
+    <section x-show="tab==='subscriptions'" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div><h3 class="text-xl font-black">Paiements des abonnements</h3><p class="text-xs admin-muted mt-1">Vérifie le transfert réellement reçu avant toute activation. Une capture ou une référence seule ne suffit pas.</p></div>
+        <button class="admin-btn" @click="loadManualPayments();loadManualMethods()">↻ Actualiser</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">En attente</p><p class="text-3xl font-black mt-2 text-amber-300" x-text="manualPayments.filter(p=>p.status==='pending').length"></p></article>
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">Validés</p><p class="text-3xl font-black mt-2 text-emerald-300" x-text="manualPayments.filter(p=>p.status==='paid').length"></p></article>
+        <article class="admin-stat rounded-2xl p-4"><p class="text-xs admin-muted">Refusés</p><p class="text-3xl font-black mt-2 text-red-300" x-text="manualPayments.filter(p=>p.status==='failed').length"></p></article>
+      </div>
+      <div class="admin-panel rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-white/10"><h4 class="font-bold">Demandes reçues</h4><p class="text-xs admin-muted mt-1">Les abonnements sont activés uniquement par validation administrative sécurisée.</p></div>
+        <div class="overflow-x-auto">
+          <table class="admin-table"><thead><tr><th>Date</th><th>Vendeur / boutique</th><th>Forfait</th><th>Montant</th><th>Mode / référence</th><th>Statut</th><th>Décision</th></tr></thead>
+            <tbody><template x-for="p in manualPayments" :key="p.id"><tr>
+              <td class="text-xs admin-muted" x-text="new Date(p.created_at).toLocaleString('fr-FR')"></td>
+              <td><p class="font-bold" x-text="manualVendorName(p)"></p><p class="text-xs admin-muted" x-text="shopNameById(p.shop_id)+' · '+manualCountry(p.shop_id)"></p></td>
+              <td class="font-semibold" x-text="manualPlanName(p.plan_id)"></td>
+              <td class="font-bold" x-text="formatMoney(p.amount,p.currency)"></td>
+              <td><p class="text-xs font-bold" x-text="manualMethodName(p.payment_method)"></p><p class="text-xs admin-muted break-all" x-text="p.payer_reference||'—'"></p><p class="text-xs admin-muted" x-text="p.payer_phone||''"></p></td>
+              <td><span class="admin-pill" :class="p.status==='paid'?'bg-emerald-500/15 text-emerald-300':(p.status==='failed'?'bg-red-500/15 text-red-300':'bg-amber-500/15 text-amber-200')" x-text="p.status==='paid'?'Validé':(p.status==='failed'?'Refusé':'En attente')"></span><p x-show="p.admin_note" class="text-xs admin-muted mt-1" x-text="p.admin_note"></p></td>
+              <td><div class="flex flex-wrap gap-2"><button x-show="p.status==='pending'" class="admin-btn text-emerald-300" @click="reviewManualPayment(p,'approve')">Valider</button><button x-show="p.status==='pending'" class="admin-btn text-red-300" @click="reviewManualPayment(p,'reject')">Refuser</button></div></td>
+            </tr></template></tbody>
+          </table>
+          <p x-show="!manualPayments.length" class="p-5 text-sm admin-muted">Aucune demande de paiement manuel enregistrée.</p>
+        </div>
+      </div>
+      <div class="admin-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        <div><h4 class="font-bold">Coordonnées de réception par pays</h4><p class="text-xs admin-muted mt-1">Configure uniquement des comptes que tu contrôles et qui peuvent réellement recevoir les transferts dans le pays sélectionné.</p></div>
+        <form @submit.prevent="saveManualPaymentMethod()" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <label class="space-y-1"><span class="text-xs admin-muted">Pays</span><select x-model="manualMethodForm.country_code" class="admin-input w-full"><option value="SN">Sénégal · XOF</option><option value="BJ">Bénin · XOF</option><option value="BF">Burkina Faso · XOF</option><option value="CI">Côte d'Ivoire · XOF</option><option value="GW">Guinée-Bissau · XOF</option><option value="ML">Mali · XOF</option><option value="NE">Niger · XOF</option><option value="TG">Togo · XOF</option><option value="CM">Cameroun · XAF</option><option value="CF">Centrafrique · XAF</option><option value="CG">Congo · XAF</option><option value="GA">Gabon · XAF</option><option value="TD">Tchad · XAF</option><option value="GQ">Guinée équatoriale · XAF</option></select></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Moyen de paiement</span><select x-model="manualMethodForm.method_code" class="admin-input w-full"><option value="wave">Wave</option><option value="orange_money">Orange Money</option><option value="pi_spi">PI-SPI / établissement participant</option><option value="mtn_momo">MTN Mobile Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="other">Autre moyen local</option></select></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Nom affiché</span><input x-model="manualMethodForm.display_name" required maxlength="80" placeholder="Ex. Orange Money" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Nom du bénéficiaire</span><input x-model="manualMethodForm.account_name" required maxlength="120" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Numéro / identifiant de réception</span><input x-model="manualMethodForm.account_reference" required maxlength="120" class="admin-input w-full"></label>
+          <label class="space-y-1"><span class="text-xs admin-muted">Instructions pour le vendeur</span><input x-model="manualMethodForm.instructions" maxlength="500" class="admin-input w-full"></label>
+          <label class="flex items-center gap-2 text-xs"><input type="checkbox" x-model="manualMethodForm.is_active"> Activer ce moyen pour les vendeurs</label>
+          <div class="sm:col-span-2 flex justify-end"><button :disabled="manualBusy" class="admin-btn admin-btn-red" x-text="manualBusy?'Enregistrement…':'Enregistrer les coordonnées'"></button></div>
+        </form>
+        <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Pays</th><th>Moyen</th><th>Bénéficiaire</th><th>Coordonnée</th><th>État</th></tr></thead><tbody>
+          <template x-for="m in manualMethods" :key="m.id"><tr><td x-text="m.country_code+' · '+m.currency"></td><td x-text="manualMethodName(m.method_code)"></td><td x-text="m.account_name"></td><td x-text="m.account_reference"></td><td><span class="admin-pill" :class="m.is_active?'bg-emerald-500/15 text-emerald-300':'bg-white/10 text-slate-300'" x-text="m.is_active?'Actif':'Désactivé'"></span><button class="admin-btn mt-2" @click="editManualMethod(m)">Modifier</button></td></tr></template>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <!-- Suivi des commandes -->
+    <section x-show="tab==='orders'" class="admin-panel rounded-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-white/10"><h3 class="font-bold text-lg">Commandes de la plateforme</h3><p class="text-xs admin-muted mt-1">Vue globale des commandes enregistrées, sans modifier leur statut.</p></div>
+      <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Date</th><th>Boutique</th><th>Référence</th><th>Client</th><th>Total indiqué</th><th>Paiement</th><th>Statut</th></tr></thead><tbody>
+        <template x-for="o in orders" :key="o.id"><tr><td class="text-xs admin-muted" x-text="new Date(o.created_at).toLocaleString('fr-FR')"></td><td class="font-semibold" x-text="shopNameById(o.shop_id)"></td><td class="text-xs" x-text="o.ref"></td><td><p x-text="o.customer_name"></p><p class="text-xs admin-muted" x-text="o.customer_phone"></p></td><td class="font-bold" x-text="o.total"></td><td class="text-xs admin-muted" x-text="o.pay_mode"></td><td><span class="admin-pill bg-white/10 text-slate-200" x-text="o.status"></span></td></tr></template>
+      </tbody></table><p x-show="!orders.length" class="p-6 text-sm admin-muted">Aucune commande enregistrée.</p></div>
+    </section>
+    <footer class="text-center text-[11px] text-zinc-600 py-2">Boutique ti i · Administration · Accès réservé</footer>
+  </div>
+</div>
+<script src="config.js"></script>
+<script>
+var db = supabase.createClient(SB_URL, SB_KEY);
+function admin() {
+  return {
+    ready: false, ok: false, busy: false, err: "", notice: "", forgot: false, recovery: false,
+    newPassword: "", confirmPassword: "", tab: "vendors", filter: "all", q: "",
+    f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
+    analyticsPeriod: "week",
+    manualPayments: [], manualMethods: [], manualPlans: [], manualBusy: false,
+    manualMethodForm: { country_code: "SN", method_code: "wave", display_name: "Wave", account_name: "", account_reference: "", instructions: "", is_active: false },
+
+    init: async function () {
+      var self = this;
+      db.auth.onAuthStateChange(function (event, session) {
+        if (event === "PASSWORD_RECOVERY") {
+          self.recovery = true; self.forgot = false; self.err = ""; self.ready = true;
+        }
+      });
+      var s = await db.auth.getSession();
+      if (s.data.session && !this.recovery) await this.check(s.data.session.user.id);
+      this.ready = true;
+      if (window.location.hash.indexOf("error") >= 0) this.err = "Le lien de récupération est invalide ou expiré. Demande un nouveau lien.";
+    },
+    login: async function () {
+      this.err = ""; this.busy = true;
+      var r = await db.auth.signInWithPassword({ email: this.f.email.trim().toLowerCase(), password: this.f.password });
+      this.busy = false;
+      if (r.error) { this.err = "Connexion impossible. Vérifie le mot de passe ou utilise « Mot de passe oublié ». (" + r.error.message + ")"; return; }
+      this.f.password = "";
+      await this.check(r.data.user.id);
+    },
+    sendRecovery: async function () {
+      this.err = ""; this.notice = ""; this.busy = true;
+      var redirect = window.location.origin + window.location.pathname + "?mode=recovery";
+      var r = await db.auth.resetPasswordForEmail(this.f.email.trim().toLowerCase(), { redirectTo: redirect });
+      this.busy = false;
+      if (r.error) { this.err = "Impossible d’envoyer le lien : " + r.error.message; return; }
+      this.notice = "Si cette adresse correspond à un compte, un lien de réinitialisation vient d’être envoyé. Vérifie aussi les courriers indésirables.";
+    },
+    saveNewPassword: async function () {
+      this.err = ""; this.notice = "";
+      if (this.newPassword.length < 10) { this.err = "Le mot de passe doit contenir au moins 10 caractères."; return; }
+      if (this.newPassword !== this.confirmPassword) { this.err = "Les deux mots de passe ne correspondent pas."; return; }
+      this.busy = true;
+      var r = await db.auth.updateUser({ password: this.newPassword });
+      this.busy = false;
+      if (r.error) { this.err = "Impossible de modifier le mot de passe : " + r.error.message; return; }
+      this.newPassword = ""; this.confirmPassword = ""; this.notice = "Mot de passe modifié. Vérification de tes droits administrateur…";
+      var s = await db.auth.getSession();
+      if (s.data.session) { this.recovery = false; await this.check(s.data.session.user.id); }
+      else { this.recovery = false; this.forgot = false; this.notice = "Mot de passe modifié. Tu peux maintenant te connecter."; }
+      history.replaceState(null, "", window.location.pathname);
+    },
+    // Seuls les comptes listés dans la table "admins" peuvent entrer
+    check: async function (uid) {
+      var r = await db.from("admins").select("user_id").eq("user_id", uid).maybeSingle();
+      if (!r.data) { this.err = "Ce compte n’a pas les droits administrateur."; await db.auth.signOut(); this.ok = false; return; }
+      this.ok = true; await this.reload();
+    },
+    logout: async function () { await db.auth.signOut(); this.ok = false; this.vendors = []; this.shops = []; this.orders = []; },
+    reload: async function () {
+      var a = await db.from("vendors").select("*").order("created_at", { ascending: false });
+      var b = await db.from("shops").select("id,owner,suspended,updated_at,data");
+      if (a.data) this.vendors = a.data;
+      if (b.data) this.shops = b.data;
+      var allOrders = [], pageSize = 1000, offset = 0, page;
+      do {
+        page = await db.from("orders").select("*").order("created_at", { ascending: false }).range(offset, offset + pageSize - 1);
+        if (page.error) { console.error("Chargement des commandes :", page.error.message); break; }
+        allOrders = allOrders.concat(page.data || []);
+        offset += pageSize;
+      } while (page.data && page.data.length === pageSize && allOrders.length < 10000);
+      this.orders = allOrders;
+      await this.loadManualPayments();
+      await this.loadManualMethods();
+    },
+    loadManualPayments: async function () {
+      var r = await db.from("subscription_payments").select("*").eq("provider", "manual_transfer").order("created_at", { ascending: false }).limit(500);
+      if (r.error) { console.warn("Paiements abonnements manuels :", r.error.message); return; }
+      this.manualPayments = r.data || [];
+      var plans = await db.from("subscription_plans").select("id,slug");
+      if (!plans.error) this.manualPlans = plans.data || [];
+    },
+    loadManualMethods: async function () {
+      var r = await db.from("subscription_manual_payment_methods").select("*").order("country_code").order("method_code");
+      if (r.error) { console.warn("Moyens de paiement manuels :", r.error.message); return; }
+      this.manualMethods = r.data || [];
+    },
+    manualVendorName: function (p) {
+      var shop = this.shops.find(function(s){return s.id===p.shop_id;});
+      var vendor = shop ? this.vendors.find(function(v){return v.id===shop.owner;}) : null;
+      return vendor ? vendor.full_name : "Vendeur";
+    },
+    manualCountry: function (shopId) {
+      var shop = this.shops.find(function(s){return s.id===shopId;});
+      return shop && shop.data ? (shop.data.country||"") : "";
+    },
+    manualPlanName: function (planId) {
+      var plan = this.manualPlans.find(function(p){return p.id===planId;});
+      var names = {starter:"Starter",pro:"Pro",premium:"Premium"};
+      return plan ? (names[plan.slug] || plan.slug) : "Forfait";
+    },
+    manualMethodName: function (code) {
+      var names = {wave:"Wave",orange_money:"Orange Money",pi_spi:"PI-SPI",mtn_momo:"MTN Mobile Money",moov_money:"Moov Money",airtel_money:"Airtel Money",other:"Autre"};
+      return names[code] || code || "—";
+    },
+    editManualMethod: function (m) {
+      this.manualMethodForm = {
+        country_code: m.country_code, method_code: m.method_code,
+        display_name: m.display_name, account_name: m.account_name,
+        account_reference: m.account_reference, instructions: m.instructions || "",
+        is_active: !!m.is_active
+      };
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    },
+    saveManualPaymentMethod: async function () {
+      if (this.manualBusy) return;
+      var form = this.manualMethodForm;
+      if (!form.account_name.trim() || !form.account_reference.trim() || !form.display_name.trim()) { alert("Complète le bénéficiaire, le nom du moyen et la coordonnée de réception."); return; }
+      var xof = ["BJ","BF","CI","GW","ML","NE","SN","TG"].includes(form.country_code);
+      this.manualBusy = true;
+      var payload = Object.assign({}, form, { currency: xof ? "XOF" : "XAF", updated_at: new Date().toISOString() });
+      var r = await db.from("subscription_manual_payment_methods").upsert(payload, { onConflict: "country_code,method_code" });
+      this.manualBusy = false;
+      if (r.error) { alert("Impossible d'enregistrer les coordonnées : "+r.error.message); return; }
+      alert("Coordonnées enregistrées.");
+      await this.loadManualMethods();
+    },
+    reviewManualPayment: async function (payment, decision) {
+      var label = decision==="approve" ? "confirmer que l'argent est bien arrivé et activer l'abonnement" : "refuser cette demande";
+      if (!confirm("As-tu vérifié le transfert dans ton compte et veux-tu "+label+" ?")) return;
+      var note = prompt("Note administrative (facultative) :", "") || "";
+      var r = await db.functions.invoke("admin-review-manual-subscription-payment", { body: { paymentId: payment.id, decision: decision, note: note } });
+      if (r.error || !r.data || r.data.error) { alert((r.data&&r.data.error)||"Impossible de traiter la demande."); return; }
+      alert(r.data.message || "Demande traitée.");
+      await this.reload();
+    },
+    get periodCards() {
+      return [
+        {key:"day",label:"Aujourd’hui",count:this.statsFor("day").count,amounts:this.statsFor("day").amounts},
+        {key:"week",label:"Cette semaine",count:this.statsFor("week").count,amounts:this.statsFor("week").amounts},
+        {key:"month",label:"Ce mois",count:this.statsFor("month").count,amounts:this.statsFor("month").amounts}
+      ];
+    },
+    get selectedStats() { return this.statsFor(this.analyticsPeriod); },
+    get selectedPeriodLabel() { return this.analyticsPeriod==="day"?"Aujourd’hui":(this.analyticsPeriod==="month"?"Ce mois":"Cette semaine"); },
+    get chartDays() {
+      var out=[], now=new Date(), start=new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate()-6);
+      for(var i=0;i<7;i++){
+        var d=new Date(start);d.setDate(start.getDate()+i);
+        var key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+        var count=this.orders.filter(function(o){var x=new Date(o.created_at);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")===key;}).length;
+        out.push({key:key,label:d.toLocaleDateString("fr-FR",{weekday:"short"}),count:count});
+      }
+      return out;
+    },
+    get chartMax() { return Math.max(1,...this.chartDays.map(function(d){return d.count;})); },
+    statsFor: function(period) {
+      var now=new Date(), start=new Date(now); start.setHours(0,0,0,0);
+      if(period==="week"){var day=(start.getDay()+6)%7;start.setDate(start.getDate()-day);}
+      if(period==="month")start.setDate(1);
+      var rows=this.orders.filter(function(o){var d=new Date(o.created_at);return !isNaN(d.getTime())&&d>=start&&d<=now;});
+      var grouped={};
+      rows.forEach(function(o){
+        var shop=this.shops.find(function(s){return s.id===o.shop_id;});
+        var currency=(shop&&shop.data&&shop.data.currency)||"Devise inconnue";
+        var raw=String(o.total==null?"":o.total).trim();
+        var amount=Number(raw.replace(/[^0-9,.-]/g,"").replace(",","."));
+        if(!Number.isFinite(amount))amount=0;
+        if(!grouped[currency])grouped[currency]={currency:currency,amount:0,count:0};
+        grouped[currency].amount+=amount;grouped[currency].count++;
+      },this);
+      var statuses=rows.map(function(o){return String(o.status||"").toLowerCase();});
+      return {count:rows.length,amounts:Object.keys(grouped).sort().map(function(k){return grouped[k];}),pending:statuses.filter(function(s){return s.indexOf("attente")>=0||s.indexOf("pending")>=0;}).length,processing:statuses.filter(function(s){return s.indexOf("préparation")>=0||s.indexOf("preparation")>=0||s.indexOf("processing")>=0||s.indexOf("expédition")>=0;}).length,completed:statuses.filter(function(s){return s.indexOf("termin")>=0||s.indexOf("livr")>=0||s.indexOf("completed")>=0;}).length};
+    },
+    formatMoney: function(value,currency) { return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(value||0))+" "+currency; },
+    count: function (st) { return this.vendors.filter(function (v) { return v.id_status === st && v.id_doc_path; }).length; },
+    get list() {
+      var q = this.q.trim().toLowerCase(), self = this, f = this.filter;
+      return this.vendors.filter(function (v) {
+        if (f === "pending" && !(v.id_status === "pending")) return false;
+        if (f !== "all" && f !== "pending" && v.id_status !== f) return false;
+        if (!q) return true;
+        return [v.full_name, v.email, v.phone, v.country, self.shopName(v)].join(" ").toLowerCase().indexOf(q) >= 0;
+      });
+    },
+    shopOf: function (v) { return this.shops.find(function (s) { return s.owner === v.id; }); },
+    shopName: function (v) { var s = this.shopOf(v); return (s && s.data && s.data.name) || v.shop_name || "—"; },
+    shopNameById: function (id) { var s = this.shops.find(function (x) { return x.id === id; }); return (s && s.data && s.data.name) || id; },
+    productsOf: function (v) { var s = this.shopOf(v); return s && s.data && s.data.products ? s.data.products.length : 0; },
+    shopLink: function (v) { var s = this.shopOf(v); return s ? location.origin + location.pathname.replace(/admin\.html$/, "") + "?b=" + s.id : "#"; },
+
+    viewDoc: async function (v) {
+      var w = window.open("", "_blank");
+      var r = await db.storage.from("id-docs").createSignedUrl(v.id_doc_path, 120);
+      if (r.error) { if (w) w.close(); alert("Impossible d’ouvrir la pièce : " + r.error.message); return; }
+      if (w) w.location = r.data.signedUrl; else window.open(r.data.signedUrl, "_blank");
+    },
+    setStatus: async function (v, patch) {
+      var r = await db.from("vendors").update(patch).eq("id", v.id);
+      if (r.error) { alert("Erreur : " + r.error.message); return; }
+      Object.assign(v, patch);
+    },
+    approve: function (v) {
+      if (confirm("Valider l’identité de " + v.full_name + " ? Sa boutique deviendra visible des clients.")) this.setStatus(v, { id_status: "approved", id_reject_reason: null });
+    },
+    reject: function (v) {
+      var why = prompt("Motif du refus (affiché au vendeur) :", "Pièce illisible ou non valide");
+      if (why === null) return;
+      this.setStatus(v, { id_status: "rejected", id_reject_reason: why.trim() || "Pièce non valide" });
+    },
+    toggleSuspend: async function (v) {
+      var s = this.shopOf(v); if (!s) return;
+      var to = !s.suspended;
+      if (!confirm((to ? "Suspendre" : "Réactiver") + " la boutique de " + v.full_name + " ?")) return;
+      var r = await db.from("shops").update({ suspended: to }).eq("id", s.id);
+      if (r.error) { alert("Erreur : " + r.error.message); return; }
+      s.suspended = to;
+    }
+  };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Boutique ti i
+
+> Plateforme sénégalaise qui permet à des vendeurs de créer une boutique en ligne (catalogue, panier, commande par WhatsApp) et de la partager par un lien. Paiement direct avec le vendeur (Wave, Orange Money, MTN MoMo, etc.). Aucun paiement n'est traité par la plateforme.
+
+## Pages
+- [Accueil](https://VOTRE-DOMAINE.com/): présentation et création de boutique
+- [Conditions d'utilisation](https://VOTRE-DOMAINE.com/cgu.html)
+- [Politique de confidentialité](https://VOTRE-DOMAINE.com/confidentialite.html)
+- [Cookies](https://VOTRE-DOMAINE.com/cookies.html)
+- [Remboursements et rétractation](https://VOTRE-DOMAINE.com/remboursement.html)
+- [Mentions légales](https://VOTRE-DOMAINE.com/mentions-legales.html)
+
+## Notes
+- Les boutiques sont à l'adresse /?b=IDENTIFIANT et ne sont visibles qu'après vérification d'identité du vendeur.
+- Langue principale : français (anglais, espagnol et arabe pour l'interface).
