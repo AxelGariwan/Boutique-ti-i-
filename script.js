@@ -1039,7 +1039,7 @@ function app() {
         // Snapshot indépendant du panier : le panier peut être vidé après l'enregistrement.
         this.lastOrderCode = trackingCode;
         this.lastOrderTotal = orderTotal;
-        this.lastOrderItems = orderItemsSnapshot;
+        this.lastOrderItems = newOrder.items;
         this.lastOrderCustomer = {
           name: c.name.trim(),
           phone: c.phone.trim(),
