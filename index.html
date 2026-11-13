@@ -643,21 +643,24 @@
 </div>
 
 <!-- Modal Gestion des Abonnements -->
-<div x-show="modal==='subscriptionModal'" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
- <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
-  <div class="flex items-center justify-between">
-   <h3 class="text-xl font-black text-slate-900" x-text="t('subTitle')"></h3>
-   <button @click="modal=''" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 font-bold">✕</button>
+<div x-show="modal==='subscriptionModal'" x-cloak
+     @click.self="modal=''" @keydown.escape.window="if(modal==='subscriptionModal') modal=''"
+     class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+ <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-5 space-y-4 shadow-2xl relative my-auto max-h-[92dvh] overflow-y-auto">
+  <div class="sticky top-0 z-10 bg-white flex items-center justify-between gap-3 pb-2 border-b border-slate-100">
+   <h3 class="text-lg sm:text-xl font-black text-slate-900" x-text="t('subTitle')"></h3>
+   <button type="button" @click="modal=''" aria-label="Fermer la fenêtre des abonnements" title="Fermer"
+           class="shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">✕</button>
   </div>
 
-  <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-1">
+  <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-1">
    <p class="text-xs font-bold text-amber-900">Paiement par transfert manuel</p>
    <p class="text-[11px] leading-relaxed text-amber-800">Choisissez une formule, consultez les coordonnées disponibles pour votre pays, effectuez le transfert puis indiquez sa référence. L'abonnement sera activé après vérification du paiement par l'équipe Boutique ti i.</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
    <template x-for="p in plans" :key="p.id">
-    <div class="border rounded-2xl p-4 transition relative flex flex-col justify-between gap-4"
+    <div class="border rounded-xl p-3 transition relative flex flex-col justify-between gap-3"
          :class="shop.plan===p.id ? 'border-emerald-600 bg-emerald-50/40 ring-2 ring-emerald-500/20' : 'border-slate-200 bg-white'">
      
      <div x-show="p.id==='pro'" class="absolute -top-3 right-4 bg-emerald-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider" x-text="t('recommended')"></div>
