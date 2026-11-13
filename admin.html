@@ -238,7 +238,7 @@ function admin() {
     newPassword: "", confirmPassword: "", tab: "vendors", filter: "all", q: "",
     f: { email: "", password: "" }, vendors: [], shops: [], orders: [],
     analyticsPeriod: "week",
-    manualPayments: [], manualMethods: [], manualBusy: false,
+    manualPayments: [], manualMethods: [], manualPlans: [], manualBusy: false,
     manualMethodForm: { country_code: "SN", method_code: "wave", display_name: "Wave", account_name: "", account_reference: "", instructions: "", is_active: false },
 
     init: async function () {
@@ -310,6 +310,8 @@ function admin() {
       var r = await db.from("subscription_payments").select("*").eq("provider", "manual_transfer").order("created_at", { ascending: false }).limit(500);
       if (r.error) { console.warn("Paiements abonnements manuels :", r.error.message); return; }
       this.manualPayments = r.data || [];
+      var plans = await db.from("subscription_plans").select("id,slug");
+      if (!plans.error) this.manualPlans = plans.data || [];
     },
     loadManualMethods: async function () {
       var r = await db.from("subscription_manual_payment_methods").select("*").order("country_code").order("method_code");
@@ -326,8 +328,9 @@ function admin() {
       return shop && shop.data ? (shop.data.country||"") : "";
     },
     manualPlanName: function (planId) {
+      var plan = this.manualPlans.find(function(p){return p.id===planId;});
       var names = {starter:"Starter",pro:"Pro",premium:"Premium"};
-      return names[this.manualPayments.find(function(p){return p.plan_id===planId;})?.plan_slug] || "Forfait";
+      return plan ? (names[plan.slug] || plan.slug) : "Forfait";
     },
     manualMethodName: function (code) {
       var names = {wave:"Wave",orange_money:"Orange Money",pi_spi:"PI-SPI",mtn_momo:"MTN Mobile Money",moov_money:"Moov Money",airtel_money:"Airtel Money",other:"Autre"};
@@ -353,7 +356,6 @@ function admin() {
       var r = await db.functions.invoke("admin-review-manual-subscription-payment", { body: { paymentId: payment.id, decision: decision, note: note } });
       if (r.error || !r.data || r.data.error) { alert((r.data&&r.data.error)||"Impossible de traiter la demande."); return; }
       alert(r.data.message || "Demande traitée.");
-      await this.loadManualPayments();
       await this.reload();
     },
     get periodCards() {
