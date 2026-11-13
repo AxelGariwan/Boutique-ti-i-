@@ -15,9 +15,9 @@ create unique index if not exists subscription_payments_manual_reference_uidx
 
 create table if not exists public.subscription_manual_payment_methods (
   id uuid primary key default gen_random_uuid(),
-  country_code text not null check (country_code in ('BJ','BF','CI','GW','ML','NE','SN','TG')),
-  currency text not null default 'XOF' check (currency = 'XOF'),
-  method_code text not null check (method_code in ('wave','orange_money','pi_spi')),
+  country_code text not null check (country_code in ('BJ','BF','CI','GW','ML','NE','SN','TG','CM','CF','CG','GA','TD','GQ')),
+  currency text not null check ((country_code in ('BJ','BF','CI','GW','ML','NE','SN','TG') and currency = 'XOF') or (country_code in ('CM','CF','CG','GA','TD','GQ') and currency = 'XAF')),
+  method_code text not null check (method_code in ('wave','orange_money','pi_spi','mtn_momo','moov_money','airtel_money','other')),
   display_name text not null,
   account_name text not null,
   account_reference text not null,
@@ -126,7 +126,7 @@ begin
 
   if v_payment.payer_reference is null
      or length(trim(v_payment.payer_reference)) < 3
-     or v_payment.payment_method not in ('wave','orange_money','pi_spi') then
+     or v_payment.payment_method not in ('wave','orange_money','pi_spi','mtn_momo','moov_money','airtel_money','other') then
     raise exception 'Référence ou moyen de paiement manquant';
   end if;
 
