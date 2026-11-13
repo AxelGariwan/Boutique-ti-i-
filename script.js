@@ -228,7 +228,8 @@ function app() {
   var tmr;
   var shopId = new URLSearchParams(location.search).get("b");
   return {
-    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false, subscriptionProvider: "nkap_pay",
+    remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false,
+    manualPayment: { planId: "", plan: null, methods: [], selectedMethod: "", payerReference: "", payerPhone: "", submitted: false, payment: null, error: "" },
     aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
     accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "", avatarBusy: false,
@@ -421,41 +422,16 @@ function app() {
       return new Intl.NumberFormat("fr-FR").format(amount) + " " + currency;
     },
     requestPlan: async function (planId) {
-      if (!this.authed) {
-        alert("Connectez-vous à votre espace vendeur avant de souscrire.");
-        return;
-      }
-      if (!["starter", "pro", "premium"].includes(planId)) {
-        alert("Formule invalide.");
-        return;
-      }
+      if (!this.authed) { alert("Connectez-vous à votre espace vendeur avant de souscrire."); return; }
+      if (!["starter", "pro", "premium"].includes(planId)) { alert("Formule invalide."); return; }
 
       var country = String(this.shop.country || "").trim().toLowerCase();
       var currency = String(this.shop.currency || "").trim().toUpperCase();
-      var isSenegal = ["sn", "senegal", "sénégal"].includes(country);
-      var xafCountries = [
-        "cm", "cameroun", "cameroon", "cf", "centrafrique",
-        "république centrafricaine", "republique centrafricaine",
-        "cg", "congo", "république du congo", "republique du congo",
-        "ga", "gabon", "td", "tchad", "gq", "guinée équatoriale",
-        "guinee equatoriale"
-      ];
-      var isSupportedXaf = currency === "XAF" && xafCountries.includes(country);
-      if (!((isSenegal && currency === "XOF") || isSupportedXaf)) {
-        alert("Les abonnements ne sont pas encore disponibles pour ce pays ou cette devise.");
+      var uemoa = ["benin","bj","burkina faso","bf","cote d'ivoire","côte d'ivoire","ci","guinee-bissau","guinée-bissau","gw","mali","ml","niger","ne","senegal","sénégal","sn","togo","tg"];
+      var cemac = ["cm","cameroun","cameroon","cf","centrafrique","république centrafricaine","republique centrafricaine","cg","congo","république du congo","republique du congo","ga","gabon","td","tchad","chad","gq","guinée équatoriale","guinee equatoriale"];
+      if (!((currency === "XOF" && uemoa.includes(country)) || (currency === "XAF" && cemac.includes(country)))) {
+        alert("Le paiement manuel des abonnements n'est pas encore disponible pour ce pays ou cette devise.");
         return;
-      }
-
-      var provider = isSenegal ? "paydunya" : (this.subscriptionProvider || "nkap_pay");
-      if (provider === "capay_global" && country !== "cm" && country !== "cameroun" && country !== "cameroon") {
-        alert("Le sandbox Capay Global est actuellement limité au Cameroun dans notre configuration de test. Choisissez Nkap Pay pour ce pays.");
-        return;
-      }
-
-      var customerPhone = "";
-      if (provider === "capay_global") {
-        customerPhone = prompt("Numéro Mobile Money du paiement (format international, ex. +2376XXXXXXXX) :", this.accountPhone || this.shop.wa || "");
-        if (!customerPhone) return;
       }
 
       if (this.checkoutBusy) return;
@@ -465,47 +441,70 @@ function app() {
         var saved = await this.save();
         if (saved && saved.error) throw saved.error;
 
-        var functionName = provider === "paydunya"
-          ? "create-subscription-checkout"
-          : provider === "nkap_pay"
-            ? "create-nkap-subscription-checkout"
-            : "create-capay-subscription-checkout";
-        var requestBody = { shopId: this.shop.sid, planSlug: planId };
-        if (provider === "capay_global") {
-          requestBody.customerPhone = customerPhone;
-          requestBody.customerName = this.shop.owner || "";
-        }
-
-        var result = await db.functions.invoke(functionName, { body: requestBody });
+        var result = await db.functions.invoke("create-manual-subscription-payment", {
+          body: { action: "methods", shopId: this.shop.sid, planSlug: planId }
+        });
         if (result.error || !result.data || result.data.error) {
-          var message = result.data && result.data.error
-            ? result.data.error
-            : "Impossible de préparer le paiement. Vérifiez votre connexion puis réessayez.";
-          alert(message);
+          throw new Error((result.data && result.data.error) || "Impossible de charger les moyens de paiement.");
+        }
+        if (!result.data.methods || !result.data.methods.length) {
+          alert("Aucun moyen de paiement n'est encore configuré pour votre pays. Contactez Boutique ti i pour connaître les modalités de règlement.");
           return;
         }
-
-        if (result.data.checkoutUrl) {
-          window.location.assign(result.data.checkoutUrl);
-          return;
-        }
-
-        if (result.data.paymentId) {
-          var params = new URLSearchParams(location.search);
-          params.set("subscription", "return");
-          params.set("payment_id", result.data.paymentId);
-          history.replaceState({}, document.title, location.pathname + "?" + params.toString() + location.hash);
-          await this.checkSubscriptionReturn();
-          return;
-        }
-
-        alert("Le prestataire n'a pas retourné de lien ni de référence de paiement. Aucun abonnement n'a été activé.");
+        this.manualPayment = {
+          planId: planId,
+          plan: result.data.plan,
+          countryCode: result.data.countryCode,
+          currency: result.data.currency,
+          methods: result.data.methods,
+          selectedMethod: result.data.methods[0].method_code,
+          payerReference: "",
+          payerPhone: "",
+          submitted: false,
+          payment: null,
+          error: ""
+        };
+        this.modal = "manualPayment";
       } catch (error) {
-        console.error("Subscription checkout failed:", error);
-        alert("Une erreur est survenue. Aucun abonnement n’a été activé.");
+        console.error("Manual subscription payment:", error);
+        alert(error.message || "Impossible de préparer la demande d'abonnement.");
       } finally {
         this.checkoutBusy = false;
       }
+    },
+    submitManualSubscriptionPayment: async function () {
+      if (this.checkoutBusy || this.manualPayment.submitted) return;
+      var reference = String(this.manualPayment.payerReference || "").trim();
+      if (reference.length < 3) { this.manualPayment.error = "Saisissez la référence de votre transfert."; return; }
+      this.checkoutBusy = true;
+      this.manualPayment.error = "";
+      try {
+        var result = await db.functions.invoke("create-manual-subscription-payment", {
+          body: {
+            action: "submit",
+            shopId: this.shop.sid,
+            planSlug: this.manualPayment.planId,
+            paymentMethod: this.manualPayment.selectedMethod,
+            payerReference: reference,
+            payerPhone: String(this.manualPayment.payerPhone || "").trim()
+          }
+        });
+        if (result.error || !result.data || result.data.error) {
+          throw new Error((result.data && result.data.error) || "Impossible d'enregistrer votre demande.");
+        }
+        this.manualPayment.payment = result.data.payment;
+        this.manualPayment.submitted = true;
+      } catch (error) {
+        this.manualPayment.error = error.message || "Erreur lors de l'enregistrement.";
+      } finally {
+        this.checkoutBusy = false;
+      }
+    },
+    copyManualPaymentValue: function (value) {
+      var text = String(value || "");
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ alert("Coordonnée copiée."); }, function(){ prompt("Copiez cette coordonnée :", text); });
+      else prompt("Copiez cette coordonnée :", text);
     },
     get canAddProduct() {
       return this.shop.products.length < this.currentPlanObj.maxProd;
