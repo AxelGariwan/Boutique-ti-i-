@@ -42,7 +42,7 @@ var PM_LIST = [
 var TR = {
   fr:{
     tagline:"Plateforme E-Commerce", aiTitle:"Xelo IA", aiIntro:"Xelo IA vous aide à développer vos ventes, analyser vos commandes et gérer votre boutique.", aiPlaceholder:"Écrivez votre question…", aiSend:"Envoyer", aiThinking:"Analyse en cours…", aiGreeting:"Bonjour ! Je suis Xelo IA, votre coach commercial. Je peux vous aider à développer votre boutique.", clientSpace:"Voir la Boutique", vendorSpace:"Espace Vendeur", availableProducts:"Catalogue des Articles", add:"Ajouter", outOfStock:"Rupture", cartTitle:"Mon Panier", emptyCart:"Votre panier est vide", total:"Total", placeOrder:"Valider et Payer", clientDetails:"Coordonnées", pay:"Mode de paiement", mapLinkOpt:"Lien de localisation GPS (ex: Google Maps, facultatif)",
-    loading:"Chargement...", createShop:"Créer ma boutique", owner:"Propriétaire", location:"Localisation", enterShop:"Entrer dans la Boutique", country:"Pays", currency:"Devise", shareShop:"Partager cette boutique", homePage:"Voir la page d’accueil", noProducts:"Aucun article pour le moment.",
+    loading:"Chargement...", createShop:"Créer ma boutique", owner:"Propriétaire", soldBy:"Vendu par", vendorPhotoTitle:"Photo de profil du vendeur", vendorPhotoHint:"Une photo claire aide vos clients à vous reconnaître. JPG, PNG ou WEBP, 5 Mo maximum.", chooseVendorPhoto:"Ajouter / changer ma photo", location:"Localisation", enterShop:"Entrer dans la Boutique", country:"Pays", currency:"Devise", shareShop:"Partager cette boutique", homePage:"Voir la page d’accueil", noProducts:"Aucun article pour le moment.",
     fullName:"Nom & Prénom", shopName:"Nom de la boutique", phone:"Téléphone / WhatsApp", address:"Adresse", payHint:"Le vendeur vous indiquera comment procéder.",
     createShopTitle:"Créer sa Boutique — 1 mois d’essai", loginTitle:"Connexion Vendeur", whatsappNumber:"Numéro WhatsApp", idDocLabel:"Pièce d’identité (obligatoire pour validation)", idSaved:"Pièce enregistrée", email:"Email", password:"Mot de passe", hide:"Masquer", show:"Voir", pleaseWait:"Veuillez patienter...", createShopBtn:"Créer ma boutique", loginBtn:"Se connecter", noAccount:"Pas de compte ? Créer ma boutique", hasAccount:"Déjà un compte ? Se connecter",
     logout:"Connexion / Déconnexion", shareLinkTitle:"Mon lien à partager aux clients", shareLinkDesc:"Diffusez ce lien sur vos réseaux sociaux ou envoyez-le directement à vos acheteurs.", linkCopied:"Lien copié", copyLink:"Copier le lien", shareWa:"Partager sur WhatsApp", generatingLink:"Génération du lien en cours...",
@@ -75,7 +75,7 @@ var TR = {
   },
   en:{
     tagline:"E-Commerce Platform", aiTitle:"Xelo IA", aiIntro:"Xelo IA helps you grow sales, analyze orders and manage your shop.", aiPlaceholder:"Write your question…", aiSend:"Send", aiThinking:"Thinking…", aiGreeting:"Hello! I am Xelo IA, your business coach. I can help you grow your shop.", clientSpace:"View Shop", vendorSpace:"Vendor Area", availableProducts:"Products", add:"Add", outOfStock:"Out of Stock", cartTitle:"Cart", emptyCart:"Empty cart", total:"Total", placeOrder:"Checkout & Pay", clientDetails:"Details", pay:"Payment method", mapLinkOpt:"GPS Location link (optional)",
-    loading:"Loading...", createShop:"Create my shop", owner:"Owner", location:"Location", enterShop:"Enter Shop", country:"Country", currency:"Currency", shareShop:"Share shop", homePage:"Home page", noProducts:"No products yet.",
+    loading:"Loading...", createShop:"Create my shop", owner:"Owner", soldBy:"Sold by", vendorPhotoTitle:"Vendor profile photo", vendorPhotoHint:"A clear photo helps customers recognize you. JPG, PNG or WEBP, max 5 MB.", chooseVendorPhoto:"Add / change my photo", location:"Location", enterShop:"Enter Shop", country:"Country", currency:"Currency", shareShop:"Share shop", homePage:"Home page", noProducts:"No products yet.",
     fullName:"Full Name", shopName:"Shop Name", phone:"Phone / WhatsApp", address:"Address", payHint:"The vendor will instruct you.",
     createShopTitle:"Create Shop — 1 month trial", loginTitle:"Vendor Login", whatsappNumber:"WhatsApp Number", idDocLabel:"ID Document (required)", idSaved:"ID Saved", email:"Email", password:"Password", hide:"Hide", show:"Show", pleaseWait:"Please wait...", createShopBtn:"Create Shop", loginBtn:"Login", noAccount:"No account? Create shop", hasAccount:"Already have an account? Login",
     logout:"Logout", shareLinkTitle:"Share Link", shareLinkDesc:"Share this link with your customers.", linkCopied:"Link copied", copyLink:"Copy link", shareWa:"Share on WhatsApp", generatingLink:"Generating link...",
@@ -108,7 +108,7 @@ var TR = {
   },
   es:{
     tagline:"Plataforma E-Commerce", aiTitle:"Xelo IA", aiIntro:"Xelo IA te ayuda a aumentar las ventas, analizar pedidos y gestionar tu tienda.", aiPlaceholder:"Escribe tu pregunta…", aiSend:"Enviar", aiThinking:"Analizando…", aiGreeting:"¡Hola! Soy Xelo IA, tu asesor comercial. Puedo ayudarte a hacer crecer tu tienda.", clientSpace:"Ver Tienda", vendorSpace:"Área Vendedor", availableProducts:"Productos", add:"Añadir", outOfStock:"Agotado", cartTitle:"Cesta", emptyCart:"Cesta vacía", total:"Total", placeOrder:"Pagar y Pedir", clientDetails:"Detalles", pay:"Método de pago", mapLinkOpt:"Enlace de ubicación GPS (opcional)",
-    loading:"Cargando...", createShop:"Crear tienda", owner:"Propietario", location:"Ubicación", enterShop:"Entrar a la tienda", country:"País", currency:"Moneda", shareShop:"Compartir", homePage:"Inicio", noProducts:"No hay productos.",
+    loading:"Cargando...", createShop:"Crear tienda", owner:"Propietario", soldBy:"Vendido por", vendorPhotoTitle:"Foto de perfil del vendedor", vendorPhotoHint:"Una foto clara ayuda a tus clientes a reconocerte. JPG, PNG o WEBP, máximo 5 MB.", chooseVendorPhoto:"Añadir / cambiar mi foto", location:"Ubicación", enterShop:"Entrar a la tienda", country:"País", currency:"Moneda", shareShop:"Compartir", homePage:"Inicio", noProducts:"No hay productos.",
     fullName:"Nombre y Apellido", shopName:"Nombre de tienda", phone:"Teléfono / WhatsApp", address:"Dirección", payHint:"El vendedor te indicará el pago.",
     createShopTitle:"Crear Tienda — 1 mes de prueba", loginTitle:"Acceso Vendedor", whatsappNumber:"Número WhatsApp", idDocLabel:"Documento de identidad", idSaved:"Documento guardado", email:"Correo", password:"Contraseña", hide:"Ocultar", show:"Ver", pleaseWait:"Espere...", createShopBtn:"Crear Tienda", loginBtn:"Iniciar sesión", noAccount:"¿Sin cuenta? Crear tienda", hasAccount:"¿Ya tienes cuenta? Entrar",
     logout:"Cerrar sesión", shareLinkTitle:"Enlace para compartir", shareLinkDesc:"Comparte este enlace con tus clientes.", linkCopied:"Copiado", copyLink:"Copiar enlace", shareWa:"Compartir en WhatsApp", generatingLink:"Generando enlace...",
@@ -140,7 +140,7 @@ var TR = {
   },
   ar:{
     tagline:"منصة التجارة الإلكترونية", aiTitle:"Xelo IA", aiIntro:"يساعدك Xelo IA على زيادة المبيعات وتحليل الطلبات وإدارة متجرك.", aiPlaceholder:"اكتب سؤالك…", aiSend:"إرسال", aiThinking:"جارٍ التحليل…", aiGreeting:"مرحباً! أنا Xelo IA، مستشارك التجاري لمساعدتك على تنمية متجرك.", clientSpace:"عرض المتجر", vendorSpace:"مساحة البائع", availableProducts:"المنتجات", add:"إضافة", outOfStock:"نفذت الكمية", cartTitle:"السلة", emptyCart:"السلة فارغة", total:"المجموع", placeOrder:"الدفع وإتمام الطلب", clientDetails:"التفاصيل", pay:"طريقة الدفع", mapLinkOpt:"رابط الموقع الجغرافي (اختياري)",
-    loading:"جاري التحميل...", createShop:"إنشاء متجري", owner:"المالك", location:"الموقع", enterShop:"دخول المتجر", country:"الدولة", currency:"العملة", shareShop:"مشاركة المتجر", homePage:"الصفحة الرئيسية", noProducts:"لا توجد منتجات.",
+    loading:"جاري التحميل...", createShop:"إنشاء متجري", owner:"المالك", soldBy:"البائع", vendorPhotoTitle:"الصورة الشخصية للبائع", vendorPhotoHint:"تساعد الصورة الواضحة العملاء على التعرف عليك. JPG أو PNG أو WEBP، بحد أقصى 5 ميغابايت.", chooseVendorPhoto:"إضافة / تغيير صورتي", location:"الموقع", enterShop:"دخول المتجر", country:"الدولة", currency:"العملة", shareShop:"مشاركة المتجر", homePage:"الصفحة الرئيسية", noProducts:"لا توجد منتجات.",
     fullName:"الاسم الكامل", shopName:"اسم المتجر", phone:"الهاتف / واتساب", address:"العنوان", payHint:"سيقوم البائع بتوجيهك.",
     createShopTitle:"إنشاء متجر — تجربة شهر", loginTitle:"تسجيل دخول البائع", whatsappNumber:"رقم الواتساب", idDocLabel:"هوية شخصية مطلوبة", idSaved:"تم حفظ الهوية", email:"البريد الإلكتروني", password:"كلمة المرور", hide:"إخفاء", show:"إظهار", pleaseWait:"يرجى الانتظار...", createShopBtn:"إنشاء متجري", loginBtn:"تسجيل الدخول", noAccount:"ليس لديك حساب؟ إنشاء متجر", hasAccount:"لديك حساب بالفعل؟ تسجيل الدخول",
     logout:"تسجيل الخروج", shareLinkTitle:"رابط المشاركة", shareLinkDesc:"شارك هذا الرابط مع عملائك.", linkCopied:"تم النسخ", copyLink:"نسخ الرابط", shareWa:"مشاركة عبر واتساب", generatingLink:"جاري إنشاء الرابط...",
@@ -185,6 +185,20 @@ function compress(file) {
   });
 }
 
+function compressAvatar(file) {
+  return new Promise(function (resolve) {
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var side = Math.min(img.width, img.height), sx = Math.round((img.width - side) / 2), sy = Math.round((img.height - side) / 2);
+      var canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512;
+      canvas.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+      URL.revokeObjectURL(url); canvas.toBlob(resolve, "image/jpeg", 0.82);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
 function rnd(n) {
   var a = "abcdefghjkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = "";
   crypto.getRandomValues(b);
@@ -202,7 +216,7 @@ function norm(s) {
 }
 
 function blankShop() {
-  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0 };
+  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0, avatarUrl: "", avatarPath: "" };
 }
 
 // Formats acceptés pour la pièce d'identité
@@ -215,7 +229,7 @@ function app() {
     remote: false, loading: !!shopId, remoteErr: "", checkoutBusy: false, subscriptionProvider: "nkap_pay",
     aiInput: "", aiMessages: [], aiBusy: false, aiError: "", aiConversations: [], aiConversationId: "", aiHistoryBusy: false,
     passwordForm: { current: "", next: "", confirm: "" }, passwordBusy: false,
-    accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "",
+    accountEmail: "", accountPhone: "", accountPhoneDraft: "", accountSaving: false, accountMessage: "", avatarBusy: false,
     ready: false, authed: false, uid: "", busy: false, imgBusy: false, deleting: false,
     modal: "", showPw: false, authMode: "login", authMethod: "email", otpSent: false, otp: "", waEnabled: !!window.WA_AUTH, authErr: "", authNotice: "", authForgot: false, authRecovery: false, recoveryPassword: "", recoveryConfirm: "", copied: false, copiedCode: false,
     tab: "homeSaaS", subTab: "home", lang: "fr", countries: COUNTRIES, cart: [], pay: "",
@@ -804,6 +818,55 @@ function app() {
           location.reload();
         }
       } finally { this.busy = false; }
+    },
+
+    uploadVendorAvatar: async function (file) {
+      if (!file) return;
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type || "")) {
+        alert("Choisissez une image JPG, PNG ou WEBP.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La photo ne doit pas dépasser 5 Mo.");
+        return;
+      }
+      if (!this.uid || !this.authed || !this.shop.sid) {
+        alert("Reconnectez-vous et attendez le chargement de votre boutique avant d'ajouter une photo.");
+        return;
+      }
+      this.avatarBusy = true;
+      var previousUrl = this.shop.avatarUrl || "";
+      var previousPath = this.shop.avatarPath || "";
+      var uploadedPath = "";
+      try {
+        var blob = await compressAvatar(file);
+        if (!blob) throw new Error("Impossible de lire cette image.");
+        uploadedPath = this.uid + "/" + Date.now() + "-" + rnd(8) + ".jpg";
+        var upload = await db.storage.from("vendor-avatars").upload(uploadedPath, blob, {
+          contentType: "image/jpeg", cacheControl: "31536000", upsert: false
+        });
+        if (upload.error) throw upload.error;
+        var publicResult = db.storage.from("vendor-avatars").getPublicUrl(uploadedPath);
+        if (!publicResult || !publicResult.data || !publicResult.data.publicUrl) throw new Error("URL publique de la photo indisponible.");
+        this.shop.avatarUrl = publicResult.data.publicUrl;
+        this.shop.avatarPath = uploadedPath;
+        var saved = await this.save();
+        if (saved && saved.error) throw saved.error;
+        if (previousPath && previousPath !== uploadedPath) {
+          var removed = await db.storage.from("vendor-avatars").remove([previousPath]);
+          if (removed.error) console.warn("Ancienne photo conservée :", removed.error.message);
+        }
+        alert("Votre photo de profil a été mise à jour.");
+      } catch (error) {
+        this.shop.avatarUrl = previousUrl;
+        this.shop.avatarPath = previousPath;
+        if (uploadedPath) {
+          try { await db.storage.from("vendor-avatars").remove([uploadedPath]); } catch (e) {}
+        }
+        alert("Impossible d'enregistrer la photo : " + ((error && error.message) || "réessayez."));
+      } finally {
+        this.avatarBusy = false;
+      }
     },
 
     saveAccountPhone: async function () {
