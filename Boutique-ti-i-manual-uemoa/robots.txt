@@ -1,6 +1,0 @@
-# Robots autorisés (moteurs de recherche et assistants IA) sur les pages publiques.
-User-agent: *
-Allow: /
-Disallow: /admin.html
-
-Sitemap: https://VOTRE-DOMAINE.com/sitemap.xml
