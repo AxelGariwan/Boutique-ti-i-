@@ -21,6 +21,7 @@ var CUR = {
 };
 
 var CARD = "Carte bancaire (Visa / Mastercard)";
+var COD = "Paiement à la livraison";
 var BANK_TRANSFER = "Virement bancaire direct";
 
 var PM_LIST = [
@@ -53,7 +54,7 @@ var TR = {
     idVerificationTitle:"Vérification d’identité", idVerificationDesc:"Votre pièce d'identité est obligatoire pour que votre boutique soit visible par les clients.", idConsentText:"Je consens expressément à ce que ma pièce d’identité soit traitée pour vérifier mon identité (confidentialité). (obligatoire)", submitIdBtn:"Envoyer mon document d'identité",
     ordersTitle:"Commandes & Suivi", ordersSubtitle:"Suivez en temps réel les commandes et leur statut pour chaque client.", noOrders:"Aucune commande pour le moment.",
     refundPolicyLabel:"Politique de retour et remboursement (affichée aux clients)",
-    paymentMethodsTitle:"Modes de paiement acceptés (Optionnel)", selectPaymentMethod:"+ Ajouter un moyen de paiement...", addPaymentBtn:"Ajouter", removeBtn:"Retirer", paymentHelpText:"Ajoutez vos coordonnées bancaires ou Mobile Money pour que les clients puissent effectuer le virement directement.",
+    codToggleLabel:"Accepter le paiement à la livraison", codToggleHelp:"Le client pourra choisir cette option. Vous confirmerez vous-même la réception de l'argent.", orderPaymentMethod:"Mode de paiement", paymentCollection:"Réception du paiement :", paymentNotReceived:"Non reçu", paymentReceived:"Argent reçu", paymentMethodsTitle:"Modes de paiement acceptés (Optionnel)", selectPaymentMethod:"+ Ajouter un moyen de paiement...", addPaymentBtn:"Ajouter", removeBtn:"Retirer", paymentHelpText:"Ajoutez vos coordonnées bancaires ou Mobile Money pour que les clients puissent effectuer le virement directement.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"Pour débuter en douceur", subPro:"Pour les vendeurs réguliers", subPremium:"Pour maximiser ses ventes",
     f1:"Jusqu'à 10 articles", f2:"Gestion des commandes", f3:"Paiement optionnel",
@@ -86,7 +87,7 @@ var TR = {
     idVerificationTitle:"Identity Verification", idVerificationDesc:"Your ID document is required for your shop to be visible.", idConsentText:"I expressly consent to my ID document being processed for identity verification (confidentiality). (required)", submitIdBtn:"Submit my ID document",
     ordersTitle:"Orders & Tracking", ordersSubtitle:"Track orders and status in real-time.", noOrders:"No orders yet.",
     refundPolicyLabel:"Return and refund policy (displayed to customers)",
-    paymentMethodsTitle:"Accepted payment methods (Optional)", selectPaymentMethod:"+ Add a payment method...", addPaymentBtn:"Add", removeBtn:"Remove", paymentHelpText:"Add your bank or mobile money info for direct client transfers.",
+    codToggleLabel:"Accept cash on delivery", codToggleHelp:"Customers can choose this option. You will confirm when you receive the money.", orderPaymentMethod:"Payment method", paymentCollection:"Payment collection:", paymentNotReceived:"Not received", paymentReceived:"Money received", paymentMethodsTitle:"Accepted payment methods (Optional)", selectPaymentMethod:"+ Add a payment method...", addPaymentBtn:"Add", removeBtn:"Remove", paymentHelpText:"Add your bank or mobile money info for direct client transfers.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"To start smoothly", subPro:"For regular vendors", subPremium:"To maximize sales",
     f1:"Up to 10 products", f2:"Order management", f3:"Optional payment",
@@ -119,7 +120,7 @@ var TR = {
     idVerificationTitle:"Verificación de identidad", idVerificationDesc:"Su documento de identidad es obligatorio para que su tienda sea visible.", idConsentText:"Consiento expresamente que mi documento de identidad sea procesado para verificar mi identidad (confidencialidad). (obligatorio)", submitIdBtn:"Enviar mi documento de identidad",
     ordersTitle:"Pedidos y Seguimiento", ordersSubtitle:"Sigue los pedidos en tiempo real.", noOrders:"No hay pedidos por el momento.",
     refundPolicyLabel:"Política de devolución y reembolso (mostrada a los clientes)",
-    paymentMethodsTitle:"Métodos de pago aceptados (Opcional)", selectPaymentMethod:"+ Agregar un método de pago...", addPaymentBtn:"Agregar", removeBtn:"Eliminar", paymentHelpText:"Agrega tus datos bancarios para transferencias directas.",
+    codToggleLabel:"Aceptar pago contra entrega", codToggleHelp:"El cliente podrá elegir esta opción. Tú confirmarás cuando recibas el dinero.", orderPaymentMethod:"Método de pago", paymentCollection:"Cobro del pago:", paymentNotReceived:"No recibido", paymentReceived:"Dinero recibido", paymentMethodsTitle:"Métodos de pago aceptados (Opcional)", selectPaymentMethod:"+ Agregar un método de pago...", addPaymentBtn:"Agregar", removeBtn:"Eliminar", paymentHelpText:"Agrega tus datos bancarios para transferencias directas.",
     planStarter:"Starter", planPro:"Pro", planPremium:"Premium",
     subStarter:"Para empezar suavemente", subPro:"Para vendedores regulares", subPremium:"Para maximizar ventas",
     f1:"Hasta 10 productos", f2:"Gestión de pedidos", f3:"Pago opcional",
@@ -151,7 +152,7 @@ var TR = {
     idVerificationTitle:"التحقق من الهوية", idVerificationDesc:"وثيقة هويتك مطلوبة حتى يظهر متجرك للعملاء.", idConsentText:"أوافق صراحة على معالجة وثيقة هويتي للتحقق من هويتي (سرية البيانات). (إجباري)", submitIdBtn:"إرسال وثيقة هويتي",
     ordersTitle:"الطلبات والمتابعة", ordersSubtitle:"تابع الطلبات وتحديثاتها في الوقت الفعلي.", noOrders:"لا توجد طلبات في الوقت الحالي.",
     refundPolicyLabel:"سياسة الإرجاع والاسترداد (تظهر للعملاء)",
-    paymentMethodsTitle:"طرق الدفع المقبولة (اختياري)", selectPaymentMethod:"+ إضافة طريقة دفع...", addPaymentBtn:"إضافة", removeBtn:"إزالة", paymentHelpText:"أضف معلوماتك المصرفية للتحويل المباشر.",
+    codToggleLabel:"قبول الدفع عند الاستلام", codToggleHelp:"يمكن للعميل اختيار هذا الخيار، وتؤكد أنت استلام المبلغ بعد التسليم.", orderPaymentMethod:"طريقة الدفع", paymentCollection:"استلام المبلغ:", paymentNotReceived:"لم يتم الاستلام", paymentReceived:"تم استلام المبلغ", paymentMethodsTitle:"طرق الدفع المقبولة (اختياري)", selectPaymentMethod:"+ إضافة طريقة دفع...", addPaymentBtn:"إضافة", removeBtn:"إزالة", paymentHelpText:"أضف معلوماتك المصرفية للتحويل المباشر.",
     planStarter:"الأساسية (Starter)", planPro:"الاحترافية (Pro)", planPremium:"الممتازة (Premium)",
     subStarter:"للبداية بسلاسة", subPro:"للبائعين المنتظمين", subPremium:"لتعظيم مبيعاتك",
     f1:"ما يصل إلى 10 منتجات", f2:"إدارة الطلبات", f3:"دفع اختياري",
@@ -211,12 +212,13 @@ function norm(s) {
   if (!s.products) s.products = [];
   if (!s.plan) s.plan = "pro";
   if (!s.refundPolicy) s.refundPolicy = "";
+  if (typeof s.allowCod !== "boolean") s.allowCod = false;
   if (!s.visits) s.visits = 0;
   return s;
 }
 
 function blankShop() {
-  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0, avatarUrl: "", avatarPath: "" };
+  return { name: "Ma Boutique", owner: "", country: "Sénégal", currency: "XOF", location: "Dakar", wa: "", pm: {}, allowCod: false, products: [], plan: "pro", sid: "", verified: false, suspended: false, refundPolicy: "", visits: 0, avatarUrl: "", avatarPath: "" };
 }
 
 // Formats acceptés pour la pièce d'identité
@@ -511,9 +513,11 @@ function app() {
 
     // Côté client (boutique publique), le serveur ne renvoie que les NOMS des modes de paiement (pmNames)
     get payOpts() {
-      if (this.remote) return Array.isArray(this.shop.pmNames) ? this.shop.pmNames.filter(function (name) { return name !== CARD; }) : [];
-      var p = this.shop.pm || {};
-      return Object.keys(p).filter(function (k) { return k !== CARD && String(p[k] || "").trim(); });
+      var methods = this.remote
+        ? (Array.isArray(this.shop.pmNames) ? this.shop.pmNames.filter(function (name) { return name !== CARD; }) : [])
+        : Object.keys(this.shop.pm || {}).filter(function (k) { return k !== CARD && String(this.shop.pm[k] || "").trim(); }, this);
+      if (this.shop.allowCod && methods.indexOf(COD) < 0) methods.push(COD);
+      return methods;
     },
     get pmOptions() {
       var p = this.shop.pm || {};
@@ -1041,6 +1045,11 @@ function app() {
         return;
       }
 
+      if (this.pay === COD && !this.shop.allowCod) {
+        alert("Le paiement à la livraison n'est pas proposé par ce vendeur.");
+        return;
+      }
+
       if (this.pay === CARD) {
         alert("Le paiement par carte bancaire n’est pas encore disponible. Choisissez un autre moyen de paiement.");
         return;
@@ -1068,6 +1077,7 @@ function app() {
         items: JSON.parse(JSON.stringify(this.cart)),
         total: orderTotal,
         paymentMethod: this.pay || "Non spécifié",
+        paymentStatus: "pending",
         message: message,
         status: "pending",
         created_at: new Date().toISOString()
@@ -1125,7 +1135,7 @@ function app() {
 
     openWhatsAppOrder: function () {
       var wa = (this.shop.wa || "").replace(/\D/g, "");
-      var msg = "Bonjour, voici ma commande enregistrée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-");
+      var msg = "Bonjour, voici ma commande enregistrée (Suivi: " + this.lastOrderCode + ") sur " + this.shop.name + "\nTotal : " + this.fmt(this.lastOrderTotal) + "\nPaiement : " + (this.pay || "-") + (this.pay === COD ? "\nPaiement à effectuer à la livraison." : "");
       window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(msg), "_blank");
       this.modal = '';
     },
@@ -1136,6 +1146,20 @@ function app() {
           var r = await db.from("orders").update({ status: o.status }).eq("id", o.id);
           if (r && r.error) alert("Le statut n'a pas pu être enregistré : " + r.error.message);
         } catch (e) {}
+      }
+    },
+
+    updateOrderPaymentStatus: async function (o) {
+      if (!this.shop.sid || !o.id || o.paymentMethod !== COD) return;
+      try {
+        var r = await db.from("orders").update({ payment_status: o.paymentStatus }).eq("id", o.id);
+        if (r && r.error) {
+          o.paymentStatus = "pending";
+          alert("Le paiement n'a pas pu être mis à jour : " + r.error.message);
+        }
+      } catch (e) {
+        o.paymentStatus = "pending";
+        alert("Erreur réseau : le statut du paiement n'a pas été enregistré.");
       }
     },
 
@@ -1216,6 +1240,7 @@ function app() {
             items: Array.isArray(o.items) ? o.items : [],
             total: parseInt(String(o.total || "").replace(/\D/g, ""), 10) || 0,
             paymentMethod: o.pay_mode,
+            paymentStatus: o.payment_status === "paid" ? "paid" : "pending",
             message: o.message || "",
             status: st,
             created_at: o.created_at
