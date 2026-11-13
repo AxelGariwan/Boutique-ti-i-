@@ -658,9 +658,9 @@
    <p class="text-[11px] leading-relaxed text-amber-800">Choisissez une formule, consultez les coordonnées disponibles pour votre pays, effectuez le transfert puis indiquez sa référence. L'abonnement sera activé après vérification du paiement par l'équipe Boutique ti i.</p>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-1 px-1 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
    <template x-for="p in plans" :key="p.id">
-    <div class="border rounded-xl p-3 transition relative flex flex-col justify-between gap-3"
+    <div class="min-w-[82%] max-w-[82%] snap-start sm:min-w-0 sm:max-w-none border rounded-xl p-3 transition relative flex flex-col justify-between gap-3"
          :class="shop.plan===p.id ? 'border-emerald-600 bg-emerald-50/40 ring-2 ring-emerald-500/20' : 'border-slate-200 bg-white'">
      
      <div x-show="p.id==='pro'" class="absolute -top-3 right-4 bg-emerald-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider" x-text="t('recommended')"></div>
