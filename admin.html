@@ -214,7 +214,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
           <div class="sm:col-span-2 flex justify-end"><button :disabled="manualBusy" class="admin-btn admin-btn-red" x-text="manualBusy?'Enregistrement…':'Enregistrer les coordonnées'"></button></div>
         </form>
         <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Pays</th><th>Moyen</th><th>Bénéficiaire</th><th>Coordonnée</th><th>État</th></tr></thead><tbody>
-          <template x-for="m in manualMethods" :key="m.id"><tr><td x-text="m.country_code+' · '+m.currency"></td><td x-text="manualMethodName(m.method_code)"></td><td x-text="m.account_name"></td><td x-text="m.account_reference"></td><td><span class="admin-pill" :class="m.is_active?'bg-emerald-500/15 text-emerald-300':'bg-white/10 text-slate-300'" x-text="m.is_active?'Actif':'Désactivé'"></span></td></tr></template>
+          <template x-for="m in manualMethods" :key="m.id"><tr><td x-text="m.country_code+' · '+m.currency"></td><td x-text="manualMethodName(m.method_code)"></td><td x-text="m.account_name"></td><td x-text="m.account_reference"></td><td><span class="admin-pill" :class="m.is_active?'bg-emerald-500/15 text-emerald-300':'bg-white/10 text-slate-300'" x-text="m.is_active?'Actif':'Désactivé'"></span><button class="admin-btn mt-2" @click="editManualMethod(m)">Modifier</button></td></tr></template>
         </tbody></table></div>
       </div>
     </section>
@@ -335,6 +335,15 @@ function admin() {
     manualMethodName: function (code) {
       var names = {wave:"Wave",orange_money:"Orange Money",pi_spi:"PI-SPI",mtn_momo:"MTN Mobile Money",moov_money:"Moov Money",airtel_money:"Airtel Money",other:"Autre"};
       return names[code] || code || "—";
+    },
+    editManualMethod: function (m) {
+      this.manualMethodForm = {
+        country_code: m.country_code, method_code: m.method_code,
+        display_name: m.display_name, account_name: m.account_name,
+        account_reference: m.account_reference, instructions: m.instructions || "",
+        is_active: !!m.is_active
+      };
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     },
     saveManualPaymentMethod: async function () {
       if (this.manualBusy) return;
