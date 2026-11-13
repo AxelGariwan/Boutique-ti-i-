@@ -108,7 +108,14 @@
     <div class="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div>
     <div>
      <h2 class="font-bold text-slate-900 text-base" x-text="shop.name"></h2>
-     <p class="text-xs text-slate-600"><span x-text="t('country')"></span> : <strong x-text="shop.country"></strong> • <span x-text="t('currency')"></span> : <strong x-text="shop.currency"></strong></p>
+     <div class="flex items-center gap-2 mt-2">
+      <div class="w-10 h-10 rounded-full overflow-hidden bg-white border border-emerald-200 flex items-center justify-center shrink-0">
+       <img x-show="shop.avatarUrl" :src="shop.avatarUrl" alt="Photo du vendeur" class="w-full h-full object-cover">
+       <span x-show="!shop.avatarUrl" class="text-sm font-black text-emerald-700" x-text="(shop.owner || 'V').trim().charAt(0).toUpperCase()"></span>
+      </div>
+      <div class="min-w-0"><p class="text-[10px] uppercase tracking-wide text-slate-500" x-text="t('soldBy')"></p><p class="text-xs font-semibold text-slate-800 truncate" x-text="shop.owner || shop.name"></p></div>
+     </div>
+     <p class="text-xs text-slate-600 mt-2"><span x-text="t('country')"></span> : <strong x-text="shop.country"></strong> • <span x-text="t('currency')"></span> : <strong x-text="shop.currency"></strong></p>
     </div>
    </div>
    <div class="flex gap-2">
@@ -500,6 +507,21 @@
     <div x-show="subTab==='account'" class="space-y-6">
      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
       <div><h2 class="font-bold text-lg text-slate-900" x-text="t('accountInfoTitle')"></h2><p class="text-xs text-slate-500 mt-1" x-text="t('accountInfoDesc')"></p></div>
+      <div class="flex flex-col sm:flex-row items-center gap-4 rounded-2xl border border-slate-200 p-4">
+       <div class="w-20 h-20 rounded-full overflow-hidden bg-emerald-100 border-2 border-emerald-200 flex items-center justify-center shrink-0">
+        <img x-show="shop.avatarUrl" :src="shop.avatarUrl" alt="Photo de profil du vendeur" class="w-full h-full object-cover">
+        <span x-show="!shop.avatarUrl" class="text-2xl font-black text-emerald-700" x-text="(shop.owner || 'V').trim().charAt(0).toUpperCase()"></span>
+       </div>
+       <div class="flex-1 text-center sm:text-left space-y-1">
+        <p class="font-bold text-sm text-slate-800" x-text="t('vendorPhotoTitle')"></p>
+        <p class="text-xs text-slate-500" x-text="t('vendorPhotoHint')"></p>
+        <label class="inline-flex items-center gap-2 mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs cursor-pointer">
+         <i data-lucide="camera" class="w-4 h-4"></i><span x-text="t('chooseVendorPhoto')"></span>
+         <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" :disabled="avatarBusy" @change="uploadVendorAvatar($event.target.files[0]); $event.target.value=''">
+        </label>
+        <p x-show="avatarBusy" class="text-xs text-emerald-700" x-text="t('pleaseWait')"></p>
+       </div>
+      </div>
       <div>
        <label class="block text-xs font-semibold text-slate-600 mb-1" x-text="t('accountEmail')"></label>
        <input type="email" :value="accountEmail || t('noAccountEmail')" readonly disabled class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 text-slate-500">
