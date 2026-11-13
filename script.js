@@ -257,7 +257,7 @@ function app() {
       var self = this;
       this.$watch("shop", function () { if (!self.remote) self.queue(); }, { deep: true });
       this.$watch("lang", function (v) { document.documentElement.lang = v; });
-      db.auth.onAuthStateChange(function (event) {
+      db.auth.onAuthStateChange(function (event, session) {
         if (event === "PASSWORD_RECOVERY") {
           self.authRecovery = true;
           self.authForgot = false;
@@ -265,6 +265,43 @@ function app() {
           self.authNotice = "";
           self.tab = "vendor";
           self.ready = true;
+          return;
+        }
+
+        // Supabase synchronise les sessions entre onglets d'un même navigateur.
+        // Ne jamais conserver l'historique IA de l'ancien compte après un changement de session.
+        if (event === "SIGNED_OUT") {
+          self.authed = false;
+          self.uid = "";
+          self.shop = blankShop();
+          self.orders = [];
+          self.aiInput = "";
+          self.aiMessages = [];
+          self.aiConversations = [];
+          self.aiConversationId = "";
+          self.aiError = "";
+          self.aiBusy = false;
+          self.aiHistoryBusy = false;
+          self.accountEmail = "";
+          self.accountPhone = "";
+          self.accountPhoneDraft = "";
+          if (self.modal === "aiChat") self.modal = "";
+          return;
+        }
+
+        if (event === "SIGNED_IN" && session && session.user && self.uid &&
+            self.uid !== session.user.id) {
+          self.authed = false;
+          self.aiInput = "";
+          self.aiMessages = [];
+          self.aiConversations = [];
+          self.aiConversationId = "";
+          self.aiError = "";
+          self.aiBusy = false;
+          self.aiHistoryBusy = false;
+          if (self.modal === "aiChat") self.modal = "";
+          // onSession recharge la boutique correspondant au nouveau compte.
+          Promise.resolve().then(function () { self.onSession(session); });
         }
       });
 
@@ -306,7 +343,14 @@ function app() {
     },
     openAiAssistant: async function () {
       if (!this.authed || !this.shop.sid) { alert("Connectez-vous à votre espace vendeur pour utiliser l'assistant IA."); return; }
-      this.aiError = ""; this.modal = "aiChat"; await this.loadAiConversations();
+      // Toujours recharger l'historique depuis le serveur pour le compte et la boutique actifs.
+      this.aiInput = "";
+      this.aiMessages = [];
+      this.aiConversations = [];
+      this.aiConversationId = "";
+      this.aiError = "";
+      this.modal = "aiChat";
+      await this.loadAiConversations();
     },
     loadAiConversations: async function () {
       this.aiHistoryBusy = true;
@@ -533,7 +577,21 @@ function app() {
 
     onSession: async function (session) {
       if (shopId) return;
-      if (!session) { this.authed = false; this.shop = blankShop(); this.aiMessages = []; this.aiConversations = []; this.aiConversationId = ""; this.accountEmail = ""; this.accountPhone = ""; this.accountPhoneDraft = ""; this.ready = true; return; }
+      if (!session) {
+        this.authed = false; this.uid = ""; this.shop = blankShop(); this.aiInput = "";
+        this.aiMessages = []; this.aiConversations = []; this.aiConversationId = "";
+        this.aiError = ""; this.aiBusy = false; this.aiHistoryBusy = false;
+        this.accountEmail = ""; this.accountPhone = ""; this.accountPhoneDraft = "";
+        this.ready = true; return;
+      }
+      // Défense supplémentaire : un nouvel utilisateur ne récupère jamais l'état IA précédent.
+      if (this.uid && this.uid !== session.user.id) {
+        this.aiInput = ""; this.aiMessages = []; this.aiConversations = [];
+        this.aiConversationId = ""; this.aiError = "";
+        this.aiBusy = false; this.aiHistoryBusy = false;
+        this.shop = blankShop(); this.orders = [];
+        if (this.modal === "aiChat") this.modal = "";
+      }
       this.uid = session.user.id;
       this.accountEmail = session.user.email || ""; this.accountMessage = "";
       var s = await db.from("shops").select("id,data,suspended").eq("owner", this.uid).maybeSingle();
