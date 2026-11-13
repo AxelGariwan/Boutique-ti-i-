@@ -15,10 +15,12 @@ Deno.serve(async (req) => {
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const anon = Deno.env.get("SUPABASE_ANON_KEY");
+    const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const authHeader = req.headers.get("Authorization");
-    if (!url || !anon || !authHeader) return json(401, { error: "Connexion administrateur requise." });
+    if (!url || !anon || !service || !authHeader) return json(401, { error: "Connexion administrateur requise." });
 
     const client = createClient(url, anon, { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } });
+    const admin = createClient(url, service, { auth: { persistSession: false } });
     const { data: userData, error: authError } = await client.auth.getUser();
     if (authError || !userData.user) return json(401, { error: "Session invalide." });
 
@@ -28,10 +30,14 @@ Deno.serve(async (req) => {
     const note = String(body.note || "").slice(0, 1000);
     if (!paymentId || !["approve", "reject"].includes(decision)) return json(400, { error: "Demande ou décision invalide." });
 
-    const { error } = await client.rpc("admin_review_manual_subscription_payment", {
+    const { data: adminRecord, error: adminError } = await admin.from("admins").select("user_id").eq("user_id", userData.user.id).maybeSingle();
+    if (adminError || !adminRecord) return json(403, { error: "Droits administrateur requis." });
+
+    const { error } = await admin.rpc("admin_review_manual_subscription_payment", {
       p_payment_id: paymentId,
       p_decision: decision,
       p_note: note || null,
+      p_admin_id: userData.user.id,
     });
     if (error) {
       console.error("admin review rpc", error);
