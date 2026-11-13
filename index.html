@@ -650,13 +650,9 @@
    <button @click="modal=''" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 font-bold">✕</button>
   </div>
 
-  <div x-show="shop.currency==='XAF'" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
-   <label for="subscription-provider" class="block text-xs font-bold text-slate-800">Prestataire de paiement pour les abonnements XAF</label>
-   <select id="subscription-provider" x-model="subscriptionProvider" class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-    <option value="nkap_pay">Nkap Pay — Afrique centrale</option>
-    <option value="capay_global" x-show="['Cameroun','CM','Cameroon'].includes(shop.country)">Capay Global — Sandbox Cameroun</option>
-   </select>
-   <p class="text-[11px] leading-relaxed text-slate-600">Nkap Pay est proposé par défaut ; la disponibilité réelle est vérifiée à chaque paiement. Capay Global est limité au Cameroun pour nos tests sandbox. Le paiement ne sera activé qu’après confirmation du prestataire.</p>
+  <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-1">
+   <p class="text-xs font-bold text-amber-900">Paiement par transfert manuel</p>
+   <p class="text-[11px] leading-relaxed text-amber-800">Choisissez une formule, consultez les coordonnées disponibles pour votre pays, effectuez le transfert puis indiquez sa référence. L'abonnement sera activé après vérification du paiement par l'équipe Boutique ti i.</p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -689,6 +685,50 @@
      </button>
     </div>
    </template>
+  </div>
+ </div>
+</div>
+
+<!-- Modal Paiement manuel d'abonnement -->
+<div x-show="modal==='manualPayment'" x-cloak class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+ <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+  <div class="flex items-center justify-between gap-3">
+   <div><p class="text-[10px] uppercase tracking-widest font-bold text-emerald-700">Boutique ti i · Abonnement</p><h3 class="text-xl font-black text-slate-900">Régler mon abonnement</h3></div>
+   <button @click="modal=''" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold">✕</button>
+  </div>
+  <div x-show="!manualPayment.submitted" class="space-y-4">
+   <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 flex items-center justify-between gap-3">
+    <div><p class="text-xs text-slate-500">Montant à transférer</p><p class="text-2xl font-black text-slate-900" x-text="manualPayment.plan ? new Intl.NumberFormat('fr-FR').format(manualPayment.plan.amount)+' '+manualPayment.currency : ''"></p></div>
+    <span class="text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 px-3 py-1" x-text="manualPayment.planId"></span>
+   </div>
+   <div>
+    <label class="block text-xs font-bold text-slate-700 mb-2">Choisissez le moyen de paiement</label>
+    <select x-model="manualPayment.selectedMethod" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm text-slate-900">
+     <template x-for="m in manualPayment.methods" :key="m.id"><option :value="m.method_code" x-text="m.display_name"></option></template>
+    </select>
+   </div>
+   <template x-for="m in manualPayment.methods.filter(function(x){return x.method_code===manualPayment.selectedMethod;})" :key="m.id">
+    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+     <div><p class="text-[11px] text-emerald-800">Bénéficiaire</p><p class="font-black text-slate-900" x-text="m.account_name"></p></div>
+     <div><p class="text-[11px] text-emerald-800">Numéro / identifiant de réception</p><div class="flex items-center justify-between gap-2"><p class="font-black text-lg text-slate-900 break-all" x-text="m.account_reference"></p><button type="button" @click="copyManualPaymentValue(m.account_reference)" class="shrink-0 text-xs font-bold text-emerald-800 underline">Copier</button></div></div>
+     <p x-show="m.instructions" class="text-xs leading-relaxed text-slate-700" x-text="m.instructions"></p>
+    </div>
+   </template>
+   <p class="text-xs text-slate-600">Effectuez d'abord le transfert du montant exact. Ensuite, saisissez la référence indiquée sur le reçu de transaction.</p>
+   <label class="block"><span class="block text-xs font-bold text-slate-700 mb-1">Référence du transfert *</span><input x-model="manualPayment.payerReference" maxlength="120" placeholder="Ex. référence de transaction" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm text-slate-900"></label>
+   <label class="block"><span class="block text-xs font-bold text-slate-700 mb-1">Numéro utilisé pour le paiement (facultatif)</span><input x-model="manualPayment.payerPhone" maxlength="30" placeholder="+221…" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm text-slate-900"></label>
+   <p x-show="manualPayment.error" class="text-xs text-red-600" x-text="manualPayment.error"></p>
+   <button type="button" @click="submitManualSubscriptionPayment()" :disabled="checkoutBusy" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold py-3 text-sm" x-text="checkoutBusy?'Enregistrement…':'J’ai effectué le transfert — envoyer la demande'"></button>
+  </div>
+  <div x-show="manualPayment.submitted" class="text-center space-y-4 py-3">
+   <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-700 grid place-items-center mx-auto text-2xl">✓</div>
+   <h4 class="text-lg font-black text-slate-900">Demande enregistrée</h4>
+   <p class="text-sm text-slate-600">Votre paiement est en attente de vérification. Votre abonnement ne sera activé qu'après confirmation du transfert par l'administrateur.</p>
+   <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-left text-xs space-y-1">
+    <p><span class="text-slate-500">Référence de demande :</span> <strong class="break-all" x-text="manualPayment.payment && manualPayment.payment.id"></strong></p>
+    <p><span class="text-slate-500">Statut :</span> <strong class="text-amber-700">En attente de vérification</strong></p>
+   </div>
+   <button type="button" @click="modal=''" class="w-full rounded-xl bg-slate-900 text-white font-bold py-3 text-sm">Fermer</button>
   </div>
  </div>
 </div>
